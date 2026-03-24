@@ -8,25 +8,25 @@
 
 ```bash
 # 交互式选择安装
-npx github:denglian/claude-tools
+npx github:xiao-an-c/claude-tools
 
 # 安装所有命令
-npx github:denglian/claude-tools --all
+npx github:xiao-an-c/claude-tools --all
 
 # 安装指定类别
-npx github:denglian/claude-tools -c git
+npx github:xiao-an-c/claude-tools -c git
 
 # 安装指定命令
-npx github:denglian/claude-tools --commands commit,sync,status
+npx github:xiao-an-c/claude-tools --commands commit,sync,status
 
 # 安装到指定项目
-npx github:denglian/claude-tools --all /path/to/project
+npx github:xiao-an-c/claude-tools --all /path/to/project
 ```
 
 ### 本地安装
 
 ```bash
-git clone https://github.com/denglian/claude-tools.git
+git clone https://github.com/xiao-an-c/claude-tools.git
 cd claude-tools
 node bin/cli.js --all
 ```
