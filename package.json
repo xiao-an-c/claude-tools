@@ -1,6 +1,6 @@
 {
   "name": "claude-tools",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "可扩展的 Claude Code 命令集 - 支持选择性安装 git/workflow 等命令",
   "keywords": [
     "claude",
