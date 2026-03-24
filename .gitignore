@@ -14,3 +14,13 @@ node_modules/
 
 # Claude
 .claude/
+
+# Lock files
+package-lock.json
+
+# Test files
+coverage/
+
+# VitePress
+docs/.vitepress/dist/
+docs/.vitepress/cache/

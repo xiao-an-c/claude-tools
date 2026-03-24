@@ -1,35 +1,42 @@
+---
+title: Git 分支规范
+---
+
 # Git 分支规范
 
 ## 一、分支结构
 
 ### 1.1 推荐的分支结构
 
-```
-                    ┌─────────────────────────────────────────┐
-                    │              master (生产)              │
-                    │   只接受来自 release 分支的合并         │
-                    └─────────────────────────────────────────┘
-                                      ↑
-                                      │ 发布
-                    ┌─────────────────────────────────────────┐
-                    │           release/* (预发布)            │
-                    │   命名：release/v1.0, release/v2.0      │
-                    │   用于版本测试和预发布                  │
-                    └─────────────────────────────────────────┘
-                                      ↑
-                                      │ 集成测试
-                    ┌─────────────────────────────────────────┐
-                    │            develop (开发集成)           │
-                    │   所有功能分支合并到此分支              │
-                    │   用于日常集成和测试                    │
-                    └─────────────────────────────────────────┘
-                                      ↑
-                    ┌────────────────┼────────────────┐
-                    │                │                │
-            ┌───────┴───────┐ ┌─────┴─────┐ ┌───────┴───────┐
-            │  feat/xxx     │ │ fix/xxx   │ │ refactor/xxx  │
-            │  功能分支     │ │ 修复分支  │ │ 重构分支      │
-            └───────────────┘ └───────────┘ └───────────────┘
+```mermaid
+gitGraph
+    commit id: "init"
+    branch develop
+    checkout develop
+    commit id: "dev-1"
+
+    branch feat/feature-a
+    checkout feat/feature-a
+    commit id: "feat-1"
+    commit id: "feat-2"
+    checkout develop
+    merge feat/feature-a id: "合并功能"
+
+    branch release/v1.0
+    checkout release/v1.0
+    commit id: "测试修复"
+    checkout main
+    merge release/v1.0 id: "发布 v1.0" tag: "v1.0.0"
+    checkout develop
+    merge release/v1.0 id: "同步回 dev"
+
+    branch hotfix/urgent
+    checkout hotfix/urgent
+    commit id: "紧急修复"
+    checkout main
+    merge hotfix/urgent id: "发布 v1.0.1" tag: "v1.0.1"
+    checkout develop
+    merge hotfix/urgent id: "同步修复"
 ```
 
 ### 1.2 分支类型定义
@@ -37,12 +44,12 @@
 | 分支类型 | 命名规范 | 说明 | 生命周期 |
 |---------|---------|------|---------|
 | `master` | `master` | 生产环境分支，只接受来自 release 的合并 | 永久 |
-| `release/*` | `release/v<version>` | 预发布分支，用于版本测试 | 版本发布后可删除 |
+| `release/*` | `release/v[version]` | 预发布分支，用于版本测试 | 版本发布后可删除 |
 | `develop` | `develop` | 开发集成分支，所有功能合并到此 | 永久 |
-| `feat/*` | `feat/<issue-id>-<description>` | 新功能开发 | 合并后删除 |
-| `fix/*` | `fix/<issue-id>-<description>` | Bug 修复 | 合并后删除 |
-| `refactor/*` | `refactor/<issue-id>-<description>` | 代码重构 | 合并后删除 |
-| `hotfix/*` | `hotfix/<issue-id>-<description>` | 紧急修复（基于 master） | 合并后删除 |
+| `feat/*` | `feat/<issue-id>-[description]` | 新功能开发 | 合并后删除 |
+| `fix/*` | `fix/<issue-id>-[description]` | Bug 修复 | 合并后删除 |
+| `refactor/*` | `refactor/<issue-id>-[description]` | 代码重构 | 合并后删除 |
+| `hotfix/*` | `hotfix/<issue-id>-[description]` | 紧急修复（基于 master） | 合并后删除 |
 
 ### 1.3 分支命名示例
 
@@ -132,18 +139,68 @@ release/v2.0.0
 
 ### 2.3 完整分支流转图
 
+```mermaid
+gitGraph
+    commit id: "初始" tag: "v1.0.0"
+    branch develop
+    checkout develop
+    commit id: "开发"
+
+    branch feat/new-feature
+    checkout feat/new-feature
+    commit id: "功能开发"
+    checkout develop
+    merge feat/new-feature id: "合并功能"
+
+    branch release/v1.1
+    checkout release/v1.1
+    commit id: "测试"
+    checkout main
+    merge release/v1.1 id: "发布" tag: "v1.1.0"
+
+    branch hotfix/critical
+    checkout hotfix/critical
+    commit id: "紧急修复"
+    checkout main
+    merge hotfix/critical id: "热修复" tag: "v1.1.1"
+    checkout develop
+    merge hotfix/critical id: "同步热修复"
 ```
-                    紧急修复路径
-                    ┌──────────────────────────────────────┐
-                    │                                      ↓
-┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
-│  feat/  │───→│ develop │───→│release/ │───→│ master  │───→│ hotfix/ │
-│  fix/   │    │         │    │  v1.0   │    │         │    │         │
-│refactor │    │  开发   │    │  测试   │    │  生产   │    │  紧急   │
-└─────────┘    └─────────┘    └─────────┘    └─────────┘    └─────────┘
-                   ↑                                           │
-                   └───────────────────────────────────────────┘
-                              同步回 develop
+
+**分支流转说明**：
+
+```mermaid
+flowchart LR
+    subgraph 开发分支
+        feat[feat/* 功能]
+        fix[fix/* 修复]
+        refactor[refactor/* 重构]
+    end
+
+    subgraph 集成分支
+        dev[develop]
+    end
+
+    subgraph 发布分支
+        release[release/*]
+    end
+
+    subgraph 生产分支
+        master[master/main]
+    end
+
+    subgraph 紧急修复
+        hotfix[hotfix/*]
+    end
+
+    feat --> dev
+    fix --> dev
+    refactor --> dev
+    dev --> release
+    release --> master
+    master --> hotfix
+    hotfix --> master
+    hotfix -.->|同步| dev
 ```
 
 ---
@@ -151,6 +208,26 @@ release/v2.0.0
 ## 三、工作流程
 
 ### 3.1 日常开发流程
+
+```mermaid
+flowchart TD
+    A[开始] --> B[从 develop 创建功能分支]
+    B --> C[开发功能]
+    C --> D[提交代码]
+    D --> E{开发完成?}
+    E -->|否| C
+    E -->|是| F[推送到远程]
+    F --> G[创建 PR/MR]
+    G --> H[Code Review]
+    H --> I{通过?}
+    I -->|否| J[修改代码]
+    J --> D
+    I -->|是| K[合并到 develop]
+    K --> L[删除功能分支]
+    L --> M[结束]
+```
+
+**命令示例**：
 
 ```bash
 # 1. 从 develop 创建功能分支
@@ -180,6 +257,25 @@ git push origin --delete feat/PROJ-123-add-user-profile
 ```
 
 ### 3.2 发布流程
+
+```mermaid
+flowchart TD
+    A[准备发布] --> B[从 develop 创建 release 分支]
+    B --> C[部署到预发布环境]
+    C --> D[进行测试]
+    D --> E{测试通过?}
+    E -->|否| F[修复 Bug]
+    F --> D
+    E -->|是| G[更新版本号]
+    G --> H[合并到 master]
+    H --> I[打版本 tag]
+    I --> J[推送到远程]
+    J --> K[同步回 develop]
+    K --> L[删除 release 分支]
+    L --> M[发布完成]
+```
+
+**命令示例**：
 
 ```bash
 # 1. 从 develop 创建发布分支
@@ -211,6 +307,22 @@ git push origin --delete release/v1.2.0
 ```
 
 ### 3.3 紧急修复流程
+
+```mermaid
+flowchart TD
+    A[发现紧急问题] --> B[从 master 创建 hotfix 分支]
+    B --> C[修复问题]
+    C --> D[更新版本号]
+    D --> E[提交代码]
+    E --> F[合并到 master]
+    F --> G[打版本 tag]
+    G --> H[推送 master 和 tags]
+    H --> I[同步到 develop]
+    I --> J[删除 hotfix 分支]
+    J --> K[紧急发布完成]
+```
+
+**命令示例**：
 
 ```bash
 # 1. 从 master 创建 hotfix 分支
