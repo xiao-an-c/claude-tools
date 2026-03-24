@@ -1,19 +1,33 @@
 /* Mermaid 图表样式 */
-.mermaid {
+.mermaid-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin: 1.5rem 0;
   padding: 1.5rem;
-  text-align: center;
-  overflow-x: auto;
-  background: var(--vp-c-bg-soft);
   border-radius: 8px;
+  background-color: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  overflow-x: auto;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.mermaid svg {
+.mermaid-wrapper.mermaid-rendered {
+  opacity: 1;
+}
+
+.mermaid-wrapper svg {
   max-width: 100%;
   height: auto;
 }
 
-/* 深色模式适配 */
-.dark .mermaid {
-  background: var(--vp-c-bg-alt);
+html.dark .mermaid-wrapper {
+  background-color: var(--vp-c-bg-alt);
+}
+
+@media (max-width: 768px) {
+  .mermaid-wrapper {
+    padding: 1rem;
+  }
 }

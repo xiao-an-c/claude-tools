@@ -16,14 +16,15 @@ export default defineConfig({
 
   markdown: {
     config: (md) => {
-      // 自定义 mermaid 代码块渲染
+      // 自定义 mermaid 代码块渲染 - 使用 Vue 组件
       const defaultRender = md.renderer.rules.fence!
       md.renderer.rules.fence = (tokens, idx, options, env, self) => {
         const token = tokens[idx]
         if (token.info.trim() === 'mermaid') {
           const code = token.content.trim()
-          // 使用 pre 标签保留换行符
-          return `<pre class="mermaid" style="display: none;">${md.utils.escapeHtml(code)}</pre>`
+          // 转义代码并传递给 Mermaid 组件
+          const escapedCode = md.utils.escapeHtml(code)
+          return `<Mermaid code="${escapedCode}" />`
         }
         return defaultRender(tokens, idx, options, env, self)
       }
