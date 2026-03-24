@@ -22,7 +22,8 @@ export default defineConfig({
         const token = tokens[idx]
         if (token.info.trim() === 'mermaid') {
           const code = token.content.trim()
-          return `<div class="mermaid">${code}</div>`
+          // 使用 pre 标签保留换行符
+          return `<pre class="mermaid" style="display: none;">${md.utils.escapeHtml(code)}</pre>`
         }
         return defaultRender(tokens, idx, options, env, self)
       }

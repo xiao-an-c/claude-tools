@@ -12,7 +12,7 @@ export default {
   setup() {
     const route = useRoute()
 
-    const initMermaid = () => {
+    const initMermaid = async () => {
       // 初始化 mermaid
       mermaid.initialize({
         startOnLoad: false,
@@ -25,19 +25,27 @@ export default {
 
       // 查找所有 mermaid 容器
       const mermaidElements = document.querySelectorAll('.mermaid')
-      mermaidElements.forEach(async (el, index) => {
+
+      for (let index = 0; index < mermaidElements.length; index++) {
+        const el = mermaidElements[index] as HTMLElement
         const code = el.textContent?.trim()
         if (code) {
           try {
-            const id = `mermaid-${index}`
+            const id = `mermaid-${Date.now()}-${index}`
             const { svg } = await mermaid.render(id, code)
-            el.innerHTML = svg
+            // 创建新的 div 替换 pre
+            const div = document.createElement('div')
+            div.className = 'mermaid-svg'
+            div.innerHTML = svg
+            el.parentNode?.replaceChild(div, el)
           } catch (error) {
             console.error('Mermaid render error:', error)
-            el.innerHTML = `<pre style="color: red;">Mermaid 渲染错误</pre>`
+            el.style.display = 'block'
+            el.style.color = 'red'
+            el.textContent = `Mermaid 渲染错误: ${error}`
           }
         }
-      })
+      }
     }
 
     onMounted(() => {
