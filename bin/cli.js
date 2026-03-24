@@ -3,18 +3,54 @@
 const fs = require('fs');
 const path = require('path');
 
-// 命令分类配置
-const CATEGORIES = {
-  git: {
-    description: 'Git 工作流命令 (feat/fix/hotfix/release)',
-    commands: [
-      'start-feat', 'start-fix', 'start-refactor', 'start-hotfix', 'start-release',
-      'commit', 'sync', 'wip', 'status', 'finish', 'publish', 'abort'
-    ]
-  }
-};
-
 const TARGET_BASE = '.claude/commands';
+
+// 获取包目录
+function getPackageDir() {
+  return path.dirname(__dirname);
+}
+
+// 动态加载命令配置
+function loadCategories() {
+  const packageDir = getPackageDir();
+  const commandsDir = path.join(packageDir, 'commands');
+  const categories = {};
+
+  if (!fs.existsSync(commandsDir)) {
+    return categories;
+  }
+
+  const dirs = fs.readdirSync(commandsDir, { withFileTypes: true })
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => dirent.name);
+
+  for (const dir of dirs) {
+    const categoryPath = path.join(commandsDir, dir);
+    const files = fs.readdirSync(categoryPath)
+      .filter(file => file.endsWith('.md'))
+      .map(file => file.replace('.md', ''));
+
+    if (files.length > 0) {
+      categories[dir] = {
+        description: getCategoryDescription(dir),
+        commands: files
+      };
+    }
+  }
+
+  return categories;
+}
+
+// 类别描述映射
+function getCategoryDescription(category) {
+  const descriptions = {
+    git: 'Git 工作流命令 (feat/fix/hotfix/release)'
+  };
+  return descriptions[category] || `${category} 命令`;
+}
+
+// 动态加载分类配置
+const CATEGORIES = loadCategories();
 
 // 解析命令行参数
 const args = process.argv.slice(2);
@@ -55,12 +91,6 @@ function listCommands() {
     });
     console.log();
   }
-}
-
-// 获取包目录
-function getPackageDir() {
-  // __dirname 是 bin 目录，包根目录是其父目录
-  return path.dirname(__dirname);
 }
 
 // 安装命令

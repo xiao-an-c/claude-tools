@@ -49,6 +49,7 @@ node bin/cli.js --all
 
 | 命令 | 用途 |
 |------|------|
+| `/git:init` | 初始化 Git 分支规范 |
 | `/git:start-feat` | 开始新功能开发 |
 | `/git:start-fix` | 开始 Bug 修复 |
 | `/git:start-refactor` | 开始代码重构 |
