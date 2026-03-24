@@ -1,0 +1,19 @@
+/* Mermaid 图表样式 */
+.mermaid {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  text-align: center;
+  overflow-x: auto;
+  background: var(--vp-c-bg-soft);
+  border-radius: 8px;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 深色模式适配 */
+.dark .mermaid {
+  background: var(--vp-c-bg-alt);
+}
