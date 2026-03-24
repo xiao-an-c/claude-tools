@@ -5,6 +5,9 @@ export default defineConfig({
   description: "可扩展的 Claude Code 命令集",
   lang: 'zh-CN',
 
+  // GitHub Pages 部署配置
+  base: '/claude-tools/',
+
   cleanUrls: true,
   lastUpdated: true,
 
@@ -55,7 +58,8 @@ export default defineConfig({
             { text: '简介', link: '/guide/' },
             { text: '快速开始', link: '/guide/getting-started' },
             { text: '安装详解', link: '/guide/installation' },
-            { text: '扩展新类别', link: '/guide/extending' }
+            { text: '扩展新类别', link: '/guide/extending' },
+            { text: '部署文档', link: '/guide/deployment' }
           ]
         }
       ],
