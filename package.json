@@ -1,0 +1,33 @@
+{
+  "name": "claude-tools",
+  "version": "1.0.0",
+  "description": "可扩展的 Claude Code 命令集 - 支持选择性安装 git/workflow 等命令",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "git",
+    "workflow",
+    "commands",
+    "cli"
+  ],
+  "author": "xiao-an-c",
+  "license": "MIT",
+  "bin": {
+    "claude-tools": "./bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "commands/"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiao-an-c/claude-tools.git"
+  },
+  "homepage": "https://github.com/xiao-an-c/claude-tools",
+  "bugs": {
+    "url": "https://github.com/xiao-an-c/claude-tools/issues"
+  }
+}
