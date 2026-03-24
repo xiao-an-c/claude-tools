@@ -12,15 +12,12 @@ const CATEGORIES = {
       'commit', 'sync', 'wip', 'status', 'finish', 'publish', 'abort'
     ]
   }
-  // 未来可扩展其他类别：
-  // workflow: { description: '...', commands: [...] }
 };
 
 const TARGET_BASE = '.claude/commands';
 
 // 解析命令行参数
 const args = process.argv.slice(2);
-const targetDir = args.find(a => !a.startsWith('--')) || process.cwd();
 
 // 帮助信息
 function showHelp() {
@@ -28,21 +25,20 @@ function showHelp() {
 🔧 Claude Tools - Claude Code 命令集安装器
 
 用法:
-  npx claude-tools [选项] [目标目录]
+  npx github:xiao-an-c/claude-tools [选项] [目标目录]
 
 选项:
-  --list, -l           列出所有可用命令
   --all, -a            安装所有命令
-  --category, -c <name> 安装指定类别的命令 (git, workflow...)
-  --commands <cmd1,cmd2> 安装指定的命令
+  --list, -l           列出所有可用命令
+  --category, -c <name> 安装指定类别 (git)
+  --commands <cmd1,cmd2> 安装指定命令
   --help, -h           显示帮助信息
 
 示例:
-  npx claude-tools                          # 交互式选择安装
-  npx claude-tools --all                    # 安装所有命令
-  npx claude-tools -c git                   # 安装 git 类别
-  npx claude-tools --commands commit,sync   # 安装指定命令
-  npx claude-tools /path/to/project --all   # 安装到指定项目
+  npx github:xiao-an-c/claude-tools --all
+  npx github:xiao-an-c/claude-tools -c git
+  npx github:xiao-an-c/claude-tools --commands commit,sync
+  npx github:xiao-an-c/claude-tools --all /path/to/project
 
 类别:
 ${Object.entries(CATEGORIES).map(([k, v]) => `  ${k.padEnd(12)} ${v.description}`).join('\n')}
@@ -63,13 +59,21 @@ function listCommands() {
 
 // 获取包目录
 function getPackageDir() {
+  // __dirname 是 bin 目录，包根目录是其父目录
   return path.dirname(__dirname);
 }
 
 // 安装命令
-function installCommands(commands, category) {
+function installCommands(commands, category, targetDir) {
   const packageDir = getPackageDir();
+  const sourcePath = path.join(packageDir, 'commands', category);
   const targetPath = path.join(targetDir, TARGET_BASE, category);
+
+  // 检查源目录是否存在
+  if (!fs.existsSync(sourcePath)) {
+    console.log(`   ❌ 源目录不存在: ${sourcePath}`);
+    return { installed: 0, failed: commands.length };
+  }
 
   // 创建目标目录
   fs.mkdirSync(targetPath, { recursive: true });
@@ -78,7 +82,7 @@ function installCommands(commands, category) {
   const failed = [];
 
   commands.forEach(cmd => {
-    const srcFile = path.join(packageDir, 'commands', category, `${cmd}.md`);
+    const srcFile = path.join(sourcePath, `${cmd}.md`);
     const destFile = path.join(targetPath, `${cmd}.md`);
 
     if (fs.existsSync(srcFile)) {
@@ -86,7 +90,7 @@ function installCommands(commands, category) {
       console.log(`   ✅ /${category}:${cmd}`);
       installed++;
     } else {
-      console.log(`   ❌ /${category}:${cmd} (不存在)`);
+      console.log(`   ❌ /${category}:${cmd} (文件不存在)`);
       failed.push(cmd);
     }
   });
@@ -94,8 +98,8 @@ function installCommands(commands, category) {
   return { installed, failed };
 }
 
-// 交互式选择（简化版 - 使用 readline）
-function interactiveSelect(callback) {
+// 交互式选择
+function interactiveSelect(targetDir, callback) {
   const readline = require('readline');
   const rl = readline.createInterface({
     input: process.stdin,
@@ -109,26 +113,73 @@ function interactiveSelect(callback) {
   });
   console.log(`  ${categories.length + 1}. 全部安装`);
 
-  rl.question('\n请选择要安装的类别 (输入数字，多个用逗号分隔): ', (answer) => {
-    const selections = answer.split(',').map(s => parseInt(s.trim()) - 1);
+  rl.question('\n请选择要安装的类别 (输入数字): ', (answer) => {
+    const selection = parseInt(answer.trim()) - 1;
 
-    const selectedCategories = selections
-      .filter(i => i >= 0 && i < categories.length)
-      .map(i => categories[i]);
-
-    if (selections.includes(categories.length)) {
+    if (selection === categories.length) {
       // 选择全部
       callback(categories);
-    } else if (selectedCategories.length > 0) {
-      callback(selectedCategories);
+    } else if (selection >= 0 && selection < categories.length) {
+      callback([categories[selection]]);
     } else {
       console.log('❌ 无效选择');
-      rl.close();
-      process.exit(1);
     }
 
     rl.close();
   });
+}
+
+// 安装所有
+function installAll(targetDir) {
+  let totalInstalled = 0;
+  for (const [category, config] of Object.entries(CATEGORIES)) {
+    console.log(`\n📦 安装 [${category}] 类别:`);
+    const result = installCommands(config.commands, category, targetDir);
+    totalInstalled += result.installed;
+  }
+  console.log(`\n✅ 全部安装完成! 共安装 ${totalInstalled} 个命令\n`);
+}
+
+// 安装指定类别
+function installCategory(category, targetDir) {
+  if (!CATEGORIES[category]) {
+    console.log(`❌ 未知类别: ${category}`);
+    console.log(`可用类别: ${Object.keys(CATEGORIES).join(', ')}`);
+    process.exit(1);
+  }
+
+  console.log(`\n📦 安装 [${category}] 类别:`);
+  const result = installCommands(CATEGORIES[category].commands, category, targetDir);
+  console.log(`\n✅ 安装完成! 共安装 ${result.installed} 个命令\n`);
+}
+
+// 安装指定命令
+function installSpecific(commandsStr, targetDir) {
+  const commands = commandsStr.split(',').map(c => c.trim());
+
+  const byCategory = {};
+  commands.forEach(cmd => {
+    if (cmd.includes(':')) {
+      const [cat, name] = cmd.split(':');
+      if (!byCategory[cat]) byCategory[cat] = [];
+      byCategory[cat].push(name);
+    } else {
+      if (!byCategory.git) byCategory.git = [];
+      byCategory.git.push(cmd);
+    }
+  });
+
+  let totalInstalled = 0;
+  for (const [category, cmds] of Object.entries(byCategory)) {
+    if (!CATEGORIES[category]) {
+      console.log(`⚠️  跳过未知类别: ${category}`);
+      continue;
+    }
+    console.log(`\n📦 安装 [${category}] 命令:`);
+    const result = installCommands(cmds, category, targetDir);
+    totalInstalled += result.installed;
+  }
+  console.log(`\n✅ 安装完成! 共安装 ${totalInstalled} 个命令\n`);
 }
 
 // 主函数
@@ -143,6 +194,9 @@ function main() {
   const commandsIndex = args.findIndex(a => a === '--commands');
   const commandsArg = commandsIndex !== -1 ? args[commandsIndex + 1] : null;
 
+  // 目标目录：找第一个不是选项的参数
+  const targetDir = args.find(a => !a.startsWith('-') && a !== categoryArg && a !== commandsArg) || process.cwd();
+
   // 显示帮助
   if (flagHelp) {
     showHelp();
@@ -155,78 +209,28 @@ function main() {
     return;
   }
 
-  console.log('\n🔧 Claude Tools - 安装器\n');
-  console.log(`📁 目标目录: ${targetDir}\n`);
+  console.log('\n🔧 Claude Tools - 安装器');
+  console.log(`📁 目标目录: ${targetDir}`);
+  console.log(`📦 包目录: ${getPackageDir()}\n`);
 
   // 确定要安装的内容
   if (flagAll) {
-    // 安装所有
-    installAll();
+    installAll(targetDir);
   } else if (categoryArg) {
-    // 安装指定类别
-    installCategory(categoryArg);
+    installCategory(categoryArg, targetDir);
   } else if (commandsArg) {
-    // 安装指定命令
-    installSpecific(commandsArg);
+    installSpecific(commandsArg, targetDir);
   } else {
-    // 交互式选择
-    interactiveSelect((selectedCategories) => {
+    interactiveSelect(targetDir, (selectedCategories) => {
+      let totalInstalled = 0;
       selectedCategories.forEach(cat => {
         console.log(`\n📦 安装 [${cat}] 类别:`);
-        installCommands(CATEGORIES[cat].commands, cat);
+        const result = installCommands(CATEGORIES[cat].commands, cat, targetDir);
+        totalInstalled += result.installed;
       });
-      console.log('\n✅ 安装完成!\n');
+      console.log(`\n✅ 安装完成! 共安装 ${totalInstalled} 个命令\n`);
     });
   }
-}
-
-function installAll() {
-  for (const [category, config] of Object.entries(CATEGORIES)) {
-    console.log(`\n📦 安装 [${category}] 类别:`);
-    installCommands(config.commands, category);
-  }
-  console.log('\n✅ 全部安装完成!\n');
-}
-
-function installCategory(category) {
-  if (!CATEGORIES[category]) {
-    console.log(`❌ 未知类别: ${category}`);
-    console.log(`可用类别: ${Object.keys(CATEGORIES).join(', ')}`);
-    process.exit(1);
-  }
-
-  console.log(`\n📦 安装 [${category}] 类别:`);
-  installCommands(CATEGORIES[category].commands, category);
-  console.log('\n✅ 安装完成!\n');
-}
-
-function installSpecific(commandsStr) {
-  // 假设命令格式为 category:cmd 或纯 cmd（默认 git）
-  const commands = commandsStr.split(',').map(c => c.trim());
-
-  // 按类别分组
-  const byCategory = {};
-  commands.forEach(cmd => {
-    if (cmd.includes(':')) {
-      const [cat, name] = cmd.split(':');
-      if (!byCategory[cat]) byCategory[cat] = [];
-      byCategory[cat].push(name);
-    } else {
-      // 默认 git 类别
-      if (!byCategory.git) byCategory.git = [];
-      byCategory.git.push(cmd);
-    }
-  });
-
-  for (const [category, cmds] of Object.entries(byCategory)) {
-    if (!CATEGORIES[category]) {
-      console.log(`⚠️  跳过未知类别: ${category}`);
-      continue;
-    }
-    console.log(`\n📦 安装 [${category}] 命令:`);
-    installCommands(cmds, category);
-  }
-  console.log('\n✅ 安装完成!\n');
 }
 
 main();
