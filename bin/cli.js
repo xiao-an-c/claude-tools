@@ -175,12 +175,16 @@ function installCategory(category, targetDir) {
   if (!CATEGORIES[category]) {
     console.log(`❌ 未知类别: ${category}`);
     console.log(`可用类别: ${Object.keys(CATEGORIES).join(', ')}`);
-    process.exit(1);
+    if (require.main === module) {
+      process.exit(1);
+    }
+    return { installed: 0, failed: 0 };
   }
 
   console.log(`\n📦 安装 [${category}] 类别:`);
   const result = installCommands(CATEGORIES[category].commands, category, targetDir);
   console.log(`\n✅ 安装完成! 共安装 ${result.installed} 个命令\n`);
+  return result;
 }
 
 // 安装指定命令
@@ -263,4 +267,22 @@ function main() {
   }
 }
 
-main();
+// 导出函数供测试使用
+module.exports = {
+  getPackageDir,
+  loadCategories,
+  getCategoryDescription,
+  installCommands,
+  installAll,
+  installCategory,
+  installSpecific,
+  interactiveSelect,
+  showHelp,
+  listCommands,
+  TARGET_BASE
+};
+
+// 只在直接运行时执行 main
+if (require.main === module) {
+  main();
+}
