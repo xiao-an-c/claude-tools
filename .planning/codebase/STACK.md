@@ -1,56 +1,56 @@
-# Technology Stack
+# 技术栈
 
-**Analysis Date:** 2026-03-26
+**分析日期：** 2026-03-26
 
-## Languages
+## 编程语言
 
-**Primary:**
-- JavaScript (Node.js) - CLI tool implementation
+**主要语言：**
+- JavaScript (Node.js) — CLI 工具实现
 
-**Secondary:**
-- Markdown - Command definitions and documentation
+**辅助语言：**
+- Markdown — 命令定义和文档
 
-## Runtime
+## 运行时
 
-**Environment:**
-- Node.js >= 18.0.0 (per `package.json` `engines` field)
+**环境：**
+- Node.js >= 18.0.0（根据 `package.json` 中 `engines` 字段）
 
-**Package Manager:**
-- npm (v9.x based on package-lock.json v3 format)
-- Lockfile: `package-lock.json` (present)
+**包管理器：**
+- npm（基于 package-lock.json v3 格式判断为 v9.x）
+- 锁文件：`package-lock.json`（已存在）
 
-## Frameworks
+## 框架
 
-**Core:**
-- None - pure Node.js CLI application
+**核心框架：**
+- 无 — 纯 Node.js CLI 应用
 
-**Testing:**
-- Jest ^29.7.0 - JavaScript testing framework
+**测试框架：**
+- Jest ^29.7.0 — JavaScript 测试框架
 
-**Documentation:**
-- VitePress ^1.6.4 - Static site generator for documentation
-- Mermaid ^11.13.0 - Diagrams in documentation
+**文档框架：**
+- VitePress ^1.6.4 — 静态文档站点生成器
+- Mermaid ^11.13.0 — 文档中的图表渲染
 
-**CLI:**
-- readline (Node.js built-in) - Interactive CLI prompts
+**CLI：**
+- readline（Node.js 内置）— 交互式 CLI 提示
 
-## Key Dependencies
+## 关键依赖
 
-**None** - This is a minimal CLI tool that relies only on Node.js built-in modules (`fs`, `path`, `readline`).
+**无运行时依赖** — 这是一个极简 CLI 工具，仅依赖 Node.js 内置模块（`fs`、`path`、`readline`）。
 
-**Dev Dependencies:**
-- `jest` ^29.7.0 - Testing framework
-- `mermaid` ^11.13.0 - Diagram rendering for docs
-- `vitepress` ^1.6.4 - Documentation site generator
+**开发依赖：**
+- `jest` ^29.7.0 — 测试框架
+- `mermaid` ^11.13.0 — 文档图表渲染
+- `vitepress` ^1.6.4 — 文档站点生成器
 
-## Configuration
+## 配置文件
 
-**Project Config:**
-- `package.json` - Project metadata, scripts, dependencies
-- `jest.config.js` - Jest testing configuration
-- `docs/.vitepress/config.mts` - VitePress site configuration
+**项目配置：**
+- `package.json` — 项目元数据、脚本、依赖
+- `jest.config.js` — Jest 测试配置
+- `docs/.vitepress/config.mts` — VitePress 站点配置
 
-**Jest Configuration** (`jest.config.js`):
+**Jest 配置**（`jest.config.js`）：
 ```javascript
 module.exports = {
   testEnvironment: 'node',
@@ -61,22 +61,22 @@ module.exports = {
 };
 ```
 
-**VitePress Configuration** (`docs/.vitepress/config.mts`):
-- Title: "Claude Tools"
-- Base: `/claude-tools/` (for GitHub Pages deployment)
-- Local search provider
-- Mermaid diagram support via custom fence renderer
+**VitePress 配置**（`docs/.vitepress/config.mts`）：
+- 标题："Claude Tools"
+- Base：`/claude-tools/`（用于 GitHub Pages 部署）
+- 本地搜索提供者
+- 通过自定义代码块渲染器支持 Mermaid 图表
 
-## Platform Requirements
+## 平台要求
 
-**Development:**
+**开发环境：**
 - Node.js >= 18
 - npm
 
-**Production:**
-- Node.js >= 18 (runtime only, no build step required for CLI)
-- Target: Unix-like systems (CLI uses shebang `#!/usr/bin/env node`)
+**生产环境：**
+- Node.js >= 18（仅运行时，CLI 无需构建步骤）
+- 目标平台：类 Unix 系统（CLI 使用 shebang `#!/usr/bin/env node`）
 
 ---
 
-*Stack analysis: 2026-03-26*
+*技术栈分析：2026-03-26*

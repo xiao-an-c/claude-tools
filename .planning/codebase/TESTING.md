@@ -1,43 +1,43 @@
-# Testing Patterns
+# 测试模式
 
-**Analysis Date:** 2026-03-26
+**分析日期：** 2026-03-26
 
-## Test Framework
+## 测试框架
 
-**Runner:**
+**测试运行器：**
 - Jest v29.7.0
-- Config: `jest.config.js`
+- 配置：`jest.config.js`
 
-**Assertion Library:**
-- Built-in Jest assertions (`expect`)
+**断言库：**
+- Jest 内置断言（`expect`）
 
-**Run Commands:**
+**运行命令：**
 ```bash
-npm test              # Run all tests
-npm run test:watch    # Watch mode
-npm run test:coverage # Coverage report
+npm test              # 运行所有测试
+npm run test:watch    # 监听模式
+npm run test:coverage # 覆盖率报告
 ```
 
-## Test File Organization
+## 测试文件组织
 
-**Location:**
-- `__tests__/` directory (root level)
-- Pattern: `*.test.js`
+**位置：**
+- `__tests__/` 目录（根目录级别）
+- 模式：`*.test.js`
 
-**Naming:**
-- `cli.test.js` for `bin/cli.js`
+**命名：**
+- `cli.test.js` 对应 `bin/cli.js`
 
-**Structure:**
+**结构：**
 ```
 __tests__/
-├── cli.test.js    # Main test file
-└── fixtures/       # Test fixtures
-    └── commands/  # Command markdown files for integration tests
+├── cli.test.js    # 主测试文件
+└── fixtures/       # 测试 fixtures
+    └── commands/  # 命令 Markdown 文件，用于集成测试
 ```
 
-## Test Structure
+## 测试结构
 
-**Suite Organization:**
+**套件组织：**
 ```javascript
 describe('CLI 模块', () => {
   let cli;
@@ -56,13 +56,13 @@ describe('CLI 模块', () => {
 });
 ```
 
-**Patterns:**
-- Outer `describe` for module name in Chinese
-- `let cli` variable re-required in each `beforeEach`
-- Inner `describe` blocks for each function under test
-- Individual `test` cases with Chinese descriptions
+**模式：**
+- 外层 `describe` 用中文模块名
+- 每个 `beforeEach` 中重新 require `cli`
+- 内层 `describe` 块按被测函数组织
+- 单个 `test` 用中文描述
 
-**Setup Pattern:**
+**Setup 模式：**
 ```javascript
 beforeEach(() => {
   jest.clearAllMocks();
@@ -73,7 +73,7 @@ beforeEach(() => {
 });
 ```
 
-**Teardown Pattern:**
+**Teardown 模式：**
 ```javascript
 afterEach(() => {
   console.log = originalLog;
@@ -81,13 +81,13 @@ afterEach(() => {
 });
 ```
 
-## Mocking
+## Mock 模式
 
-**Framework:** Jest native mocking
+**框架：** Jest 原生 Mock
 
-**Patterns:**
+**模式：**
 
-**1. Console Output Capture:**
+**1. 控制台输出捕获：**
 ```javascript
 let consoleOutput = [];
 const originalLog = console.log;
@@ -103,7 +103,7 @@ afterEach(() => {
 });
 ```
 
-**2. Module Mocking with `jest.doMock`:**
+**2. 模块 Mock（`jest.doMock`）：**
 ```javascript
 jest.doMock('fs', () => ({
   ...jest.requireActual('fs'),
@@ -111,14 +111,14 @@ jest.doMock('fs', () => ({
 }));
 ```
 
-**3. Method Spying:**
+**3. 方法监听（Spy）：**
 ```javascript
 const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 // ... test ...
 mockExit.mockRestore();
 ```
 
-**4. Readline Interface Mocking:**
+**4. Readline 接口 Mock：**
 ```javascript
 const mockRl = {
   question: jest.fn((_, callback) => callback('1')),
@@ -127,19 +127,19 @@ const mockRl = {
 jest.spyOn(readline, 'createInterface').mockReturnValue(mockRl);
 ```
 
-**What to Mock:**
-- `console.log` for output capture
-- `fs` filesystem operations (using temp directories)
-- `readline` for interactive prompts
-- `process.exit` to prevent test termination
+**需要 Mock 的内容：**
+- `console.log` 用于输出捕获
+- `fs` 文件系统操作（使用临时目录）
+- `readline` 用于交互提示
+- `process.exit` 防止测试终止
 
-## Fixtures and Factories
+## Fixtures 和工厂
 
-**Test Data:**
-- Temporary directories via `fs.mkdtempSync`
-- Location: `os.tmpdir()` with prefix `claude-tools-test-`
+**测试数据：**
+- 通过 `fs.mkdtempSync` 创建临时目录
+- 位置：`os.tmpdir()` 前缀为 `claude-tools-test-`
 
-**Example Pattern:**
+**示例模式：**
 ```javascript
 let tempTargetDir;
 
@@ -152,12 +152,12 @@ afterEach(() => {
 });
 ```
 
-**Real Command Files:**
-- `__tests__/fixtures/commands/` contains actual `.md` files for integration testing
+**真实命令文件：**
+- `__tests__/fixtures/commands/` 包含用于集成测试的真实 `.md` 文件
 
-## Coverage
+## 覆盖率
 
-**Configuration:**
+**配置：**
 ```javascript
 module.exports = {
   testEnvironment: 'node',
@@ -168,38 +168,38 @@ module.exports = {
 };
 ```
 
-**Current Coverage:**
-- Only `bin/**/*.js` is covered (single file `bin/cli.js`)
+**当前覆盖率：**
+- 仅覆盖 `bin/**/*.js`（单文件 `bin/cli.js`）
 
-**Requirements:** No explicit coverage threshold enforced
+**要求：** 未强制执行显式覆盖率阈值
 
-**View Coverage:**
+**查看覆盖率：**
 ```bash
 npm run test:coverage
-# Output in coverage/lcov.info and coverage/lcov-report/
+# 输出到 coverage/lcov.info 和 coverage/lcov-report/
 ```
 
-## Test Types
+## 测试类型
 
-**Unit Tests:**
-- Test individual functions in isolation
-- Mock console output to verify behavior
-- Use `jest.isolateModulesAsync` for module-level mocking
+**单元测试：**
+- 隔离测试单个函数
+- Mock console 输出验证行为
+- 使用 `jest.isolateModulesAsync` 做模块级 Mock
 
-**Integration Tests:**
-- Use real filesystem with temp directories
-- Copy actual command files to verify installation logic
-- Test file existence as assertions
+**集成测试：**
+- 使用真实文件系统配合临时目录
+- 复制真实命令文件验证安装逻辑
+- 用文件存在性做断言
 
-**E2E Tests:** Not used
+**E2E 测试：** 未使用
 
-## Common Patterns
+## 常见模式
 
-**Async Testing:**
-- Uses `done` callback for async verification
-- Uses `jest.isolateModulesAsync` for async module loading
+**异步测试：**
+- 使用 `done` 回调做异步验证
+- 使用 `jest.isolateModulesAsync` 做异步模块加载
 
-**Example:**
+**示例：**
 ```javascript
 test('当命令无前缀时应默认为 git 类别', (done) => {
   const mockRl = {
@@ -215,22 +215,22 @@ test('当命令无前缀时应默认为 git 类别', (done) => {
 });
 ```
 
-**Error Testing:**
+**错误测试：**
 ```javascript
 test('当命令数组为 null 时应抛出 TypeError', () => {
   expect(() => cli.installCommands(null, 'git', tempTargetDir)).toThrow(TypeError);
 });
 ```
 
-## Jest Configuration
+## Jest 配置
 
-**File:** `jest.config.js`
+**文件：** `jest.config.js`
 
-**Settings:**
-- `testEnvironment`: 'node'
-- `testMatch`: `['**/__tests__/**/*.test.js']`
-- `collectCoverageFrom`: `['bin/**/*.js']`
+**设置：**
+- `testEnvironment`：'node'
+- `testMatch`：`['**/__tests__/**/*.test.js']`
+- `collectCoverageFrom`：`['bin/**/*.js']`
 
 ---
 
-*Testing analysis: 2026-03-26*
+*测试分析：2026-03-26*

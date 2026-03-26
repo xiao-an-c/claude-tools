@@ -1,15 +1,15 @@
-# Codebase Structure
+# 代码库结构
 
-**Analysis Date:** 2026-03-26
+**分析日期：** 2026-03-26
 
-## Directory Layout
+## 目录布局
 
 ```
 /Users/denglian/mine/claude-tools/
-├── bin/                    # CLI entry point
-│   └── cli.js              # Main CLI implementation
-├── commands/                # Source command templates
-│   ├── git/                # Git workflow commands
+├── bin/                    # CLI 入口点
+│   └── cli.js              # CLI 主实现
+├── commands/               # 源命令模板
+│   ├── git/                # Git 工作流命令
 │   │   ├── abort.md
 │   │   ├── commit.md
 │   │   ├── finish.md
@@ -23,134 +23,134 @@
 │   │   ├── status.md
 │   │   ├── sync.md
 │   │   └── wip.md
-│   └── test/               # Test generation commands
+│   └── test/               # 测试生成命令
 │       ├── coverage.md
 │       ├── generate.md
 │       ├── review.md
 │       └── snapshot.md
-├── __tests__/              # Jest test suite
-│   ├── cli.test.js         # CLI module tests
-│   └── fixtures/           # Test fixtures
-├── docs/                   # VitePress documentation
-│   ├── guide/              # User guides
-│   ├── commands/           # Command documentation
-│   ├── specs/              # Specification docs
-│   └── .vitepress/         # VitePress config
-├── .claude/commands/       # Installed commands (development)
+├── __tests__/              # Jest 测试套件
+│   ├── cli.test.js         # CLI 模块测试
+│   └── fixtures/           # 测试fixtures
+├── docs/                   # VitePress 文档
+│   ├── guide/              # 用户指南
+│   ├── commands/           # 命令文档
+│   ├── specs/              # 规范文档
+│   └── .vitepress/         # VitePress 配置
+├── .claude/commands/       # 已安装命令（开发用）
 │   ├── git/
 │   └── test/
-├── .github/workflows/      # CI/CD configuration
-├── coverage/               # Test coverage reports
-├── package.json           # Project manifest
-├── jest.config.js          # Jest configuration
-└── README.md               # Project documentation
+├── .github/workflows/      # CI/CD 配置
+├── coverage/               # 测试覆盖率报告
+├── package.json           # 项目清单
+├── jest.config.js          # Jest 配置
+└── README.md               # 项目文档
 ```
 
-## Directory Purposes
+## 目录用途
 
-**`bin/`:**
-- Purpose: CLI entry point
-- Contains: `cli.js` - the main executable
-- Key files: `cli.js`
+**`bin/`：**
+- 用途：CLI 入口点
+- 内容：`cli.js` — 主可执行文件
+- 关键文件：`cli.js`
 
-**`commands/`:**
-- Purpose: Source command templates for distribution
-- Contains: Category subdirectories with `.md` command files
-- Key files: `git/*.md`, `test/*.md`
+**`commands/`：**
+- 用途：分发的源命令模板
+- 内容：分类子目录中的 `.md` 命令文件
+- 关键文件：`git/*.md`、`test/*.md`
 
-**`__tests__/`:**
-- Purpose: Jest test suite
-- Contains: `cli.test.js` - comprehensive tests for CLI functions
-- Key files: `cli.test.js`
+**`__tests__/`：**
+- 用途：Jest 测试套件
+- 内容：`cli.test.js` — CLI 函数完整测试
+- 关键文件：`cli.test.js`
 
-**`docs/`:**
-- Purpose: VitePress documentation site
-- Contains: User guides, command documentation, specifications
+**`docs/`：**
+- 用途：VitePress 文档站点
+- 内容：用户指南、命令文档、规范说明
 
-**`.claude/commands/`:**
-- Purpose: Development installation target
-- Contains: Copy of commands installed locally for development testing
-- Note: This is gitignored - represents installed state, not source
+**`.claude/commands/`：**
+- 用途：开发安装目标
+- 内容：本地安装的 commands 副本
+- 注意：已被 gitignore — 表示已安装状态，非源码
 
-## Key File Locations
+## 关键文件位置
 
-**Entry Points:**
-- `bin/cli.js`: Main CLI executable, shebang `#!/usr/bin/env node`
+**入口点：**
+- `bin/cli.js`：主 CLI 可执行文件，shebang `#!/usr/bin/env node`
 
-**Configuration:**
-- `package.json`: Project metadata, dependencies, scripts, bin entry
-- `jest.config.js`: Jest test runner configuration
+**配置：**
+- `package.json`：项目元数据、依赖、脚本、bin 入口
+- `jest.config.js`：Jest 测试运行器配置
 
-**Core Logic:**
-- `bin/cli.js`: All CLI functionality (292 lines)
+**核心逻辑：**
+- `bin/cli.js`：所有 CLI 功能（292 行）
 
-**Testing:**
-- `__tests__/cli.test.js`: Complete test suite for CLI module
+**测试：**
+- `__tests__/cli.test.js`：CLI 模块完整测试套件
 
-## Naming Conventions
+## 命名规范
 
-**Files:**
-- JavaScript: `lowercase.js` (cli.js, jest.config.js)
-- Markdown commands: `kebab-case.md` (start-feat.md, commit.md)
-- Directories: `lowercase/` (bin/, commands/, docs/)
+**文件：**
+- JavaScript：`lowercase.js`（cli.js, jest.config.js）
+- Markdown 命令：`kebab-case.md`（start-feat.md, commit.md）
+- 目录：`lowercase/`（bin/, commands/, docs/）
 
-**Functions:**
-- camelCase: `getPackageDir`, `loadCategories`, `installCommands`, `installAll`
+**函数：**
+- camelCase：`getPackageDir`、`loadCategories`、`installCommands`、`installAll`
 
-**Variables:**
-- camelCase: `packageDir`, `targetDir`, `consoleOutput`
-- UPPER_SNAKE for constants: `TARGET_BASE`
+**变量：**
+- camelCase：`packageDir`、`targetDir`、`consoleOutput`
+- 常量：未使用 UPPER_SNAKE_CASE，直接赋值使用
 
-**Categories (directory names):**
-- lowercase: `git`, `test`
+**分类（目录名）：**
+- 小写：`git`、`test`
 
-**Commands (file names):**
-- kebab-case: `start-feat`, `start-hotfix`, `sync`
+**命令（文件名）：**
+- kebab-case：`start-feat`、`start-hotfix`、`sync`
 
-## Where to Add New Code
+## 在哪里添加新代码
 
-**New Command in Existing Category:**
-1. Create new `.md` file in `commands/{category}/`
-2. Follow YAML frontmatter pattern (name, description, allowed-tools)
-3. Add markdown body with `<objective>`, `<rules>`, `<process>`, `<execution>` sections
+**在已有分类中添加新命令：**
+1. 在 `commands/{category}/` 下创建新的 `.md` 文件
+2. 遵循 YAML frontmatter 模式（name, description, allowed-tools）
+3. Markdown 正文包含 `<objective>`、`<rules>`、`<process>`、`<execution>` 部分
 
-**New Category:**
-1. Create new directory under `commands/` (e.g., `commands/workflow/`)
-2. Add `.md` command files to the new directory
-3. Update `getCategoryDescription()` in `bin/cli.js` to include the new category
-4. Category is auto-discovered for installation
+**新增分类：**
+1. 在 `commands/` 下创建新目录（如 `commands/workflow/`）
+2. 在新目录下添加 `.md` 命令文件
+3. 更新 `bin/cli.js` 中的 `getCategoryDescription()` 包含新分类
+4. 分类会被自动发现用于安装
 
-**New CLI Function:**
-1. Add function to `bin/cli.js`
-2. Export function in `module.exports` object
-3. Add corresponding tests in `__tests__/cli.test.js`
+**新增 CLI 函数：**
+1. 在 `bin/cli.js` 中添加函数
+2. 在 `module.exports` 对象中导出函数
+3. 在 `__tests__/cli.test.js` 中添加对应测试
 
-**Test Fixtures:**
-- Location: `__tests__/fixtures/`
-- Create subdirectory structure matching your fixture needs
+**测试 fixtures：**
+- 位置：`__tests__/fixtures/`
+- 创建符合 fixture 需求的子目录结构
 
-## Special Directories
+## 特殊目录
 
-**`.claude/commands/`:**
-- Purpose: Claude Code custom commands directory
-- Generated: Yes, by CLI installation process
-- Committed: No, gitignored
+**`.claude/commands/`：**
+- 用途：Claude Code 自定义命令目录
+- 是否生成：是，通过 CLI 安装过程生成
+- 是否提交：否，已被 gitignore
 
-**`coverage/`:**
-- Purpose: Jest coverage reports
-- Generated: Yes, by `npm test -- --coverage`
-- Committed: Yes, for CI visibility
+**`coverage/`：**
+- 用途：Jest 覆盖率报告
+- 是否生成：是，通过 `npm test -- --coverage`
+- 是否提交：是，用于 CI 可视化
 
-**`node_modules/`:**
-- Purpose: npm dependencies
-- Generated: Yes, by `npm install`
-- Committed: No
+**`node_modules/`：**
+- 用途：npm 依赖
+- 是否生成：是，通过 `npm install`
+- 是否提交：否
 
-**`.vitepress/dist/`:**
-- Purpose: Built VitePress site
-- Generated: Yes, by `npm run docs:build`
-- Committed: Yes, for GitHub Pages deployment
+**`.vitepress/dist/`：**
+- 用途：构建后的 VitePress 站点
+- 是否生成：是，通过 `npm run docs:build`
+- 是否提交：是，用于 GitHub Pages 部署
 
 ---
 
-*Structure analysis: 2026-03-26*
+*结构分析：2026-03-26*

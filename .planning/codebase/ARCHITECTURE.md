@@ -1,105 +1,105 @@
-# Architecture
+# 架构设计
 
-**Analysis Date:** 2026-03-26
+**分析日期：** 2026-03-26
 
-## Pattern Overview
+## 整体架构
 
-**Overall:** Plugin Installer Pattern (Command Distribution System)
+**架构模式：** 插件安装器模式（命令分发系统）
 
-**Key Characteristics:**
-- CLI tool that installs markdown-based command templates into Claude Code's `.claude/commands/` directory
-- Command files are YAML-frontmatter markdown documents that define AI agent instructions
-- Dynamic discovery of available commands from filesystem at runtime
-- No build step - pure runtime composition of command categories
+**核心特征：**
+- CLI 工具，将基于 Markdown 的命令模板安装到 Claude Code 的 `.claude/commands/` 目录
+- 命令文件为 YAML frontmatter 的 Markdown 文档，定义 AI Agent 指令
+- 运行时从文件系统动态发现可用命令
+- 无构建步骤，纯运行时组合命令分类
 
-## Layers
+## 分层结构
 
-**CLI Entry Layer:**
-- Purpose: Command-line interface and argument parsing
-- Location: `bin/cli.js`
-- Contains: Main CLI logic, argument parsing, help display, interactive prompts
-- Depends on: Node.js built-in modules (fs, path, readline)
-- Used by: End users via npx or direct execution
+**CLI 入口层：**
+- 职责：命令行接口和参数解析
+- 位置：`bin/cli.js`
+- 内容：CLI 主逻辑、参数解析、帮助显示、交互提示
+- 依赖：Node.js 内置模块（fs, path, readline）
+- 使用者：最终用户（通过 npx 或直接执行）
 
-**Command Template Layer:**
-- Purpose: Source command definitions organized by category
-- Location: `commands/{category}/*.md`
-- Contains: Git workflow commands (abort, commit, finish, etc.) and test commands (generate, review, coverage, snapshot)
-- Depends on: None (static markdown files)
-- Used by: CLI during installation to copy to target projects
+**命令模板层：**
+- 职责：按分类组织源命令定义
+- 位置：`commands/{category}/*.md`
+- 内容：Git 工作流命令（abort, commit, finish 等）和测试命令（generate, review, coverage, snapshot）
+- 依赖：无（静态 Markdown 文件）
+- 使用者：CLI 安装时复制到目标项目
 
-**Installation Target:**
-- Location: `{targetProject}/.claude/commands/{category}/{command}.md`
-- Purpose: Claude Code command prompts that appear as `/category:command` in the agent
+**安装目标位置：**
+- 位置：`{目标项目}/.claude/commands/{category}/{command}.md`
+- 职责：Claude Code 命令提示，在 Agent 中显示为 `/category:command`
 
-## Data Flow
+## 数据流向
 
-**Command Installation Flow:**
+**命令安装流程：**
 
-1. User invokes CLI with options (e.g., `--all`, `-c git`, `--commands commit,sync`)
-2. CLI parses arguments, determines target directory (cwd or specified path)
-3. CLI loads category configuration via `loadCategories()` - reads `commands/` subdirectories
-4. For each command to install:
-   - Source: `commands/{category}/{command}.md`
-   - Destination: `{targetDir}/.claude/commands/{category}/{command}.md`
-5. CLI creates target directories recursively, copies markdown files
-6. Output confirms installation success/failure
+1. 用户调用 CLI（如 `--all`、`-c git`、`--commands commit,sync`）
+2. CLI 解析参数，确定目标目录（当前目录或指定路径）
+3. CLI 通过 `loadCategories()` 加载分类配置 — 读取 `commands/` 子目录
+4. 对每个待安装命令：
+   - 源：`commands/{category}/{command}.md`
+   - 目标：`{targetDir}/.claude/commands/{category}/{command}.md`
+5. CLI 递归创建目标目录，复制 Markdown 文件
+6. 输出确认安装成功/失败
 
-**Category Discovery Flow:**
+**分类发现流程：**
 
-1. `loadCategories()` scans `commands/` directory for subdirectories
-2. Each subdirectory name becomes a category
-3. Files ending in `.md` within category directory become commands
-4. Category descriptions loaded from `getCategoryDescription()` map
+1. `loadCategories()` 扫描 `commands/` 目录下的子目录
+2. 每个子目录名作为一个分类
+3. 分类目录内以 `.md` 结尾的文件成为命令
+4. 分类描述从 `getCategoryDescription()` 映射中加载
 
-## Key Abstractions
+## 核心抽象
 
-**CLI Module:**
-- Purpose: Central module exporting all installation functions
-- Examples: `bin/cli.js`
-- Pattern: CommonJS module with named exports for all public functions
-- Exported: `getPackageDir`, `loadCategories`, `getCategoryDescription`, `installCommands`, `installAll`, `installCategory`, `installSpecific`, `interactiveSelect`, `showHelp`, `listCommands`, `main`, `TARGET_BASE`
+**CLI 模块：**
+- 职责：集中导出所有安装功能
+- 示例：`bin/cli.js`
+- 模式：CommonJS 模块，命名导出所有公共函数
+- 导出：`getPackageDir`、`loadCategories`、`getCategoryDescription`、`installCommands`、`installAll`、`installCategory`、`installSpecific`、`interactiveSelect`、`showHelp`、`listCommands`、`main`、`TARGET_BASE`
 
-**Command Template:**
-- Purpose: Markdown file defining a Claude Code command
-- Examples: `commands/git/commit.md`, `commands/test/generate.md`
-- Pattern: YAML frontmatter (name, description, allowed-tools) + markdown body with `<objective>`, `<rules>`, `<process>`, `<execution>` sections
+**命令模板：**
+- 职责：定义 Claude Code 命令的 Markdown 文件
+- 示例：`commands/git/commit.md`、`commands/test/generate.md`
+- 模式：YAML frontmatter（name, description, allowed-tools）+ Markdown 正文，包含 `<objective>`、`<rules>`、`<process>`、`<execution>` 部分
 
-**Category Configuration:**
-- Purpose: Groups related commands under a namespace
-- Examples: `git`, `test` categories
-- Pattern: Dynamic - discovered at runtime from directory structure, descriptions in `getCategoryDescription()` function
+**分类配置：**
+- 职责：将相关命令分组在同一个命名空间下
+- 示例：`git`、`test` 分类
+- 模式：动态 — 运行时从目录结构发现，描述在 `getCategoryDescription()` 函数中
 
-## Entry Points
+## 入口点
 
-**Direct Execution:**
-- Location: `bin/cli.js`
-- Triggers: `node bin/cli.js [options] [targetDir]` or `npx github:xiao-an-c/claude-tools`
-- Responsibilities: Parses args, executes installation, displays output
+**直接执行：**
+- 位置：`bin/cli.js`
+- 触发：`node bin/cli.js [选项] [目标目录]` 或 `npx github:xiao-an-c/claude-tools`
+- 职责：解析参数、执行安装、显示输出
 
-**Module Import:**
-- Location: `bin/cli.js`
-- Triggers: `require('../bin/cli.js')` in tests
-- Responsibilities: Exports all functions for programmatic use and testing
+**模块导入：**
+- 位置：`bin/cli.js`
+- 触发：测试中 `require('../bin/cli.js')`
+- 职责：导出所有函数供编程调用和测试
 
-## Error Handling
+## 错误处理
 
-**Strategy:** Graceful degradation with console output
+**策略：** 降级处理 + 控制台输出
 
-**Patterns:**
-- Source directory missing: Return `{ installed: 0, failed: commands.length }` with error message
-- Command file not found: Report individual failure, continue with remaining commands
-- Invalid category: Exit with code 1 when called directly, return empty result when imported
-- Target directory access issues: fs.mkdirSync with `recursive: true` handles creation
+**模式：**
+- 源目录缺失：返回 `{ installed: 0, failed: commands.length }` 并输出错误信息
+- 命令文件未找到：报告单个失败，继续处理剩余命令
+- 无效分类：直接调用时 exit(1)，作为模块导入时返回空结果
+- 目标目录访问问题：`fs.mkdirSync` 的 `recursive: true` 选项处理创建
 
-## Cross-Cutting Concerns
+## 横切关注点
 
-**Logging:** Direct console.log for status output (install progress, errors)
+**日志：** 直接使用 `console.log` 输出状态信息（安装进度、错误）
 
-**Validation:** Argument parsing via `args.includes()` and `args.findIndex()`, no formal validation schema
+**验证：** 通过 `args.includes()` 和 `args.findIndex()` 做参数解析，无正式验证 schema
 
-**Authentication:** Not applicable - this is a read-only installer that copies files
+**认证：** 不适用 — 这是只读的安装工具，仅复制文件
 
 ---
 
-*Architecture analysis: 2026-03-26*
+*架构分析：2026-03-26*

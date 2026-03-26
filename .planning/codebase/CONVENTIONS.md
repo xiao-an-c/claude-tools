@@ -1,35 +1,35 @@
-# Coding Conventions
+# 编码规范
 
-**Analysis Date:** 2026-03-26
+**分析日期：** 2026-03-26
 
-## Naming Patterns
+## 命名模式
 
-**Files:**
-- JavaScript: `camelCase.js` - e.g., `cli.js`
-- Markdown command files: `kebab-case.md` - e.g., `commit.md`, `start-feat.md`
+**文件：**
+- JavaScript：`camelCase.js` — 如 `cli.js`
+- Markdown 命令文件：`kebab-case.md` — 如 `commit.md`、`start-feat.md`
 
-**Functions:**
-- `camelCase` - e.g., `getPackageDir`, `loadCategories`, `installCommands`
-- Private-looking functions (internal use): Same pattern, no underscore prefix
+**函数：**
+- `camelCase` — 如 `getPackageDir`、`loadCategories`、`installCommands`
+- 私有函数（内部使用）：同样模式，不使用下划线前缀
 
-**Variables:**
-- `camelCase` - e.g., `packageDir`, `targetPath`, `consoleOutput`
-- Constants: `SCREAMING_SNAKE_CASE` not used; values assigned directly
+**变量：**
+- `camelCase` — 如 `packageDir`、`targetPath`、`consoleOutput`
+- 常量：未使用 `SCREAMING_SNAKE_CASE`，直接赋值使用
 
-**Types:**
-- No TypeScript used; plain JavaScript only
+**类型：**
+- 未使用 TypeScript，仅用纯 JavaScript
 
-## Code Style
+## 代码风格
 
-**Language:** JavaScript (CommonJS)
+**语言：** JavaScript（CommonJS）
 
-**Formatting:**
-- No Prettier configuration detected
-- No ESLint configuration detected
-- Manual formatting observed
-- 2-space indentation in `bin/cli.js`
+**格式化：**
+- 未检测到 Prettier 配置
+- 未检测到 ESLint 配置
+- 手动格式化
+- `bin/cli.js` 使用 2 空格缩进
 
-**Module System:**
+**模块系统：**
 ```javascript
 const fs = require('fs');
 const path = require('path');
@@ -37,19 +37,19 @@ const path = require('path');
 module.exports = { /* named exports */ };
 ```
 
-**Import Order:**
-1. Node.js built-ins (`fs`, `path`, `os`, `readline`)
-2. No external npm packages imported in main code
+**导入顺序：**
+1. Node.js 内置模块（`fs`、`path`、`os`、`readline`）
+2. 主代码中无外部 npm 包导入
 
-## Error Handling
+## 错误处理
 
-**Patterns:**
-- `if (!fs.existsSync(path))` checks before file operations
-- Early returns with error messages via `console.log`
-- `process.exit(1)` for fatal CLI errors (in module-check mode)
-- Return objects with `{ installed, failed }` counts rather than throwing
+**模式：**
+- 文件操作前用 `if (!fs.existsSync(path))` 检查
+- 通过 `console.log` 提前返回并输出错误信息
+- 致命 CLI 错误使用 `process.exit(1)`（在模块检查模式下）
+- 返回 `{ installed, failed }` 计数对象而非抛出异常
 
-**Example (bin/cli.js:104-107):**
+**示例（bin/cli.js:104-107）：**
 ```javascript
 if (!fs.existsSync(sourcePath)) {
   console.log(`   ❌ 源目录不存在: ${sourcePath}`);
@@ -57,44 +57,44 @@ if (!fs.existsSync(sourcePath)) {
 }
 ```
 
-## Logging
+## 日志
 
-**Framework:** Plain `console.log` (no logging library)
+**框架：** 纯 `console.log`（无日志库）
 
-**Patterns:**
-- Emoji-prefixed status messages: `✅`, `❌`, `📦`, `🔧`, `📋`
-- Structured output with category brackets: `[git]`, `[category]`
-- Template literals for dynamic content
+**模式：**
+- Emoji 前缀状态消息：`✅`、`❌`、`📦`、`🔧`、`📋`
+- 结构化输出带分类括号：`[git]`、`[category]`
+- 模板字符串处理动态内容
 
-**Example (bin/cli.js:121):**
+**示例（bin/cli.js:121）：**
 ```javascript
 console.log(`   ✅ /${category}:${cmd}`);
 ```
 
-## Comments
+## 注释
 
-**Language:** Chinese comments explaining intent
+**语言：** 中文注释解释意图
 
-**When Used:**
-- Function purpose comments: `// 获取包目录`
-- Section dividers: `// 动态加载命令配置`
-- Operation labels: `// 检查源目录是否存在`
+**使用场景：**
+- 函数用途注释：`// 获取包目录`
+- 章节分隔：`// 动态加载命令配置`
+- 操作标签：`// 检查源目录是否存在`
 
-## Function Design
+## 函数设计
 
-**Size:** Small, single-purpose functions (e.g., `getPackageDir` returns one value)
+**大小：** 小型、单一职责函数（如 `getPackageDir` 只返回一个值）
 
-**Parameters:**
-- Max 3 parameters typical
-- Pass options via object destructuring not observed
+**参数：**
+- 通常最多 3 个参数
+- 未观察到通过对象解构传递选项
 
-**Return Values:**
-- Functions return meaningful values (paths, objects, counts)
-- Void functions use `console.log` for output
+**返回值：**
+- 函数返回有意义的值（路径、对象、计数）
+- void 函数使用 `console.log` 输出
 
-## Module Design
+## 模块设计
 
-**Exports:**
+**导出：**
 ```javascript
 module.exports = {
   getPackageDir,
@@ -105,20 +105,20 @@ module.exports = {
 };
 ```
 
-**Direct Execution Check:**
+**直接执行检查：**
 ```javascript
 if (require.main === module) {
   main();
 }
 ```
 
-**Single Entry Point:** All logic in `bin/cli.js`
+**单一入口点：** 所有逻辑在 `bin/cli.js` 中
 
-## CLI Argument Parsing
+## CLI 参数解析
 
-**Pattern:** Manual argument parsing with `process.argv.slice(2)`
+**模式：** 通过 `process.argv.slice(2)` 手动解析参数
 
-**Example (bin/cli.js:57, 223-234):**
+**示例（bin/cli.js:57, 223-234）：**
 ```javascript
 const args = process.argv.slice(2);
 // ...
@@ -126,18 +126,18 @@ const flagAll = args.includes('--all') || args.includes('-a');
 const flagList = args.includes('--list') || args.includes('-l');
 ```
 
-## Testing Conventions
+## 测试规范
 
-**Test Location:** `__tests__/` directory, co-located with test subject via naming convention
+**测试位置：** `__tests__/` 目录，通过命名约定与被测代码同位置
 
-**Test File Naming:** `*.test.js` pattern (Jest default)
+**测试文件命名：** `*.test.js` 模式（Jest 默认）
 
-**Setup/Teardown:**
-- `beforeEach` for initialization
-- `afterEach` for cleanup
-- `jest.clearAllMocks()` in `beforeEach`
-- `jest.restoreAllMocks()` in `afterEach`
+**Setup/Teardown：**
+- `beforeEach` 用于初始化
+- `afterEach` 用于清理
+- `beforeEach` 中 `jest.clearAllMocks()`
+- `afterEach` 中 `jest.restoreAllMocks()`
 
 ---
 
-*Convention analysis: 2026-03-26*
+*规范分析：2026-03-26*

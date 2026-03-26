@@ -1,190 +1,190 @@
-# Codebase Concerns
+# 代码库问题
 
-**Analysis Date:** 2026-03-26
+**分析日期：** 2026-03-26
 
-## Tech Debt
+## 技术债务
 
-**Single Large CLI Module:**
-- Issue: `bin/cli.js` is a 291-line monolithic file containing all CLI logic (parsing, file operations, UI)
-- Files: `bin/cli.js`
-- Impact: Difficult to maintain, test, and extend. All concerns (I/O, validation, display) are tightly coupled
-- Fix approach: Extract into separate modules (e.g., `src/parser.js`, `src/installer.js`, `src/ui.js`)
+**单个大型 CLI 模块：**
+- 问题：`bin/cli.js` 是一个 291 行的单一文件，包含所有 CLI 逻辑（解析、文件操作、UI）
+- 文件：`bin/cli.js`
+- 影响：难以维护、测试和扩展。所有关注点（I/O、验证、显示）紧密耦合
+- 修复方案：拆分为独立模块（如 `src/parser.js`、`src/installer.js`、`src/ui.js`）
 
-**Hardcoded Category Descriptions:**
-- Issue: `getCategoryDescription()` uses a static object instead of loading descriptions from command files
-- Files: `bin/cli.js` (lines 45-51)
-- Impact: Adding new categories requires code changes. Descriptions can get out of sync with actual commands
-- Fix approach: Parse descriptions from command file frontmatter dynamically
+**硬编码的分类描述：**
+- 问题：`getCategoryDescription()` 使用静态对象，而非从命令文件动态加载描述
+- 文件：`bin/cli.js`（第 45-51 行）
+- 影响：新增分类需要修改代码。描述可能与实际命令不同步
+- 修复方案：从命令文件 frontmatter 动态解析描述
 
-**Synchronous File Operations:**
-- Issue: Multiple `fs.readdirSync`, `fs.copyFileSync`, `fs.mkdirSync` calls block the event loop
-- Files: `bin/cli.js`
-- Impact: CLI may hang on slow I/O, especially when installing to network drives
-- Fix approach: Convert to async/await pattern using `fs.promises`
+**同步文件操作：**
+- 问题：多个 `fs.readdirSync`、`fs.copyFileSync`、`fs.mkdirSync` 调用阻塞事件循环
+- 文件：`bin/cli.js`
+- 影响：CLI 在慢速 I/O 时可能挂起，特别是在网络驱动器上安装时
+- 修复方案：转换为使用 `fs.promises` 的 async/await 模式
 
-**No Input Validation:**
-- Issue: `getCategoryDescription()` accepts null/undefined/empty strings without proper handling
-- Files: `bin/cli.js` (lines 45-51)
-- Impact: Returns nonsensical strings like `"null 命令"` or `"undefined 命令"`
-- Fix approach: Add validation and return a default description for invalid inputs
+**无输入验证：**
+- 问题：`getCategoryDescription()` 对 null/undefined/空字符串没有正确处理
+- 文件：`bin/cli.js`（第 45-51 行）
+- 影响：返回如 `"null 命令"` 或 `"undefined 命令"` 这种无意义的字符串
+- 修复方案：添加验证，对无效输入返回默认描述
 
-**Missing Error Handling for File Operations:**
-- Issue: `fs.readdirSync`, `fs.copyFileSync`, `fs.existsSync` can throw but are not wrapped in try/catch
-- Files: `bin/cli.js` (lines 19-41, 98-130)
-- Impact: Unexpected errors (permissions, disk full, corrupted files) crash the CLI ungracefully
-- Fix approach: Wrap file operations in try/catch with user-friendly error messages
+**文件操作缺少错误处理：**
+- 问题：`fs.readdirSync`、`fs.copyFileSync`、`fs.existsSync` 可能抛出异常但未用 try/catch 包装
+- 文件：`bin/cli.js`（第 19-41 行、第 98-130 行）
+- 影响：意外错误（权限、磁盘满、文件损坏）导致 CLI 崩溃，无优雅降级
+- 修复方案：用 try/catch 包装文件操作，输出用户友好的错误信息
 
-## Known Bugs
+## 已知 Bug
 
-**Path Traversal Vulnerability in installCommands:**
-- Symptoms: Command names like `../../etc/passwd` could write files outside target directory
-- Files: `bin/cli.js` (lines 115-127)
-- Trigger: Calling `installCommands(['../../../etc/passwd'], 'git', targetDir)`
-- Workaround: None - input not sanitized
-- Fix approach: Validate command names against a whitelist pattern before copying
+**installCommands 中的路径遍历漏洞：**
+- 症状：命令名如 `../../etc/passwd` 可能将文件写到目标目录外
+- 文件：`bin/cli.js`（第 115-127 行）
+- 触发：`installCommands(['../../../etc/passwd'], 'git', targetDir)`
+- 临时方案：无 — 输入未做清理
+- 修复方案：复制前验证命令名匹配白名单模式
 
-**Empty Command Array Defaulting to Git:**
-- Issue: `installSpecific('')` defaults to git category but produces confusing output
-- Files: `bin/cli.js` (lines 192-218)
-- Trigger: `cli.installSpecific('', tempTargetDir)` produces "安装完成" with 0 installed commands
-- Workaround: Explicitly validate empty command strings before processing
+**空命令数组默认到 git：**
+- 问题：`installSpecific('')` 默认到 git 分类但产生混乱输出
+- 文件：`bin/cli.js`（第 192-218 行）
+- 触发：`cli.installSpecific('', tempTargetDir)` 输出 "安装完成" 但安装 0 个命令
+- 临时方案：处理前显式验证空命令字符串
 
-**Test Expects Nonsensical Output:**
-- Issue: Test at line 67-68 expects `getCategoryDescription(null)` to return `"null 命令"`
-- Files: `__tests__/cli.test.js` (lines 62-68)
-- Impact: Test validates the buggy behavior rather than correct behavior
-- Fix approach: Fix `getCategoryDescription` to return proper default and update test
+**测试期望无意义的输出：**
+- 问题：第 67-68 行的测试期望 `getCategoryDescription(null)` 返回 `"null 命令"`
+- 文件：`__tests__/cli.test.js`（第 62-68 行）
+- 影响：测试验证的是有 Bug 的行为而非正确行为
+- 修复方案：修复 `getCategoryDescription` 返回正确默认值并更新测试
 
-**Jest Mocks Module Caching Issue:**
-- Issue: `jest.isolateModulesAsync` at line 109 may not properly reset module cache between tests
-- Files: `__tests__/cli.test.js` (lines 107-120)
-- Impact: Tests may have interdependencies if module state leaks
-- Fix approach: Use `jest.resetModules()` explicitly
+**Jest Mock 模块缓存问题：**
+- 问题：第 109 行的 `jest.isolateModulesAsync` 可能无法正确重置模块间的缓存
+- 文件：`__tests__/cli.test.js`（第 107-120 行）
+- 影响：如果模块状态泄漏，测试可能有依赖关系
+- 修复方案：显式使用 `jest.resetModules()`
 
-## Security Considerations
+## 安全考虑
 
-**No Path Sanitization in File Copy:**
-- Risk: Malicious command names could contain path traversal sequences
-- Files: `bin/cli.js` (lines 115-127)
-- Current mitigation: None
-- Recommendations:
-  - Validate command names match pattern: `^[a-zA-Z0-9_-]+$`
-  - Use `path.resolve()` to verify target path is within target directory
-  - Add `--dry-run` flag to preview what would be installed
+**文件复制无路径清理：**
+- 风险：恶意命令名可能包含路径遍历序列
+- 文件：`bin/cli.js`（第 115-127 行）
+- 当前缓解：无
+- 建议：
+  - 验证命令名匹配模式：`^[a-zA-Z0-9_-]+$`
+  - 使用 `path.resolve()` 验证目标路径在目标目录内
+  - 添加 `--dry-run` 选项预览将安装的内容
 
-**No Validation of Target Directory:**
-- Risk: Installing to system directories (e.g., `/`, `/root`) could cause damage
-- Files: `bin/cli.js` (lines 98-130)
-- Current mitigation: None
-- Recommendations: Warn when target is root or system directory
+**目标目录无验证：**
+- 风险：安装到系统目录（如 `/`、`/root`）可能造成损害
+- 文件：`bin/cli.js`（第 98-130 行）
+- 当前缓解：无
+- 建议：目标为 root 或系统目录时发出警告
 
-**Commands Directory is User-Controlled Content:**
-- Risk: Command `.md` files are installed verbatim and could contain malicious instructions
-- Files: `commands/**/*.md`
-- Current mitigation: None - these are user-created commands for Claude Code
-- Recommendations: Document that only trusted command files should be installed
+**命令目录是用户可控内容：**
+- 风险：命令 `.md` 文件原样安装，可能包含恶意指令
+- 文件：`commands/**/*.md`
+- 当前缓解：无 — 这些是用户为 Claude Code 创建的命令
+- 建议：记录只应安装可信命令文件
 
-## Performance Bottlenecks
+## 性能瓶颈
 
-**Module-Level loadCategories() Execution:**
-- Problem: `loadCategories()` runs synchronously at module load time (line 54)
-- Files: `bin/cli.js` (line 54)
-- Cause: `const CATEGORIES = loadCategories()` executes before any CLI logic
-- Improvement path: Lazy load categories on first command invocation
+**模块级 loadCategories() 执行：**
+- 问题：`loadCategories()` 在模块加载时同步执行（第 54 行）
+- 文件：`bin/cli.js`（第 54 行）
+- 原因：`const CATEGORIES = loadCategories()` 在任何 CLI 逻辑前执行
+- 改进方向：首次命令调用时惰性加载分类
 
-**Synchronous Directory Scanning:**
-- Problem: `fs.readdirSync` blocks for entire directory scan
-- Files: `bin/cli.js` (lines 23-25, 29)
-- Improvement path: Use async `fs.readdir` with caching
+**同步目录扫描：**
+- 问题：`fs.readdirSync` 阻塞整个目录扫描
+- 文件：`bin/cli.js`（第 23-25 行、第 29 行）
+- 改进方向：使用带缓存的异步 `fs.readdir`
 
-## Fragile Areas
+## 脆弱区域
 
-**interactiveSelect with Async Callback:**
-- Files: `bin/cli.js` (lines 133-161)
-- Why fragile: Uses readline callback pattern. If callback throws or never resolves, readline interface hangs
-- Safe modification: Ensure callback always called, handle errors gracefully
-- Test coverage: Limited - only happy path tested
+**带异步回调的 interactiveSelect：**
+- 文件：`bin/cli.js`（第 133-161 行）
+- 脆弱原因：使用 readline 回调模式。如果回调抛出或永不解析，readline 接口会挂起
+- 安全修改：确保回调始终被调用，优雅处理错误
+- 测试覆盖：有限 — 仅测试正常路径
 
-**main() Function Complexity:**
-- Files: `bin/cli.js` (lines 221-270)
-- Why fragile: Complex argument parsing with multiple flags, index-based argument extraction
-- Safe modification: Extract to dedicated argument parser class/function
-- Test coverage: Tests exist but don't cover all flag combinations
+**main() 函数复杂性：**
+- 文件：`bin/cli.js`（第 221-270 行）
+- 脆弱原因：复杂的参数解析，多个标志，基于索引的参数提取
+- 安全修改：提取为专用参数解析器类/函数
+- 测试覆盖：有测试但未覆盖所有标志组合
 
-**Dynamic Command Loading from Filesystem:**
-- Files: `bin/cli.js` (lines 14-42)
-- Why fragile: Assumes filesystem is stable. Race conditions possible if commands directory changes during execution
-- Safe modification: Cache category list, add refresh mechanism
+**从文件系统动态加载命令：**
+- 文件：`bin/cli.js`（第 14-42 行）
+- 脆弱原因：假设文件系统稳定。如果命令目录在执行期间变化，可能出现竞态条件
+- 安全修改：缓存分类列表，添加刷新机制
 
-## Scaling Limits
+## 扩展限制
 
-**Linear File Copy Loop:**
-- Current capacity: Can install ~100+ commands without issues
-- Limit: No batching - each file copied sequentially
-- Scaling path: Use Promise.all() for parallel copies when multiple commands installed
+**线性文件复制循环：**
+- 当前容量：安装 ~100+ 命令无问题
+- 限制：无批处理 — 每个文件顺序复制
+- 扩展路径：安装多个命令时使用 `Promise.all()` 并行复制
 
-**No Concurrent Installation Support:**
-- Current capacity: Single installation at a time
-- Limit: If called multiple times, file operations could conflict
-- Scaling path: Add file locking mechanism
+**不支持并发安装：**
+- 当前容量：一次只能安装一个
+- 限制：如果多次调用，文件操作可能冲突
+- 扩展路径：添加文件锁机制
 
-## Dependencies at Risk
+## 有风险的依赖
 
-**jest Version ^29.7.0:**
-- Risk: Major jest updates may break test syntax or behavior
-- Impact: Tests may fail on jest upgrade
-- Migration plan: Pin to minor version, review changelog before upgrading
+**jest 版本 ^29.7.0：**
+- 风险：主要 jest 更新可能破坏测试语法或行为
+- 影响：升级 jest 时测试可能失败
+- 迁移计划：固定到次版本号，升级前审查 changelog
 
-**No Runtime Dependencies:**
-- This project has minimal runtime dependencies (only Node.js built-ins)
-- Low supply chain risk
+**无运行时依赖：**
+- 本项目运行时依赖极简（仅 Node.js 内置模块）
+- 供应链风险低
 
-## Missing Critical Features
+## 缺失的关键功能
 
-**No Undo/Rollback for Installation:**
-- Problem: If installation fails midway, partial state remains
-- Blocks: Safe experimentation with installation
+**无撤销/回滚安装：**
+- 问题：如果安装中途失败，保留部分状态
+- 阻碍：安全尝试安装
 
-**No Installation Verification:**
-- Problem: After install, no check that files were copied correctly
-- Blocks: Detecting corrupted or incomplete installations
+**无安装验证：**
+- 问题：安装后不检查文件是否正确复制
+- 阻碍：检测损坏或不完整的安装
 
-**No Update Mechanism:**
-- Problem: No way to update installed commands to newer versions
-- Blocks: Keeping commands up to date across projects
+**无更新机制：**
+- 问题：无法将已安装命令更新到新版本
+- 阻碍：跨项目保持命令更新
 
-## Test Coverage Gaps
+## 测试覆盖缺口
 
-**No Integration Tests:**
-- What's not tested: Full end-to-end installation workflow
-- Files: No integration test file exists
-- Risk: Discrepancies between unit-tested logic and actual behavior
-- Priority: High
+**无集成测试：**
+- 未测试内容：完整端到端安装工作流
+- 文件：不存在集成测试文件
+- 风险：单元测试逻辑与实际行为之间可能存在差异
+- 优先级：高
 
-**Untested Error Paths:**
-- What's not tested:
-  - `fs.existsSync` returning false unexpectedly
-  - `fs.copyFileSync` failing mid-copy
-  - `fs.mkdirSync` failing due to permissions
-- Files: `__tests__/cli.test.js`
-- Risk: Error handling code is never executed in tests
-- Priority: Medium
+**未测试的错误路径：**
+- 未测试内容：
+  - `fs.existsSync` 意外返回 false
+  - `fs.copyFileSync` 复制中途失败
+  - `fs.mkdirSync` 因权限失败
+- 文件：`__tests__/cli.test.js`
+- 风险：错误处理代码从未在测试中执行
+- 优先级：中
 
-**Untested interactiveSelect Edge Cases:**
-- What's not tested:
-  - Non-numeric input
-  - Input with special characters
-  - Empty input (just pressing Enter)
-- Files: `__tests__/cli.test.js` (lines 326-393)
-- Risk: Interactive mode may break on unexpected input
-- Priority: Medium
+**未测试的 interactiveSelect 边界情况：**
+- 未测试内容：
+  - 非数字输入
+  - 带特殊字符的输入
+  - 空输入（直接按回车）
+- 文件：`__tests__/cli.test.js`（第 326-393 行）
+- 风险：交互模式可能因意外输入而崩溃
+- 优先级：中
 
-**No Test for Concurrent Module Access:**
-- What's not tested: Behavior when CLI is required from multiple contexts simultaneously
-- Files: N/A
-- Risk: Module-level state (`CATEGORIES`) may cause issues
-- Priority: Low
+**无并发模块访问测试：**
+- 未测试内容：CLI 同时从多个上下文 require 时的行为
+- 文件：不适用
+- 风险：模块级状态（`CATEGORIES`）可能导致问题
+- 优先级：低
 
 ---
 
-*Concerns audit: 2026-03-26*
+*问题审计：2026-03-26*
