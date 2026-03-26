@@ -63,6 +63,17 @@ node bin/cli.js --all
 | `/git:publish` | 发布到 master |
 | `/git:abort` | 放弃当前分支 |
 
+### [test] 测试辅助命令
+
+基于 AAA 模式的单元测试辅助命令集。
+
+| 命令 | 用途 |
+|------|------|
+| `/test:generate` | 为模块生成单元测试 |
+| `/test:snapshot` | 生成快照测试 |
+| `/test:review` | 审查测试质量 |
+| `/test:coverage` | 分析测试覆盖率 |
+
 ## 扩展新类别
 
 1. 在 `commands/` 下创建新目录：

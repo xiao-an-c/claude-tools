@@ -89,6 +89,17 @@ export default defineConfig({
             { text: '/git:publish', link: '/commands/git/publish' },
             { text: '/git:abort', link: '/commands/git/abort' }
           ]
+        },
+        {
+          text: 'Test 命令',
+          collapsed: false,
+          items: [
+            { text: '概览', link: '/commands/test/' },
+            { text: '/test:generate', link: '/commands/test/generate' },
+            { text: '/test:snapshot', link: '/commands/test/snapshot' },
+            { text: '/test:review', link: '/commands/test/review' },
+            { text: '/test:coverage', link: '/commands/test/coverage' }
+          ]
         }
       ],
       '/specs/': [

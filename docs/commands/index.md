@@ -25,3 +25,16 @@ Claude Tools 提供多种命令类别，按需安装使用。
 | `/git:abort` | 放弃当前分支 |
 
 [查看 Git 命令详情](/commands/git/)
+
+### [test] 测试辅助命令
+
+基于 AAA 模式的单元测试辅助命令集。
+
+| 命令 | 用途 |
+|------|------|
+| `/test:generate` | 为模块生成单元测试 |
+| `/test:snapshot` | 生成快照测试 |
+| `/test:review` | 审查测试质量 |
+| `/test:coverage` | 分析测试覆盖率 |
+
+[查看 Test 命令详情](/commands/test/)
