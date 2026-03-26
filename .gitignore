@@ -24,3 +24,7 @@ coverage/
 # VitePress
 docs/.vitepress/dist/
 docs/.vitepress/cache/
+
+# GSD
+
+.planning
