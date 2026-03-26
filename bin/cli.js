@@ -44,7 +44,8 @@ function loadCategories() {
 // 类别描述映射
 function getCategoryDescription(category) {
   const descriptions = {
-    git: 'Git 工作流命令 (feat/fix/hotfix/release)'
+    git: 'Git 工作流命令 (feat/fix/hotfix/release)',
+    test: '单元测试命令 (generate/review/coverage/snapshot)'
   };
   return descriptions[category] || `${category} 命令`;
 }
@@ -217,7 +218,8 @@ function installSpecific(commandsStr, targetDir) {
 }
 
 // 主函数
-function main() {
+function main(argv) {
+  const args = argv || process.argv.slice(2);
   const flagAll = args.includes('--all') || args.includes('-a');
   const flagList = args.includes('--list') || args.includes('-l');
   const flagHelp = args.includes('--help') || args.includes('-h');
@@ -279,6 +281,7 @@ module.exports = {
   interactiveSelect,
   showHelp,
   listCommands,
+  main,
   TARGET_BASE
 };
 
