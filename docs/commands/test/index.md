@@ -55,7 +55,3 @@ it('should return token when credentials are valid', () => {
 # 分析覆盖率
 /test:coverage
 ```
-
-## 相关文档
-
-- [测试方法论](../guide/testing-methodology) - AAA 模式详细说明
