@@ -93,8 +93,8 @@ git checkout master
 git pull origin master
 git merge $BRANCH --no-ff -m "Release $VERSION"
 
-# 3. 打 tag（使用生成的 Release Notes）
-git tag -a "$VERSION" -F "$TAG_FILE"
+# 3. 打 tag（commentChar 改为 ; 避免 # 开头行被 git 当注释吞掉）
+git -c core.commentChar=";" tag -a "$VERSION" -F "$TAG_FILE"
 rm -f "$TAG_FILE"
 
 # 4. 推送 master 和 tags
