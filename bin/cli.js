@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const TARGET_BASE = '.claude/commands';
+const AGENTS_TARGET_BASE = '.claude/agents';
 
 // 获取包目录
 function getPackageDir() {
@@ -45,9 +46,69 @@ function loadCategories() {
 function getCategoryDescription(category) {
   const descriptions = {
     git: 'Git 工作流命令 (feat/fix/hotfix/release)',
-    test: '单元测试命令 (generate/review/coverage/snapshot)'
+    test: '单元测试命令 (generate/review/coverage/snapshot)',
+    dev: '开发工作流命令 (多 Agent 协作)'
   };
   return descriptions[category] || `${category} 命令`;
+}
+
+// 扫描 agents 目录，返回 agent 列表（扁平结构）
+function loadAgents() {
+  const packageDir = getPackageDir();
+  const agentsDir = path.join(packageDir, 'agents');
+  const agents = {};
+
+  if (!fs.existsSync(agentsDir)) {
+    return agents;
+  }
+
+  const files = fs.readdirSync(agentsDir)
+    .filter(file => file.endsWith('.md'));
+
+  for (const file of files) {
+    const name = file.replace('.md', '');
+    agents[name] = file;
+  }
+
+  return agents;
+}
+
+// 命令类别到 agents 的依赖关系
+const CATEGORY_AGENT_DEPS = {
+  dev: ['dev-developer', 'dev-planner', 'dev-recorder', 'dev-tester']
+};
+
+// 安装 agents
+function installAgents(agents, targetDir) {
+  const packageDir = getPackageDir();
+  const agentsDir = path.join(packageDir, 'agents');
+  const targetPath = path.join(targetDir, AGENTS_TARGET_BASE);
+
+  if (!fs.existsSync(agentsDir)) {
+    console.log(`   ❌ agents 源目录不存在: ${agentsDir}`);
+    return { installed: 0, failed: agents.length };
+  }
+
+  fs.mkdirSync(targetPath, { recursive: true });
+
+  let installed = 0;
+  const failed = [];
+
+  agents.forEach(agent => {
+    const srcFile = path.join(agentsDir, `${agent}.md`);
+    const destFile = path.join(targetPath, `${agent}.md`);
+
+    if (fs.existsSync(srcFile)) {
+      fs.copyFileSync(srcFile, destFile);
+      console.log(`   ✅ agent:${agent}`);
+      installed++;
+    } else {
+      console.log(`   ❌ agent:${agent} (文件不存在)`);
+      failed.push(agent);
+    }
+  });
+
+  return { installed, failed };
 }
 
 // 动态加载分类配置
@@ -78,7 +139,11 @@ function showHelp() {
   npx github:xiao-an-c/claude-tools --all /path/to/project
 
 类别:
-${Object.entries(CATEGORIES).map(([k, v]) => `  ${k.padEnd(12)} ${v.description}`).join('\n')}
+${Object.entries(CATEGORIES).map(([k, v]) => {
+    const deps = CATEGORY_AGENT_DEPS[k];
+    const agentsNote = deps ? ` (自动安装 ${deps.length} 个 agents)` : '';
+    return `  ${k.padEnd(12)} ${v.description}${agentsNote}`;
+  }).join('\n')}
 `);
 }
 
@@ -90,11 +155,15 @@ function listCommands() {
     config.commands.forEach(cmd => {
       console.log(`  /${category}:${cmd}`);
     });
+    const deps = CATEGORY_AGENT_DEPS[category];
+    if (deps && deps.length > 0) {
+      console.log(`  🔗 依赖 agents: ${deps.join(', ')}`);
+    }
     console.log();
   }
 }
 
-// 安装命令
+// 安装命令（同时安装依赖的 agents）
 function installCommands(commands, category, targetDir) {
   const packageDir = getPackageDir();
   const sourcePath = path.join(packageDir, 'commands', category);
@@ -103,7 +172,7 @@ function installCommands(commands, category, targetDir) {
   // 检查源目录是否存在
   if (!fs.existsSync(sourcePath)) {
     console.log(`   ❌ 源目录不存在: ${sourcePath}`);
-    return { installed: 0, failed: commands.length };
+    return { installed: 0, failed: commands.length, agents: { installed: 0, failed: [] } };
   }
 
   // 创建目标目录
@@ -126,7 +195,15 @@ function installCommands(commands, category, targetDir) {
     }
   });
 
-  return { installed, failed };
+  // 安装依赖的 agents
+  let agentsResult = { installed: 0, failed: [] };
+  const deps = CATEGORY_AGENT_DEPS[category];
+  if (deps && deps.length > 0) {
+    console.log(`\n🔗 安装 [${category}] 依赖的 agents:`);
+    agentsResult = installAgents(deps, targetDir);
+  }
+
+  return { installed, failed, agents: agentsResult };
 }
 
 // 交互式选择
@@ -163,12 +240,22 @@ function interactiveSelect(targetDir, callback) {
 // 安装所有
 function installAll(targetDir) {
   let totalInstalled = 0;
+  let totalAgentsInstalled = 0;
+
   for (const [category, config] of Object.entries(CATEGORIES)) {
     console.log(`\n📦 安装 [${category}] 类别:`);
     const result = installCommands(config.commands, category, targetDir);
     totalInstalled += result.installed;
+    // 收集依赖的 agents（由 installCommands 内部处理安装，这里只做统计）
+    if (result.agents) {
+      totalAgentsInstalled += result.agents.installed;
+    }
   }
-  console.log(`\n✅ 全部安装完成! 共安装 ${totalInstalled} 个命令\n`);
+  if (totalAgentsInstalled > 0) {
+    console.log(`\n✅ 全部安装完成! 共安装 ${totalInstalled} 个命令, ${totalAgentsInstalled} 个 agents\n`);
+  } else {
+    console.log(`\n✅ 全部安装完成! 共安装 ${totalInstalled} 个命令\n`);
+  }
 }
 
 // 安装指定类别
@@ -179,12 +266,15 @@ function installCategory(category, targetDir) {
     if (require.main === module) {
       process.exit(1);
     }
-    return { installed: 0, failed: 0 };
+    return { installed: 0, failed: 0, agents: { installed: 0, failed: [] } };
   }
 
   console.log(`\n📦 安装 [${category}] 类别:`);
   const result = installCommands(CATEGORIES[category].commands, category, targetDir);
-  console.log(`\n✅ 安装完成! 共安装 ${result.installed} 个命令\n`);
+  const agentsInfo = result.agents && result.agents.installed > 0
+    ? `, ${result.agents.installed} 个 agents`
+    : '';
+  console.log(`\n✅ 安装完成! 共安装 ${result.installed} 个命令${agentsInfo}\n`);
   return result;
 }
 
@@ -205,6 +295,8 @@ function installSpecific(commandsStr, targetDir) {
   });
 
   let totalInstalled = 0;
+  let totalAgentsInstalled = 0;
+
   for (const [category, cmds] of Object.entries(byCategory)) {
     if (!CATEGORIES[category]) {
       console.log(`⚠️  跳过未知类别: ${category}`);
@@ -213,8 +305,14 @@ function installSpecific(commandsStr, targetDir) {
     console.log(`\n📦 安装 [${category}] 命令:`);
     const result = installCommands(cmds, category, targetDir);
     totalInstalled += result.installed;
+    if (result.agents) {
+      totalAgentsInstalled += result.agents.installed;
+    }
   }
-  console.log(`\n✅ 安装完成! 共安装 ${totalInstalled} 个命令\n`);
+  const agentsInfo = totalAgentsInstalled > 0
+    ? `, ${totalAgentsInstalled} 个 agents`
+    : '';
+  console.log(`\n✅ 安装完成! 共安装 ${totalInstalled} 个命令${agentsInfo}\n`);
 }
 
 // 主函数
@@ -259,12 +357,19 @@ function main(argv) {
   } else {
     interactiveSelect(targetDir, (selectedCategories) => {
       let totalInstalled = 0;
+      let totalAgentsInstalled = 0;
       selectedCategories.forEach(cat => {
         console.log(`\n📦 安装 [${cat}] 类别:`);
         const result = installCommands(CATEGORIES[cat].commands, cat, targetDir);
         totalInstalled += result.installed;
+        if (result.agents) {
+          totalAgentsInstalled += result.agents.installed;
+        }
       });
-      console.log(`\n✅ 安装完成! 共安装 ${totalInstalled} 个命令\n`);
+      const agentsInfo = totalAgentsInstalled > 0
+        ? `, ${totalAgentsInstalled} 个 agents`
+        : '';
+      console.log(`\n✅ 安装完成! 共安装 ${totalInstalled} 个命令${agentsInfo}\n`);
     });
   }
 }
@@ -273,8 +378,10 @@ function main(argv) {
 module.exports = {
   getPackageDir,
   loadCategories,
+  loadAgents,
   getCategoryDescription,
   installCommands,
+  installAgents,
   installAll,
   installCategory,
   installSpecific,
@@ -282,7 +389,9 @@ module.exports = {
   showHelp,
   listCommands,
   main,
-  TARGET_BASE
+  TARGET_BASE,
+  AGENTS_TARGET_BASE,
+  CATEGORY_AGENT_DEPS
 };
 
 // 只在直接运行时执行 main

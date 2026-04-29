@@ -1,6 +1,6 @@
 {
   "name": "claude-tools",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "可扩展的 Claude Code 命令集 - 支持选择性安装 git/workflow 等命令",
   "keywords": [
     "claude",
@@ -17,7 +17,8 @@
   },
   "files": [
     "bin/",
-    "commands/"
+    "commands/",
+    "agents/"
   ],
   "scripts": {
     "test": "jest",
