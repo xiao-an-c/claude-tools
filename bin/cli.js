@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const TARGET_BASE = '.claude/commands';
+const AGENTS_TARGET_BASE = '.claude/agents';
 
 // 获取包目录
 function getPackageDir() {
@@ -45,7 +46,8 @@ function loadCategories() {
 function getCategoryDescription(category) {
   const descriptions = {
     git: 'Git 工作流命令 (feat/fix/hotfix/release)',
-    test: '单元测试命令 (generate/review/coverage/snapshot)'
+    test: '单元测试命令 (generate/review/coverage/snapshot)',
+    dev: '开发工作流命令 (多 Agent 协作)'
   };
   return descriptions[category] || `${category} 命令`;
 }

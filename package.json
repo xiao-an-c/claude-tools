@@ -17,7 +17,8 @@
   },
   "files": [
     "bin/",
-    "commands/"
+    "commands/",
+    "agents/"
   ],
   "scripts": {
     "test": "jest",
