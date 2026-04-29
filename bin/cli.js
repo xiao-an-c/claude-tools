@@ -52,6 +52,65 @@ function getCategoryDescription(category) {
   return descriptions[category] || `${category} 命令`;
 }
 
+// 扫描 agents 目录，返回 agent 列表（扁平结构）
+function loadAgents() {
+  const packageDir = getPackageDir();
+  const agentsDir = path.join(packageDir, 'agents');
+  const agents = {};
+
+  if (!fs.existsSync(agentsDir)) {
+    return agents;
+  }
+
+  const files = fs.readdirSync(agentsDir)
+    .filter(file => file.endsWith('.md'));
+
+  for (const file of files) {
+    const name = file.replace('.md', '');
+    agents[name] = file;
+  }
+
+  return agents;
+}
+
+// 命令类别到 agents 的依赖关系
+const CATEGORY_AGENT_DEPS = {
+  dev: ['dev-developer', 'dev-planner', 'dev-recorder', 'dev-tester']
+};
+
+// 安装 agents
+function installAgents(agents, targetDir) {
+  const packageDir = getPackageDir();
+  const agentsDir = path.join(packageDir, 'agents');
+  const targetPath = path.join(targetDir, AGENTS_TARGET_BASE);
+
+  if (!fs.existsSync(agentsDir)) {
+    console.log(`   ❌ agents 源目录不存在: ${agentsDir}`);
+    return { installed: 0, failed: agents.length };
+  }
+
+  fs.mkdirSync(targetPath, { recursive: true });
+
+  let installed = 0;
+  const failed = [];
+
+  agents.forEach(agent => {
+    const srcFile = path.join(agentsDir, `${agent}.md`);
+    const destFile = path.join(targetPath, `${agent}.md`);
+
+    if (fs.existsSync(srcFile)) {
+      fs.copyFileSync(srcFile, destFile);
+      console.log(`   ✅ agent:${agent}`);
+      installed++;
+    } else {
+      console.log(`   ❌ agent:${agent} (文件不存在)`);
+      failed.push(agent);
+    }
+  });
+
+  return { installed, failed };
+}
+
 // 动态加载分类配置
 const CATEGORIES = loadCategories();
 
@@ -275,8 +334,10 @@ function main(argv) {
 module.exports = {
   getPackageDir,
   loadCategories,
+  loadAgents,
   getCategoryDescription,
   installCommands,
+  installAgents,
   installAll,
   installCategory,
   installSpecific,
@@ -284,7 +345,9 @@ module.exports = {
   showHelp,
   listCommands,
   main,
-  TARGET_BASE
+  TARGET_BASE,
+  AGENTS_TARGET_BASE,
+  CATEGORY_AGENT_DEPS
 };
 
 // 只在直接运行时执行 main
