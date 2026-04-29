@@ -47,6 +47,29 @@ describe('CLI 模块', () => {
       expect(result).toBe(expected);
     });
 
+    test('应返回 dev 类别的正确描述', () => {
+      // Arrange
+      const category = 'dev';
+      const expected = '开发工作流命令 (多 Agent 协作)';
+
+      // Act
+      const result = cli.getCategoryDescription(category);
+
+      // Assert
+      expect(result).toBe(expected);
+    });
+
+    test('应返回 test 类别的正确描述', () => {
+      // Arrange
+      const category = 'test';
+
+      // Act
+      const result = cli.getCategoryDescription(category);
+
+      // Assert
+      expect(result).toContain('测试');
+    });
+
     test('应返回未知类别的默认描述', () => {
       // Arrange
       const category = 'unknown';
@@ -120,6 +143,142 @@ describe('CLI 模块', () => {
     });
   });
 
+  describe('loadAgents', () => {
+    test('应从 agents 目录加载 agent 列表', () => {
+      // Arrange & Act
+      const agents = cli.loadAgents();
+
+      // Assert
+      expect(Object.keys(agents).length).toBeGreaterThan(0);
+      expect(agents).toHaveProperty('dev-developer');
+      expect(agents).toHaveProperty('dev-planner');
+      expect(agents).toHaveProperty('dev-recorder');
+      expect(agents).toHaveProperty('dev-tester');
+    });
+
+    test('应将 agent 文件名作为 key，原始文件名作为 value', () => {
+      // Arrange & Act
+      const agents = cli.loadAgents();
+
+      // Assert
+      expect(agents['dev-developer']).toBe('dev-developer.md');
+      expect(agents['dev-planner']).toBe('dev-planner.md');
+    });
+
+    test('应去除 agent 文件名的 .md 扩展名作为 key', () => {
+      // Arrange & Act
+      const agents = cli.loadAgents();
+
+      // Assert
+      const keysWithMd = Object.keys(agents).filter(k => /\.md$/.test(k));
+      expect(keysWithMd).toEqual([]);
+    });
+
+    test('当 agents 目录不存在时应返回空对象', () => {
+      return jest.isolateModulesAsync(async () => {
+        jest.doMock('fs', () => ({
+          ...jest.requireActual('fs'),
+          existsSync: jest.fn().mockReturnValue(false)
+        }));
+
+        const cliWithMockedFs = require('../bin/cli.js');
+        const agents = cliWithMockedFs.loadAgents();
+        expect(agents).toEqual({});
+      });
+    });
+  });
+
+  describe('CATEGORY_AGENT_DEPS', () => {
+    test('应定义 dev 类别依赖 dev-* agents', () => {
+      // Arrange
+      const deps = cli.CATEGORY_AGENT_DEPS;
+
+      // Assert
+      expect(deps).toHaveProperty('dev');
+      expect(deps.dev).toEqual(
+        expect.arrayContaining(['dev-developer', 'dev-planner', 'dev-recorder', 'dev-tester'])
+      );
+    });
+
+    test('dev 类别应恰好依赖 4 个 agents', () => {
+      // Arrange & Act
+      const deps = cli.CATEGORY_AGENT_DEPS;
+
+      // Assert
+      expect(deps.dev).toHaveLength(4);
+    });
+
+    test('git 类别不应有 agent 依赖', () => {
+      // Arrange & Act
+      const deps = cli.CATEGORY_AGENT_DEPS;
+
+      // Assert
+      expect(deps).not.toHaveProperty('git');
+    });
+  });
+
+  describe('installAgents', () => {
+    let tempTargetDir;
+
+    beforeEach(() => {
+      tempTargetDir = fs.mkdtempSync(path.join(os.tmpdir(), 'claude-tools-test-'));
+    });
+
+    afterEach(() => {
+      fs.rmSync(tempTargetDir, { recursive: true, force: true });
+    });
+
+    test('应将 agent 文件复制到 .claude/agents/ 目录', () => {
+      // Arrange
+      const agents = ['dev-developer', 'dev-planner'];
+
+      // Act
+      const result = cli.installAgents(agents, tempTargetDir);
+
+      // Assert
+      expect(result.installed).toBe(2);
+      expect(result.failed).toEqual([]);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-developer.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-planner.md'))).toBe(true);
+    });
+
+    test('当目标目录不存在时应自动创建', () => {
+      // Arrange
+      const agents = ['dev-developer'];
+      const agentsPath = path.join(tempTargetDir, '.claude/agents');
+      expect(fs.existsSync(agentsPath)).toBe(false);
+
+      // Act
+      cli.installAgents(agents, tempTargetDir);
+
+      // Assert
+      expect(fs.existsSync(agentsPath)).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-developer.md'))).toBe(true);
+    });
+
+    test('当 agent 文件不存在时应报告失败', () => {
+      // Arrange
+      const agents = ['dev-developer', 'nonexistent-agent'];
+
+      // Act
+      const result = cli.installAgents(agents, tempTargetDir);
+
+      // Assert
+      expect(result.installed).toBe(1);
+      expect(result.failed).toContain('nonexistent-agent');
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-developer.md'))).toBe(true);
+    });
+
+    test('当 agents 数组为空时应返回零安装数', () => {
+      // Arrange & Act
+      const result = cli.installAgents([], tempTargetDir);
+
+      // Assert
+      expect(result.installed).toBe(0);
+      expect(result.failed).toEqual([]);
+    });
+  });
+
   describe('installCommands', () => {
     let tempTargetDir;
 
@@ -184,6 +343,30 @@ describe('CLI 模块', () => {
       // Arrange & Act & Assert
       expect(() => cli.installCommands(null, 'git', tempTargetDir)).toThrow(TypeError);
     });
+
+    // Agents 集成测试
+    test('安装 dev 类别命令时应同时安装依赖的 agents', () => {
+      // Arrange & Act
+      const result = cli.installCommands(['start'], 'dev', tempTargetDir);
+
+      // Assert - agents 应被安装
+      expect(result.agents).toBeDefined();
+      expect(result.agents.installed).toBeGreaterThan(0);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-developer.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-planner.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-recorder.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-tester.md'))).toBe(true);
+    });
+
+    test('安装 git 类别命令时不应安装 agents', () => {
+      // Arrange & Act
+      const result = cli.installCommands(['commit'], 'git', tempTargetDir);
+
+      // Assert
+      expect(result.agents).toBeDefined();
+      expect(result.agents.installed).toBe(0);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents'))).toBe(false);
+    });
   });
 
   describe('installAll', () => {
@@ -206,6 +389,27 @@ describe('CLI 模块', () => {
 
       const files = fs.readdirSync(gitPath);
       expect(files.length).toBeGreaterThan(0);
+    });
+
+    test('应安装所有依赖的 agents', () => {
+      // Arrange & Act
+      cli.installAll(tempTargetDir);
+
+      // Assert - dev-* agents 应被安装
+      const agentsPath = path.join(tempTargetDir, '.claude/agents');
+      expect(fs.existsSync(agentsPath)).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-developer.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-planner.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-recorder.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-tester.md'))).toBe(true);
+    });
+
+    test('安装所有时应输出 agents 统计信息', () => {
+      // Act
+      cli.installAll(tempTargetDir);
+
+      // Assert
+      expect(consoleOutput.some(line => line.includes('agents'))).toBe(true);
     });
   });
 
@@ -236,6 +440,37 @@ describe('CLI 模块', () => {
 
       expect(result.installed).toBe(0);
       expect(consoleOutput.some(line => line.includes('未知类别'))).toBe(true);
+    });
+
+    test('安装 dev 类别时应同时安装 dev-* agents', () => {
+      // Arrange
+      const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
+
+      // Act
+      const result = cli.installCategory('dev', tempTargetDir);
+
+      // Assert
+      expect(result.agents).toBeDefined();
+      expect(result.agents.installed).toBeGreaterThan(0);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-developer.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-planner.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-recorder.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-tester.md'))).toBe(true);
+
+      mockExit.mockRestore();
+    });
+
+    test('安装 git 类别时不应安装任何 agents', () => {
+      // Arrange
+      const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
+
+      // Act
+      cli.installCategory('git', tempTargetDir);
+
+      // Assert
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents'))).toBe(false);
+
+      mockExit.mockRestore();
     });
   });
 
@@ -302,6 +537,22 @@ describe('CLI 模块', () => {
       // Arrange & Act & Assert
       expect(() => cli.installSpecific('commit', null)).toThrow();
     });
+
+    test('安装 dev:start 命令时应同时安装 dev-* agents', () => {
+      // Arrange & Act
+      cli.installSpecific('dev:start', tempTargetDir);
+
+      // Assert - dev:* 命令触发 agents 安装
+      const devStartFile = path.join(tempTargetDir, '.claude/commands/dev/start.md');
+      expect(fs.existsSync(devStartFile)).toBe(true);
+
+      const agentsPath = path.join(tempTargetDir, '.claude/agents');
+      expect(fs.existsSync(agentsPath)).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-developer.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-planner.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-recorder.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-tester.md'))).toBe(true);
+    });
   });
 
   describe('showHelp', () => {
@@ -348,6 +599,10 @@ describe('CLI 模块', () => {
     });
 
     test('选择类别后应调用回调函数', (done) => {
+      // 类别按目录排序，索引 0 是第一个类别
+      const categories = Object.keys(cli.loadCategories());
+      const firstCategory = categories[0];
+
       const mockRl = {
         question: jest.fn((_, callback) => callback('1')),
         close: jest.fn()
@@ -356,7 +611,7 @@ describe('CLI 模块', () => {
       jest.spyOn(readline, 'createInterface').mockReturnValue(mockRl);
 
       cli.interactiveSelect(tempTargetDir, (selectedCategories) => {
-        expect(selectedCategories).toEqual(['git']);
+        expect(selectedCategories).toEqual([firstCategory]);
         done();
       });
     });
