@@ -45,7 +45,7 @@ export default defineConfig({
       { text: '规范', link: '/specs/git-branch-spec' },
       { text: 'FAQ', link: '/guide/faq' },
       {
-        text: 'v1.0.0',
+        text: 'v0.5.0',
         items: [
           { text: 'GitHub', link: 'https://github.com/xiao-an-c/claude-tools' }
         ]
