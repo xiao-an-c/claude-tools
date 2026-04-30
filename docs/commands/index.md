@@ -38,3 +38,59 @@ Claude Tools 提供多种命令类别，按需安装使用。
 | `/test:coverage` | 分析测试覆盖率 |
 
 [查看 Test 命令详情](/commands/test/)
+
+### [dev] 开发工作流命令
+
+多 Agent 协作开发工作流命令集，自动化完成从需求讨论到验收的完整开发周期。
+
+| 命令 | 用途 |
+|------|------|
+| `/dev:start` | 启动多 Agent 迭代开发工作流 |
+| `/dev:status` | 查看当前工作流状态和进度 |
+| `/dev:resume` | 恢复中断的工作流 |
+
+[查看 Dev 命令详情](/commands/dev/)
+
+## 快速参考
+
+### 日常开发
+
+```bash
+/git:start-feat user-profile     # 开始功能
+# ... 编写代码 ...
+/git:commit 添加用户资料页面      # 智能提交
+/git:sync                        # 同步基础分支
+/git:finish                      # 完成合并
+```
+
+### 发布流程
+
+```bash
+/git:start-release v1.0.0        # 创建发布分支
+# ... 测试修复 ...
+/git:publish                     # 发布到 master 并同步 develop
+```
+
+### 紧急修复
+
+```bash
+/git:start-hotfix payment-crash  # 从 master 创建
+# ... 修复代码 ...
+/git:finish                      # 自动合并 master + develop
+```
+
+### 测试辅助
+
+```bash
+/test:generate src/utils/parser.ts   # 生成单元测试
+/test:review tests/parser.test.ts    # 审查测试质量
+/test:coverage                       # 分析覆盖率
+
+### 多 Agent 开发工作流
+
+```bash
+/dev:start 添加用户登录功能    # 启动完整工作流
+/dev:status                    # 查看进度
+/dev:resume                    # 恢复中断的工作流
+```
+```
