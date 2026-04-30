@@ -72,7 +72,29 @@ ls .claude/commands/git/
 /git:finish
 ```
 
+## 测试工作流
+
+### 1. 生成单元测试
+
+```bash
+/test:generate src/utils/parser.ts
+```
+
+### 2. 审查测试质量
+
+```bash
+/test:review tests/utils/parser.test.ts
+```
+
+### 3. 分析覆盖率
+
+```bash
+/test:coverage
+```
+
 ## 下一步
 
 - 查看 [Git 命令](/commands/git/) 了解所有可用命令
+- 查看 [Test 命令](/commands/test/) 了解测试辅助命令
 - 阅读 [Git 分支规范](/specs/git-branch-spec) 了解工作流详情
+- 遇到问题？查阅 [常见问题](/guide/faq)

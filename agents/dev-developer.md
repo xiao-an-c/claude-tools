@@ -17,6 +17,7 @@ tools: [Read, Write, Edit, Bash, Glob, Grep, Agent]
 - `<task_files>` — 需要创建或修改的文件列表
 - `<task_verification>` — 验证方式
 - `<plan_path>` — PLAN.md 文件路径（可按需读取上下文）
+- `<test_design_path>` — TEST-DESIGN.md 文件路径（可按需参考测试用例设计）
 - `<branch_type>` — 分支类型 (feat / fix / refactor)
 - `<project_root>` — 项目根目录
 
@@ -82,7 +83,9 @@ git commit -m "<提交信息>"
 
 ### 5. 记录经验（后台，不阻断）
 
-在提交完成后，后台启动 recorder 记录本轮发现的项目经验：
+在提交完成后，后台启动 recorder 记录本轮发现的项目经验。
+
+**注意：必须传入具体的任务信息，否则 recorder 无法提取有价值的经验。**
 
 ```
 Agent(
@@ -91,14 +94,19 @@ Agent(
   run_in_background=true,
   prompt="
     <phase>development</phase>
-    <branch_name><branch_type></branch_name>
+    <task_id><T-XX></task_id>
+    <task_title><任务标题></task_title>
+    <branch_name><branch_name></branch_name>
+    <changed_files><本任务实际修改/创建的文件列表></changed_files>
+    <commit_hash><刚才的提交短哈希></commit_hash>
     <project_root><project_root></project_root>
     <knowledge_dir>docs/knowledge/</knowledge_dir>
+    <notes><开发过程中遇到的问题、踩的坑、发现的模式，如果没有就写 无></notes>
   "
 )
 ```
 
-不等 recorder 完成，立即进入下一步。
+不等 recorder 完成，立即返回摘要。
 
 ### 6. 返回摘要
 

@@ -11,17 +11,27 @@ tools: [Read, Write, Bash, Grep, Glob]
 ## 输入
 
 编排器会在 prompt 中传入：
-- `<phase>` — 当前阶段：`planning` / `development` / `testing`
+- `<phase>` — 当前阶段：`planning` / `development` / `verification` / `acceptance`
+- `<task_id>` — 任务 ID（如 T-01），development/verification 阶段必传
+- `<task_title>` — 任务标题，development 阶段必传
 - `<branch_name>` — 当前分支名
+- `<changed_files>` — 本阶段修改的文件列表，development 阶段必传
+- `<commit_hash>` — 提交短哈希，development 阶段必传
 - `<project_root>` — 项目根目录
 - `<knowledge_dir>` — 知识库目录路径（如 `docs/knowledge/`）
+- `<notes>` — 各阶段记录的注意事项和经验（可能为空）
 
 ## 工作流程
 
 ### 1. 了解本阶段工作
 
+**优先使用传入的具体信息**（task_id、changed_files、notes），而不是 git log。
+
+如果传入了 `<changed_files>`，直接读取这些文件的内容来分析经验。
+如果未传入（planning 阶段），使用 git 命令查看变更：
+
 ```bash
-# 查看本轮所有变更
+# 仅在未传入 changed_files 时使用
 git log --oneline develop..HEAD
 git diff --stat develop..HEAD
 ```
@@ -32,7 +42,8 @@ git diff --stat develop..HEAD
 |-------|--------|
 | `planning` | 项目架构发现、模块关系、技术栈特征 |
 | `development` | 代码模式、非显而易见的坑、API 限制 |
-| `testing` | 测试配置、环境依赖、工具链用法 |
+| `verification` | 测试配置、环境依赖、工具链用法、验证方式有效性 |
+| `acceptance` | 整体模式总结、跨任务的关联经验、流程改进点 |
 
 ### 2. 读取现有知识库
 

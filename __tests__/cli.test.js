@@ -196,16 +196,16 @@ describe('CLI 模块', () => {
       // Assert
       expect(deps).toHaveProperty('dev');
       expect(deps.dev).toEqual(
-        expect.arrayContaining(['dev-developer', 'dev-planner', 'dev-recorder', 'dev-tester'])
+        expect.arrayContaining(['dev-developer', 'dev-planner', 'dev-product', 'dev-recorder', 'dev-tester'])
       );
     });
 
-    test('dev 类别应恰好依赖 4 个 agents', () => {
+    test('dev 类别应恰好依赖 5 个 agents', () => {
       // Arrange & Act
       const deps = cli.CATEGORY_AGENT_DEPS;
 
       // Assert
-      expect(deps.dev).toHaveLength(4);
+      expect(deps.dev).toHaveLength(5);
     });
 
     test('git 类别不应有 agent 依赖', () => {

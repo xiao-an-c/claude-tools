@@ -41,9 +41,11 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '指南', link: '/guide/' },
       { text: '命令', link: '/commands/' },
+      { text: 'Dev', link: '/commands/dev/' },
       { text: '规范', link: '/specs/git-branch-spec' },
+      { text: 'FAQ', link: '/guide/faq' },
       {
-        text: 'v1.0.0',
+        text: 'v0.5.0',
         items: [
           { text: 'GitHub', link: 'https://github.com/xiao-an-c/claude-tools' }
         ]
@@ -58,6 +60,7 @@ export default defineConfig({
             { text: '简介', link: '/guide/' },
             { text: '快速开始', link: '/guide/getting-started' },
             { text: '安装详解', link: '/guide/installation' },
+            { text: '常见问题', link: '/guide/faq' },
             { text: '扩展新类别', link: '/guide/extending' },
             { text: '部署文档', link: '/guide/deployment' }
           ]
@@ -99,6 +102,16 @@ export default defineConfig({
             { text: '/test:snapshot', link: '/commands/test/snapshot' },
             { text: '/test:review', link: '/commands/test/review' },
             { text: '/test:coverage', link: '/commands/test/coverage' }
+          ]
+        },
+        {
+          text: 'Dev 命令',
+          collapsed: false,
+          items: [
+            { text: '概览', link: '/commands/dev/' },
+            { text: '/dev:start', link: '/commands/dev/start' },
+            { text: '/dev:status', link: '/commands/dev/status' },
+            { text: '/dev:resume', link: '/commands/dev/resume' }
           ]
         }
       ],
