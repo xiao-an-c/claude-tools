@@ -75,7 +75,7 @@ function loadAgents() {
 
 // 命令类别到 agents 的依赖关系
 const CATEGORY_AGENT_DEPS = {
-  dev: ['dev-developer', 'dev-planner', 'dev-recorder', 'dev-tester']
+  dev: ['dev-developer', 'dev-planner', 'dev-product', 'dev-recorder', 'dev-tester']
 };
 
 // 安装 agents
