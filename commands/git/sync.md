@@ -1,94 +1,112 @@
 ---
 name: git:sync
-description: 同步基础分支的最新代码到当前分支
-allowed-tools:
-  - Bash
-  - AskUserQuestion
+description: 同步代码（子分支从父分支，集成分支从 develop/master）
+allowed-tools: [Bash]
 ---
 
-<objective>
-将基础分支（develop 或 master）的最新代码合并到当前分支，保持分支同步。
-</objective>
+# /git:sync — 同步代码
 
-<rules>
-基础分支识别：
-- feat/*, fix/*, refactor/* → 同步 develop
-- hotfix/*, release/* → 同步 master
-- develop, master → 不需要同步
-</rules>
+同步基础分支的最新代码到当前分支。支持子分支从父分支同步。
 
-<process>
-1. 获取当前分支名
-2. 识别基础分支
-3. 检查当前是否有未提交的更改
-4. git fetch origin 获取远程更新
-5. git merge origin/<base-branch> 合并基础分支
-6. 如果有冲突，停止并提示用户手动解决
-</process>
-
-<execution>
-## 获取当前分支
+## 用法
 
 ```bash
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
+/git:sync
 ```
 
-## 识别基础分支
+## 子分支检测
+
+解析当前分支名，检测是否匹配子分支模式：`^(feat|fix|refactor|hotfix|release)/(.+)-t\d+$`
+
+## 同步目标
+
+| 当前分支类型 | 同步目标 |
+|-------------|---------|
+| 子分支（`-t\d+` 后缀） | 从父分支 merge（本地） |
+| feat/*, fix/*, refactor/* | `origin/develop` |
+| hotfix/*, release/* | `origin/master` |
+| develop, master | 无需同步 |
+
+## 执行流程
+
+### 1. 获取当前分支名
 
 ```bash
-case "$BRANCH" in
-  feat/*|fix/*|refactor/*)
-    BASE_BRANCH="develop"
-    ;;
-  hotfix/*|release/*)
-    BASE_BRANCH="master"
-    ;;
-  develop|master)
-    echo "当前在 $BRANCH 分支，无需同步基础分支"
-    exit 0
-    ;;
-  *)
-    # 询问用户要同步哪个分支
-    ;;
-esac
+CURRENT_BRANCH=$(git branch --show-current)
 ```
 
-## 检查未提交更改
+### 2. 检测分支类型和同步目标
 
 ```bash
-CHANGES=$(git status --porcelain)
-if [ -n "$CHANGES" ]; then
-  echo "有未提交的更改，请先提交或暂存："
-  git status --short
-  # 询问用户是否继续
+if [[ "$CURRENT_BRANCH" =~ ^(feat|fix|refactor|hotfix|release)/(.+)-t[0-9]+$ ]]; then
+  SYNC_TARGET="${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+  SYNC_TYPE="parent"
+elif [[ "$CURRENT_BRANCH" =~ ^(feat|fix|refactor)/ ]]; then
+  SYNC_TARGET="origin/develop"
+  SYNC_TYPE="remote"
+elif [[ "$CURRENT_BRANCH" =~ ^(hotfix|release)/ ]]; then
+  SYNC_TARGET="origin/master"
+  SYNC_TYPE="remote"
+else
+  echo "当前分支无需同步"
+  exit 0
 fi
 ```
 
-## 同步代码
+### 3. 检查未提交更改
+
+如果有未提交更改，先 stash。
+
+### 4. 执行同步
+
+#### 子分支同步（从父分支）
+
+```bash
+git merge "$SYNC_TARGET" -m "Sync from $SYNC_TARGET"
+```
+
+**子分支不需要 fetch**，因为父分支是本地的。
+
+#### 普通分支同步（从远程）
 
 ```bash
 git fetch origin
-git merge origin/$BASE_BRANCH
+git merge "$SYNC_TARGET"
 ```
 
-## 冲突处理
+### 5. 恢复 stash（如果有）
+
+### 6. 冲突处理
 
 如果合并出现冲突：
+
 ```
 ❌ 合并冲突！请手动解决：
 
 1. 查看冲突文件: git status
 2. 编辑冲突文件解决冲突
-3. 标记已解决: git add <file>
+3. 标记已解决: git add [file]
 4. 完成合并: git commit
-
-冲突文件列表：
-<conflicted files>
 ```
 
-## 输出
+### 7. 输出结果
 
-✅ 已同步 `origin/<base-branch>` 到当前分支
-📌 当前分支: `<branch>`
-📊 基础分支: `<base-branch>`
-</execution>
+**子分支同步：**
+```
+✅ 已同步父分支 `feat/user-auth` 到 `feat/user-auth-t01`
+📌 当前分支: feat/user-auth-t01
+📊 同步来源: feat/user-auth (本地)
+```
+
+**普通分支同步：**
+```
+✅ 已同步 `origin/develop` 到当前分支
+📌 当前分支: feat/user-profile
+📊 基础分支: develop
+```
+
+## 相关命令
+
+- [/git:start-task](./start-task) - 创建任务子分支
+- [/git:commit](./commit) - 智能提交
+- [/git:finish](./finish) - 完成并合并分支

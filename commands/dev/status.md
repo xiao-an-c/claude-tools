@@ -14,7 +14,7 @@ allowed-tools: [Read, Bash]
 CURRENT_BRANCH=$(git branch --show-current)
 ```
 
-如果不是 `feat/*`、`fix/*`、`refactor/*` 分支，提示 "当前分支没有活跃的开发工作流"。
+如果不是 `feat/*`、`fix/*`、`refactor/*`、`hotfix/*`、`release/*` 分支，提示 "当前分支没有活跃的开发工作流"。
 
 ### 2. 检查状态目录
 
@@ -24,13 +24,29 @@ CURRENT_BRANCH=$(git branch --show-current)
 
 ### 3. 读取并展示状态
 
+读取 `.dev/config.yml` 获取：
+- `workflow.tier` — 工作流级别 (quick/standard/full)
+- `workflow.tier_source` — 级别来源 (manual/auto)
+- `git.base_branch` — 基础分支
+- `git.branch_type` — 分支类型
+- `sub_branches.enabled` — 是否启用子分支
+- `sub_branches.active` — 当前活跃子分支
+- `sub_branches.completed` — 已合并子分支列表
+- `sub_branches.failed` — 失败子分支列表
+
 读取以下文件并展示：
 
-**PLAN.md** — 展示任务总数和列表
+**PLAN.md** — 展示任务总数和列表（Quick 级别可能不存在）
 
 **TASK-LOG.md** — 展示执行记录表格
 
 **TEST-REPORT.md** — 如果存在，展示测试结果
+
+**子分支状态** — 扫描本地分支中匹配 `<type>/<slug>-t*` 的分支，检查合并状态：
+```bash
+git branch --list "<type>/<slug>-t*"
+# 对每个子分支: git branch --merged 检查是否已合并
+```
 
 ### 4. 展示格式
 
@@ -38,13 +54,19 @@ CURRENT_BRANCH=$(git branch --show-current)
 ================================================================
  DEV WORKFLOW STATUS
 ================================================================
- 分支: <branch>
+ 分支: <branch> (<branch_type>)
+ 级别: <Quick/Standard/Full> (<auto/manual>)
  状态: <进行中/已完成>
 
  任务进度: X/Y 完成
  ┃████████░░░░░░░░░░░░░░░░░░░░░░░ 40%
 
  测试: 通过 X/Y (如已有测试)
+
+ 子分支:
+  [merged]   feat/user-auth-t01 — Login page
+  [active]   feat/user-auth-t02 — Auth service (current)
+  [pending]  feat/user-auth-t03 — Session mgmt
 
  提交数: N
 ================================================================
@@ -57,5 +79,5 @@ CURRENT_BRANCH=$(git branch --show-current)
  下一步:
    /dev:resume  — 继续执行未完成的任务
    /git:status  — 查看 git 分支状态
-   /git:finish  — 合并到 develop
+   /git:finish  — 合并到 <base_branch>
 ```

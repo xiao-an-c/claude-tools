@@ -10,34 +10,27 @@ allowed-tools:
   - Grep
   - Agent
   - AskUserQuestion
-  - TeamCreate
-  - TeamDelete
-  - TaskCreate
-  - TaskList
-  - TaskGet
-  - TaskUpdate
-  - SendMessage
 ---
 
 # /dev:resume — 恢复工作流
 
-## ⚠️ 绝对禁止 — 你是调度器，不是执行者
+## 绝对禁止 — 你是调度器，不是执行者
 
 你只做调度和文件状态管理。**禁止执行以下操作**：
 
-- ❌ 读取 src/ 下的源代码文件
-- ❌ 分析代码逻辑、bug 原因、技术方案
-- ❌ 编写或修改任何源代码
-- ❌ 运行测试、构建、安装依赖
-- ❌ 做任何技术判断（方案选择、代码评估）
+- 读取 src/ 下的源代码文件
+- 分析代码逻辑、bug 原因、技术方案
+- 编写或修改任何源代码
+- 运行测试、构建、安装依赖
+- 做任何技术判断（方案选择、代码评估）
 
 **唯一允许的操作：**
 
-- ✅ 读取工作流状态文件（PLAN.md, TASK-LOG.md, TEST-DESIGN.md, ARCHITECTURE.md, TECH-DESIGN.md, ACCEPTANCE.md）
-- ✅ 读取 `.dev/config.yml` 项目配置
-- ✅ 执行 git 命令（查看状态）
-- ✅ 使用 Agent() + TeamCreate + SendMessage + Task* 工具管理团队
-- ✅ 写入工作流状态文件（TASK-LOG.md, ACCEPTANCE.md）
+- 读取工作流状态文件（PLAN.md, TASK-LOG.md, TEST-DESIGN.md, ARCHITECTURE.md, TECH-DESIGN.md, ACCEPTANCE.md）
+- 读取 `.dev/config.yml` 项目配置
+- 执行 git 命令（查看状态）
+- 使用 Agent() spawn 各阶段 Agent，通过文件状态判断恢复点
+- 写入工作流状态文件（TASK-LOG.md, ACCEPTANCE.md）
 
 **如果你发现自己正在阅读源代码或思考技术方案 → 立即停止 → 改用 Agent 工具委托。**
 
@@ -49,99 +42,134 @@ allowed-tools:
 CURRENT_BRANCH=$(git branch --show-current)
 ```
 
-如果不是 `feat/*`、`fix/*`、`refactor/*` 分支，提示 "当前分支没有可恢复的工作流。"
+如果不是 `feat/*`、`fix/*`、`refactor/*`、`hotfix/*`、`release/*` 分支（包括子分支 `<type>/<slug>-t*`），提示 "当前分支没有可恢复的工作流。"
+
+**子分支检测：** 如果当前分支匹配 `^(feat|fix|refactor|hotfix|release)/(.+)-t\d+$`，提取父分支名，恢复点判断需要考虑子分支状态。
 
 ### 2. 读取状态
 
 读取 `.dev/plan/<current-branch>/` 下的状态文件。
 
-读取 `.dev/config.yml` 获取项目配置（如果存在）。
+如果当前在子分支上，读取 `.dev/plan/<parent-branch>/` 下的状态文件。
+
+读取 `.dev/config.yml` 获取项目配置。**关键：读取 `workflow.tier` 和 `sub_branches` 配置。**
 
 检查文件存在性：
 - `PRD.md` — 产品需求文档
 - `TEST-DESIGN.md` — 测试用例设计文档
 - `ARCHITECTURE.md` — 架构设计文档
-- `PLAN.md` — 任务规划（必须存在）
+- `PLAN.md` — 任务规划
 - `TECH-DESIGN.md` — 技术设计文档
 - `TASK-LOG.md` — 执行记录
 - `ACCEPTANCE.md` — 验收说明书
 
-如果 PLAN.md 不存在，提示 "未找到计划文件。使用 /dev:start 启动新工作流。"
+如果 PRD.md 不存在，提示 "未找到需求文档。使用 /dev:start 启动新工作流。"
 
 **从 config 获取：**
+- `workflow.tier` — 工作流级别 (quick/standard/full)
 - `git.base_branch` — 基础分支（回退到 `develop`）
+- `git.branch_type` — 分支类型
 - `verification.commands` — 验证命令（回退到 PLAN.md 验证字段）
 - `build.dev_command` — 开发命令（回退到省略）
 
-### 3. 判断恢复点
+### 3. 判断恢复点（按级别）
 
-从状态文件中判断工作流中断在哪个阶段：
+根据 `workflow.tier` 和缺失文件判断恢复点：
+
+#### Quick 级别的恢复点
 
 | 条件 | 恢复点 | 说明 |
 |------|--------|------|
-| PRD.md 不存在 | **Step 4** | 需重新执行产品讨论（内联 spawn dev-product） |
-| TEST-DESIGN.md 不存在 | **Step 5** | 需创建团队并执行测试设计 |
-| ARCHITECTURE.md 不存在 | **Step 6** | 需创建团队并执行架构设计 |
-| PLAN.md 不存在 | **Step 8** | 需创建团队并执行任务规划 |
-| TECH-DESIGN.md 不存在 | **Step 9** | 需创建团队并执行技术设计 |
-| TASK-LOG.md 有待执行任务 | **Step 10** | 需创建团队并继续开发循环 |
+| PRD.md 不存在 | **Step 4** | 需重新执行产品讨论 |
+| TASK-LOG.md 为空或不存在 | **Step 10** | 直接开始开发 |
+| TASK-LOG.md 有待执行任务 | **Step 10** | 继续开发 |
+| 所有任务已完成，ACCEPTANCE.md 不存在 | **Step 13** | 生成验收说明书 |
+| ACCEPTANCE.md 已存在 | 已完成 | 提示工作流已完成 |
+
+Quick 级别不需要创建团队，直接内联 spawn developer。
+
+#### Standard 级别的恢复点
+
+| 条件 | 恢复点 | 说明 |
+|------|--------|------|
+| PRD.md 不存在 | **Step 4** | 需重新执行产品讨论 |
+| TEST-DESIGN.md 或 ARCHITECTURE.md 不存在 | **Step 6** | spawn architect + tester 并行执行 |
+| PLAN.md 不存在 | **Step 8** | spawn planner 执行任务规划 |
+| TASK-LOG.md 有待执行任务 | **Step 10** | spawn developer 继续开发循环 |
 | 所有任务已完成，ACCEPTANCE.md 不存在 | **Step 13** | 直接生成验收说明书 |
-| ACCEPTANCE.md 已存在 | 已完成 | 提示工作流已完成，建议 /git:finish |
+| ACCEPTANCE.md 已存在 | 已完成 | 提示 /git:finish |
+
+#### Full 级别的恢复点
+
+| 条件 | 恢复点 | 说明 |
+|------|--------|------|
+| PRD.md 不存在 | **Step 4** | 需重新执行产品讨论 |
+| TEST-DESIGN.md 不存在 | **Step 5** | spawn tester 执行测试设计 |
+| ARCHITECTURE.md 不存在 | **Step 6** | spawn architect 执行架构设计 |
+| PLAN.md 不存在 | **Step 8** | spawn planner 执行任务规划 |
+| TECH-DESIGN.md 不存在 | **Step 9** | spawn tech-designer 执行技术设计 |
+| TASK-LOG.md 有待执行任务 | **Step 10** | spawn developer 继续开发循环 |
+| 所有任务已完成，ACCEPTANCE.md 不存在 | **Step 13** | 直接生成验收说明书 |
+| ACCEPTANCE.md 已存在 | 已完成 | 提示工作流已完成 |
 | 有 FAILED 任务 | Step 10 | 询问用户：重试失败任务 / 跳过 / 终止 |
 | 有 BLOCKED 任务 | Step 10 | 询问用户如何处理阻塞 |
 
-**注意：** 如果恢复点在 Step 5 及之后，需要创建团队（Step 4 的 Product 不需要团队）。
-
 ### 4. 恢复产品讨论（仅恢复点 = Step 4）
 
-如果 PRD.md 不存在，以内联方式 spawn dev-product（与 /dev:start 的 Step 4 相同），然后继续 Step 5。
+如果 PRD.md 不存在，以内联方式 spawn dev-product（与 /dev:start 的 Step 4 相同），然后继续。
 
-### 5. 创建团队 + 恢复任务状态
+### 5. 按恢复点 spawn Agent（按级别）
 
-**创建团队：**
+**不使用团队。编排器直接根据恢复点 spawn 对应的 Agent，通过文件状态判断恢复点。**
+
+#### Quick 级别：直接内联 spawn developer
+
+与 `/dev:start` 的 Quick 模式一致，直接内联 spawn developer：
 
 ```
-TeamCreate(
-  team_name="dev-workflow",
-  description="恢复开发工作流: <功能描述>"
+Agent(
+  subagent_type="dev-developer",
+  model="sonnet",
+  prompt="
+    <project_root><项目根目录绝对路径></project_root>
+    <config_path>.dev/config.yml</config_path>
+    <prd_path>.dev/plan/<branch-name>/PRD.md</prd_path>
+    你是开发者。直接根据 PRD.md 实现功能。不需要 PLAN.md 或 TECH-DESIGN.md。
+    实现完成后提交代码。
+  "
 )
 ```
 
-**重建 TaskList：** 根据恢复点和已完成状态创建任务。
+#### Standard 级别：按需 spawn
 
-| 恢复点 | 需要创建的任务 |
-|--------|---------------|
-| Step 5 | 测试设计, 架构设计, 架构自审, 任务规划, 技术设计 |
-| Step 6 | 架构设计, 架构自审, 任务规划, 技术设计 |
-| Step 7 | 架构自审, 任务规划, 技术设计 |
-| Step 8 | 任务规划, 技术设计 |
-| Step 9 | 技术设计 |
-| Step 10 | 开发任务（从 TASK-LOG.md 读取未完成的任务） |
+根据恢复点，spawn 对应的 Agent：
 
-对于已完成阶段的任务，直接创建为 completed 状态，不分配 owner。
+| 恢复点 | spawn 策略 |
+|--------|-----------|
+| Step 6 | 并行 spawn architect + tester |
+| Step 8 | spawn planner |
+| Step 10 | spawn developer(s)（从 TASK-LOG.md 读取未完成的任务） |
 
-对于当前和后续阶段的任务，创建为 pending 状态，设置正确的 blockedBy 依赖。
+spawn 参数与 `/dev:start` 中对应 Step 的 Agent spawn 格式一致。
 
-**开发任务恢复：** 如果恢复点是 Step 10，从 TASK-LOG.md 和 PLAN.md 中读取未完成的开发任务，为每个创建 TaskCreate。
+#### Full 级别：按需 spawn
 
-**spawn 全体团队成员：** 在一条消息中并行 spawn 7 个 Agent（与 /dev:start 的 Step 5 相同），全部加入团队。
+根据恢复点，spawn 对应的 Agent：
+
+| 恢复点 | spawn 策略 |
+|--------|-----------|
+| Step 5 | spawn tester |
+| Step 6 | spawn architect |
+| Step 7 | spawn architect（自审） |
+| Step 8 | spawn planner |
+| Step 9 | spawn tech-designer |
+| Step 10 | spawn developer(s)（从 TASK-LOG.md 读取未完成的任务） |
+
+spawn 参数与 `/dev:start` 中对应 Step 的 Agent spawn 格式一致。
 
 ### 6. 从恢复点继续执行
 
-根据恢复点，发送对应的 START/EXECUTE 消息给相关 agent：
-
-| 恢复点 | 动作 |
-|--------|------|
-| Step 5 | 分配 tester + architect，并行执行测试设计 + 架构设计 |
-| Step 6 | 分配 architect 执行架构设计 |
-| Step 7 | 分配 architect 执行架构自审 |
-| Step 8 | 分配 planner 执行任务规划 |
-| Step 9 | 分配 tech-designer 执行技术设计 |
-| Step 10 | 分配 developer 执行下一个开发任务，进入开发循环 |
-
-**从恢复点开始，按照 `/dev:start` 中对应 Step 的相同逻辑继续执行。**
-
-**验证命令：** 读取 `.dev/config.yml` 的 `verification.commands`。如果 config 为空，回退到从 PLAN.md 验证字段获取。
+**不再通过消息通知，直接 spawn Agent。** 按照 `/dev:start` 中对应 Step 的相同逻辑继续执行，遵守级别对应的步骤选择。
 
 ### 7. 显示恢复信息
 
@@ -149,7 +177,8 @@ TeamCreate(
 ================================================================
  DEV WORKFLOW RESUMED
 ================================================================
- 分支: <branch>
+ 分支: <branch> (<branch_type>)
+ 级别: <Quick/Standard/Full>
  恢复点: Step <N> - <描述>
  已完成: <已完成阶段列表>
  剩余任务: X 个
@@ -158,4 +187,4 @@ TeamCreate(
 
 ### 8. 正常流程继续
 
-从恢复点开始，后续流程（验证、循环、验收、shutdown）与 `/dev:start` 完全一致。当所有工作完成后，执行 Step 13 的验收和团队关闭流程。
+从恢复点开始，后续流程与 `/dev:start` 完全一致。当所有工作完成后，执行 Step 13 的验收流程。
