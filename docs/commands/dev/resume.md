@@ -14,14 +14,18 @@
 
 | 条件 | 恢复点 | 动作 |
 |------|--------|------|
-| PRD.md 不存在 | **Step 4** | spawn dev-product 进行产品讨论 |
-| PRD.md 存在，PLAN.md 不存在 | **Step 5** | spawn dev-planner 基于 PRD 规划 |
-| PLAN.md 存在，TEST-DESIGN.md 不存在 | **Step 6** | spawn dev-tester 生成测试用例文档 |
-| PLAN.md + TEST-DESIGN.md 存在，有待执行任务 | **Step 7** | spawn dev-developer 继续开发 |
-| 所有任务完成，ACCEPTANCE.md 不存在 | **Step 10** | 生成验收说明书 |
-| ACCEPTANCE.md 已存在 | 已完成 | 提示工作流已完成 |
-| 有 FAILED 任务 | Step 7 | 询问用户：重试/跳过/终止 |
-| 有 BLOCKED 任务 | Step 7 | 询问用户如何处理阻塞 |
+| PRD.md 不存在 | **Step 4** | 重新执行产品讨论（内联 spawn dev-product） |
+| TEST-DESIGN.md 不存在 | **Step 5** | 创建团队并执行测试设计 + 架构设计 |
+| ARCHITECTURE.md 不存在 | **Step 6** | 创建团队并执行架构设计 |
+| PLAN.md 不存在 | **Step 8** | 创建团队并执行任务规划 |
+| TECH-DESIGN.md 不存在 | **Step 9** | 创建团队并执行技术设计 |
+| TASK-LOG.md 有待执行任务 | **Step 10** | 创建团队并继续开发循环 |
+| 所有任务已完成，ACCEPTANCE.md 不存在 | **Step 13** | 直接生成验收说明书 |
+| ACCEPTANCE.md 已存在 | 已完成 | 提示工作流已完成，建议 /git:finish |
+| 有 FAILED 任务 | Step 10 | 询问用户：重试失败任务 / 跳过 / 终止 |
+| 有 BLOCKED 任务 | Step 10 | 询问用户如何处理阻塞 |
+
+**注意：** 如果恢复点在 Step 5 及之后，需要创建团队。恢复时会重建 TaskList 和 spawn 团队成员。
 
 ## 输出示例
 
@@ -30,8 +34,9 @@
  DEV WORKFLOW RESUMED
 ================================================================
  分支: feat/user-login
- 恢复点: Step 7 - 继续开发
- 剩余任务: 3 个
+ 恢复点: Step 8 - 任务规划
+ 已完成: 产品讨论, 测试设计, 架构设计, 架构自审
+ 剩余任务: 5 个
 ================================================================
 ```
 
@@ -40,9 +45,10 @@
 - 必须在 `feat/*`、`fix/*` 或 `refactor/*` 分支执行
 - 需要有 `.dev/plan/<branch>/` 目录和对应的状态文件
 - 如果没有活跃的工作流，使用 `/dev:start` 启动新工作流
+- 恢复后从恢复点开始，后续流程与 `/dev:start` 完全一致
 
 ## 相关命令
 
-- [/dev:start](./start) — 启动新工作流
-- [/dev:status](./status) — 查看工作流状态
-- [/git:finish](../git/finish) — 完成并合并分支
+- [/dev:start](./start) -- 启动新工作流
+- [/dev:status](./status) -- 查看工作流状态
+- [/git:finish](../git/finish) -- 完成并合并分支

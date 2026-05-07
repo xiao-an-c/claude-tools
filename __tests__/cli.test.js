@@ -154,6 +154,8 @@ describe('CLI 模块', () => {
       expect(agents).toHaveProperty('dev-planner');
       expect(agents).toHaveProperty('dev-recorder');
       expect(agents).toHaveProperty('dev-tester');
+      expect(agents).toHaveProperty('dev-architect');
+      expect(agents).toHaveProperty('dev-tech-designer');
     });
 
     test('应将 agent 文件名作为 key，原始文件名作为 value', () => {
@@ -196,16 +198,16 @@ describe('CLI 模块', () => {
       // Assert
       expect(deps).toHaveProperty('dev');
       expect(deps.dev).toEqual(
-        expect.arrayContaining(['dev-developer', 'dev-planner', 'dev-product', 'dev-recorder', 'dev-tester'])
+        expect.arrayContaining(['dev-developer', 'dev-planner', 'dev-product', 'dev-recorder', 'dev-tester', 'dev-architect', 'dev-tech-designer'])
       );
     });
 
-    test('dev 类别应恰好依赖 5 个 agents', () => {
+    test('dev 类别应恰好依赖 7 个 agents', () => {
       // Arrange & Act
       const deps = cli.CATEGORY_AGENT_DEPS;
 
       // Assert
-      expect(deps.dev).toHaveLength(5);
+      expect(deps.dev).toHaveLength(7);
     });
 
     test('git 类别不应有 agent 依赖', () => {
@@ -356,6 +358,8 @@ describe('CLI 模块', () => {
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-planner.md'))).toBe(true);
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-recorder.md'))).toBe(true);
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-tester.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-architect.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-tech-designer.md'))).toBe(true);
     });
 
     test('安装 git 类别命令时不应安装 agents', () => {
@@ -402,6 +406,8 @@ describe('CLI 模块', () => {
       expect(fs.existsSync(path.join(agentsPath, 'dev-planner.md'))).toBe(true);
       expect(fs.existsSync(path.join(agentsPath, 'dev-recorder.md'))).toBe(true);
       expect(fs.existsSync(path.join(agentsPath, 'dev-tester.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-architect.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-tech-designer.md'))).toBe(true);
     });
 
     test('安装所有时应输出 agents 统计信息', () => {
@@ -456,6 +462,8 @@ describe('CLI 模块', () => {
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-planner.md'))).toBe(true);
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-recorder.md'))).toBe(true);
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-tester.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-architect.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-tech-designer.md'))).toBe(true);
 
       mockExit.mockRestore();
     });
@@ -552,6 +560,8 @@ describe('CLI 模块', () => {
       expect(fs.existsSync(path.join(agentsPath, 'dev-planner.md'))).toBe(true);
       expect(fs.existsSync(path.join(agentsPath, 'dev-recorder.md'))).toBe(true);
       expect(fs.existsSync(path.join(agentsPath, 'dev-tester.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-architect.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-tech-designer.md'))).toBe(true);
     });
   });
 
