@@ -1,84 +1,94 @@
 ---
 name: git:commit
-description: 智能提交，根据分支类型自动添加 commit 前缀
-allowed-tools:
-  - Bash
-  - AskUserQuestion
+description: 智能提交，根据分支类型自动添加 commit 前缀（支持子分支）
+allowed-tools: [Bash, AskUserQuestion]
 ---
 
-<objective>
-根据当前分支类型自动生成符合规范的 commit 信息，执行 git add 和 git commit。
-</objective>
+# /git:commit — 智能提交
 
-<rules>
-分支类型对应的 commit 前缀：
-- feat/*     → feat(scope): <message>
-- fix/*      → fix(scope): <message>
-- refactor/* → refactor(scope): <message>
-- hotfix/*   → fix(scope): [紧急] <message>
-- release/*  → chore(release): <message>
-- develop    → chore: <message>
-- master     → 禁止直接提交
+根据分支类型自动添加 commit 前缀。支持子分支。
 
-scope 通过分析修改的文件路径自动推断。
-</rules>
-
-<process>
-1. 获取当前分支名，识别分支类型
-2. 如果在 master 分支，拒绝提交并提示
-3. 分析 git diff --stat 获取修改范围作为 scope
-4. 如果用户提供了 message，使用它；否则分析更改自动生成
-5. 构建完整的 commit 信息
-6. 执行 git add -A 和 git commit
-</process>
-
-<execution>
-## 获取当前分支
+## 用法
 
 ```bash
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
+/git:commit [message]
 ```
 
-## 检查是否在 master
+## 子分支检测
 
-如果在 master 分支，输出错误并停止：
-"❌ 禁止直接在 master 分支提交！请使用功能分支。"
+解析当前分支名，检测是否匹配子分支模式：`^(feat|fix|refactor|hotfix|release)/(.+)-t\d+$`
 
-## 分析修改范围
+子分支使用与父分支相同的 commit prefix。通过提取分支类型部分确定 prefix。
+
+## 分支类型与 commit 前缀
+
+| 分支类型 | commit 格式 |
+|----------|-------------|
+| feat/* (含子分支 feat/*-t*) | `feat(scope): [message]` |
+| fix/* (含子分支 fix/*-t*) | `fix(scope): [message]` |
+| refactor/* (含子分支 refactor/*-t*) | `refactor(scope): [message]` |
+| hotfix/* (含子分支 hotfix/*-t*) | `fix(scope): [紧急] [message]` |
+| release/* | `chore(release): [message]` |
+| develop | `chore: [message]` |
+| master | 禁止直接提交 |
+
+**子分支规则：** `feat/user-auth-t01` 提取类型 `feat` → 使用 `feat(scope):` prefix。与父分支 `feat/user-auth` 使用相同的 prefix。
+
+## Scope 推断规则
+
+根据修改的文件路径自动推断 scope：
+
+| 文件路径 | scope |
+|----------|-------|
+| src/views/* | 页面名 |
+| src/api/* | api |
+| src/components/* | 组件名 |
+| src/utils/* | utils |
+| src/store/* | store |
+
+## 执行流程
+
+### 1. 获取当前分支名
 
 ```bash
-# 获取修改的文件统计
-git diff --stat --cached 2>/dev/null || git diff --stat
+CURRENT_BRANCH=$(git branch --show-current)
 ```
 
-根据修改的文件路径推断 scope：
-- src/views/* → 页面名
-- src/api/* → api
-- src/components/* → 组件名
-- src/utils/* → utils
-- src/store/* → store
-- 多个不同目录 → 根据主要修改推断
-
-## 构建 commit 信息
-
-如果用户提供了 message：
-```
-<type>(<scope>): <message>
-```
-
-如果没有提供 message，询问用户：
-"请输入提交信息："
-
-## 执行提交
+### 2. 提取分支类型（支持子分支）
 
 ```bash
-git add -A
-git commit -m "<type>(<scope>): <message>"
+# 提取类型前缀，支持子分支的 -tNN 后缀
+if [[ "$CURRENT_BRANCH" =~ ^(feat|fix|refactor|hotfix|release)/ ]]; then
+  BRANCH_TYPE=$(echo "$CURRENT_BRANCH" | sed 's|/.*||')
+fi
 ```
 
-## 输出
+### 3. 如果在 master 分支，拒绝提交并提示
 
-✅ 提交成功: `<type>(<scope>): <message>`
-📊 当前分支: `<branch>`
-💡 提示: 使用 `/git:sync` 同步基础分支，或 `/git:finish` 完成开发
-</execution>
+### 4. 分析 git diff --stat 获取修改范围作为 scope
+
+### 5. 如果用户提供了 message，使用它；否则分析更改自动生成
+
+### 6. 构建完整的 commit 信息并执行
+
+## 输出示例
+
+**子分支提交：**
+```
+✅ 提交成功: `feat(user): 添加登录页面`
+📊 当前分支: feat/user-auth-t01 (子分支)
+💡 提示: 使用 /git:sync 从父分支同步，或 /git:finish 完成任务
+```
+
+**普通分支提交：**
+```
+✅ 提交成功: `feat(user): 添加用户资料页面`
+📊 当前分支: feat/user-profile
+💡 提示: 使用 /git:sync 同步基础分支，或 /git:finish 完成开发
+```
+
+## 相关命令
+
+- [/git:start-task](./start-task) - 创建任务子分支
+- [/git:sync](./sync) - 同步代码
+- [/git:finish](./finish) - 完成并合并分支
