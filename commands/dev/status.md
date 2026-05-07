@@ -30,11 +30,7 @@ CURRENT_BRANCH=$(git branch --show-current)
 
 **TASK-LOG.md** — 展示执行记录表格
 
-**PRD.md** — 如果存在，展示产品需求概要（用户故事数、界面数）
-
-**TEST-DESIGN.md** — 如果存在，展示测试用例设计概要
-
-**ACCEPTANCE.md** — 如果存在，展示验收说明书
+**TEST-REPORT.md** — 如果存在，展示测试结果
 
 ### 4. 展示格式
 

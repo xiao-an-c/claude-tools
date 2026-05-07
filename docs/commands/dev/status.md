@@ -25,7 +25,7 @@
  状态: 进行中
 
  任务进度: 2/5 完成
- ┃████████████████████░░░░░░░░░░░░░░░ 40%
+ ||||||||||||||||||||||||.................... 40%
 
  测试: 通过 6/6
 
@@ -40,23 +40,21 @@
  | T-05 | 记住密码功能       | 待执行 | -      |
 
  下一步:
-   /dev:resume  — 继续执行未完成的任务
-   /git:status  — 查看 git 分支状态
-   /git:finish  — 合并到 develop
+   /dev:resume  -- 继续执行未完成的任务
+   /git:status  -- 查看 git 分支状态
+   /git:finish  -- 合并到 develop
 ```
 
 ## 信息来源
 
 命令读取 `.dev/plan/<branch-name>/` 目录下的状态文件：
 
-- **PLAN.md** — 任务列表和总数
-- **TASK-LOG.md** — 执行记录表格
-- **PRD.md** — 产品需求概要（如存在）
-- **TEST-DESIGN.md** — 测试用例设计概要（如存在）
-- **ACCEPTANCE.md** — 验收说明书（如存在）
+- **PLAN.md** -- 任务列表和总数
+- **TASK-LOG.md** -- 执行记录表格
+- **TEST-REPORT.md** -- 测试结果（如存在）
 
 ## 相关命令
 
-- [/dev:start](./start) — 启动工作流
-- [/dev:resume](./resume) — 恢复工作流
-- [/git:status](../git/status) — 查看 git 分支状态
+- [/dev:start](./start) -- 启动工作流
+- [/dev:resume](./resume) -- 恢复工作流
+- [/git:status](../git/status) -- 查看 git 分支状态

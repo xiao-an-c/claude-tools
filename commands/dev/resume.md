@@ -10,6 +10,13 @@ allowed-tools:
   - Grep
   - Agent
   - AskUserQuestion
+  - TeamCreate
+  - TeamDelete
+  - TaskCreate
+  - TaskList
+  - TaskGet
+  - TaskUpdate
+  - SendMessage
 ---
 
 # /dev:resume — 恢复工作流
@@ -26,11 +33,11 @@ allowed-tools:
 
 **唯一允许的操作：**
 
-- ✅ 读取工作流状态文件（PLAN.md, TASK-LOG.md, TEST-DESIGN.md, ACCEPTANCE.md）
+- ✅ 读取工作流状态文件（PLAN.md, TASK-LOG.md, TEST-DESIGN.md, ARCHITECTURE.md, TECH-DESIGN.md, ACCEPTANCE.md）
+- ✅ 读取 `.dev/config.yml` 项目配置
 - ✅ 执行 git 命令（查看状态）
-- ✅ 使用 Agent() 工具 spawn 子 Agent 委托所有技术工作
-- ✅ 使用 AskUserQuestion 询问用户
-- ✅ 写入工作流状态文件
+- ✅ 使用 Agent() + TeamCreate + SendMessage + Task* 工具管理团队
+- ✅ 写入工作流状态文件（TASK-LOG.md, ACCEPTANCE.md）
 
 **如果你发现自己正在阅读源代码或思考技术方案 → 立即停止 → 改用 Agent 工具委托。**
 
@@ -48,57 +55,95 @@ CURRENT_BRANCH=$(git branch --show-current)
 
 读取 `.dev/plan/<current-branch>/` 下的状态文件。
 
+读取 `.dev/config.yml` 获取项目配置（如果存在）。
+
 检查文件存在性：
-- `PLAN.md` — 计划文件（必须存在）
-- `TASK-LOG.md` — 执行记录
+- `PRD.md` — 产品需求文档
 - `TEST-DESIGN.md` — 测试用例设计文档
+- `ARCHITECTURE.md` — 架构设计文档
+- `PLAN.md` — 任务规划（必须存在）
+- `TECH-DESIGN.md` — 技术设计文档
+- `TASK-LOG.md` — 执行记录
 - `ACCEPTANCE.md` — 验收说明书
 
 如果 PLAN.md 不存在，提示 "未找到计划文件。使用 /dev:start 启动新工作流。"
+
+**从 config 获取：**
+- `git.base_branch` — 基础分支（回退到 `develop`）
+- `verification.commands` — 验证命令（回退到 PLAN.md 验证字段）
+- `build.dev_command` — 开发命令（回退到省略）
 
 ### 3. 判断恢复点
 
 从状态文件中判断工作流中断在哪个阶段：
 
-| 条件 | 恢复点 | 动作 |
+| 条件 | 恢复点 | 说明 |
 |------|--------|------|
-| PRD.md 不存在 | **Step 4** | spawn dev-product 进行产品讨论 |
-| PRD.md 存在，PLAN.md 不存在 | **Step 5** | spawn dev-planner 基于 PRD 规划 |
-| PLAN.md 存在，TEST-DESIGN.md 不存在 | **Step 6** | spawn dev-tester（design_only）生成测试用例文档 |
-| PLAN.md + TEST-DESIGN.md 存在，TASK-LOG.md 有待执行任务 | **Step 7** | spawn dev-developer 继续下一个未执行任务 |
-| 所有任务已完成，ACCEPTANCE.md 不存在 | **Step 10** | 生成验收说明书 |
+| PRD.md 不存在 | **Step 4** | 需重新执行产品讨论（内联 spawn dev-product） |
+| TEST-DESIGN.md 不存在 | **Step 5** | 需创建团队并执行测试设计 |
+| ARCHITECTURE.md 不存在 | **Step 6** | 需创建团队并执行架构设计 |
+| PLAN.md 不存在 | **Step 8** | 需创建团队并执行任务规划 |
+| TECH-DESIGN.md 不存在 | **Step 9** | 需创建团队并执行技术设计 |
+| TASK-LOG.md 有待执行任务 | **Step 10** | 需创建团队并继续开发循环 |
+| 所有任务已完成，ACCEPTANCE.md 不存在 | **Step 13** | 直接生成验收说明书 |
 | ACCEPTANCE.md 已存在 | 已完成 | 提示工作流已完成，建议 /git:finish |
-| 有 FAILED 任务 | Step 7 | 询问用户：重试失败任务 / 跳过 / 终止 |
-| 有 BLOCKED 任务 | Step 7 | 询问用户如何处理阻塞 |
+| 有 FAILED 任务 | Step 10 | 询问用户：重试失败任务 / 跳过 / 终止 |
+| 有 BLOCKED 任务 | Step 10 | 询问用户如何处理阻塞 |
 
-### 4. 继续执行
+**注意：** 如果恢复点在 Step 5 及之后，需要创建团队（Step 4 的 Product 不需要团队）。
 
-从恢复点开始，按照 `/dev:start` 中对应 Step 的相同逻辑继续执行：
+### 4. 恢复产品讨论（仅恢复点 = Step 4）
 
-**如果恢复到 Step 4（产品讨论）：**
-- spawn dev-product 与用户讨论需求、绘制线框图
-- 完成后进入 Step 5
+如果 PRD.md 不存在，以内联方式 spawn dev-product（与 /dev:start 的 Step 4 相同），然后继续 Step 5。
 
-**如果恢复到 Step 5（规划）：**
-- spawn dev-planner 基于 PRD 生成 PLAN.md
-- 完成后进入 Step 6
+### 5. 创建团队 + 恢复任务状态
 
-**如果恢复到 Step 6（测试设计）：**
-- spawn dev-tester（design_only 模式）生成 TEST-DESIGN.md
-- 完成后进入 Step 7
+**创建团队：**
 
-**如果恢复到 Step 7（开发循环）：**
-- 逐任务 spawn dev-developer（**每轮 1 个**）
-- 每个任务完成后执行验证命令（从 PLAN.md 获取）
-- 验证失败 → spawn developer 修复 → 重试（最多 2 轮）
-- 验证通过 → 更新 TASK-LOG.md → 判断下一个任务
-- 全部完成 → 进入 Step 10
+```
+TeamCreate(
+  team_name="dev-workflow",
+  description="恢复开发工作流: <功能描述>"
+)
+```
 
-**如果恢复到 Step 10（验收）：**
-- 生成 ACCEPTANCE.md
-- spawn dev-recorder 记录验收经验
+**重建 TaskList：** 根据恢复点和已完成状态创建任务。
 
-### 5. 显示恢复信息
+| 恢复点 | 需要创建的任务 |
+|--------|---------------|
+| Step 5 | 测试设计, 架构设计, 架构自审, 任务规划, 技术设计 |
+| Step 6 | 架构设计, 架构自审, 任务规划, 技术设计 |
+| Step 7 | 架构自审, 任务规划, 技术设计 |
+| Step 8 | 任务规划, 技术设计 |
+| Step 9 | 技术设计 |
+| Step 10 | 开发任务（从 TASK-LOG.md 读取未完成的任务） |
+
+对于已完成阶段的任务，直接创建为 completed 状态，不分配 owner。
+
+对于当前和后续阶段的任务，创建为 pending 状态，设置正确的 blockedBy 依赖。
+
+**开发任务恢复：** 如果恢复点是 Step 10，从 TASK-LOG.md 和 PLAN.md 中读取未完成的开发任务，为每个创建 TaskCreate。
+
+**spawn 全体团队成员：** 在一条消息中并行 spawn 7 个 Agent（与 /dev:start 的 Step 5 相同），全部加入团队。
+
+### 6. 从恢复点继续执行
+
+根据恢复点，发送对应的 START/EXECUTE 消息给相关 agent：
+
+| 恢复点 | 动作 |
+|--------|------|
+| Step 5 | 分配 tester + architect，并行执行测试设计 + 架构设计 |
+| Step 6 | 分配 architect 执行架构设计 |
+| Step 7 | 分配 architect 执行架构自审 |
+| Step 8 | 分配 planner 执行任务规划 |
+| Step 9 | 分配 tech-designer 执行技术设计 |
+| Step 10 | 分配 developer 执行下一个开发任务，进入开发循环 |
+
+**从恢复点开始，按照 `/dev:start` 中对应 Step 的相同逻辑继续执行。**
+
+**验证命令：** 读取 `.dev/config.yml` 的 `verification.commands`。如果 config 为空，回退到从 PLAN.md 验证字段获取。
+
+### 7. 显示恢复信息
 
 ```
 ================================================================
@@ -106,6 +151,11 @@ CURRENT_BRANCH=$(git branch --show-current)
 ================================================================
  分支: <branch>
  恢复点: Step <N> - <描述>
+ 已完成: <已完成阶段列表>
  剩余任务: X 个
 ================================================================
 ```
+
+### 8. 正常流程继续
+
+从恢复点开始，后续流程（验证、循环、验收、shutdown）与 `/dev:start` 完全一致。当所有工作完成后，执行 Step 13 的验收和团队关闭流程。
