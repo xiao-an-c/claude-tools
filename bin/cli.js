@@ -47,7 +47,7 @@ function getCategoryDescription(category) {
   const descriptions = {
     git: 'Git 工作流命令 (feat/fix/hotfix/release)',
     test: '单元测试命令 (generate/review/coverage/snapshot)',
-    dev: '开发工作流命令 (多 Agent 协作)'
+    dev: '开发工作流命令 (场景驱动：patch/fix/feat/refactor/hotfix/review/discuss/investigate)'
   };
   return descriptions[category] || `${category} 命令`;
 }

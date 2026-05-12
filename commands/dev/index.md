@@ -1,88 +1,96 @@
 # [dev] 开发工作流命令
 
-多 Agent 协作开发工作流命令集，自动评估复杂度，按 Quick/Standard/Full 三级流程执行。
+场景驱动的多 Agent 协作开发工作流。每个命令对应一个真实的开发场景。
 
-## 可用命令
+## 命令总览
+
+### 路由器
 
 | 命令 | 用途 |
 |------|------|
-| `/dev:start [--quick\|--standard\|--full] [描述]` | 启动开发工作流（自动评估级别，或手动指定） |
-| `/dev:status` | 查看当前工作流状态、级别和进度 |
+| `/dev:start [描述]` | 自动识别场景，分发到对应模式 |
+| `/dev:start --<mode> [描述]` | 手动指定模式（patch/fix/feat/refactor/hotfix/review/discuss/investigate） |
+
+### 代码修改模式
+
+| 命令 | 场景 | Agent | Git | 文档 |
+|------|------|-------|-----|------|
+| `/dev:patch <改动>` | 小修小补，已知原因 | architect + developer | 无 | 无 |
+| `/dev:fix <问题>` | Bug 修复，需诊断 | architect + developer | `fix/*` | PRD, ACCEPTANCE |
+| `/dev:feat <功能>` | 新功能开发 | product + tester + architect + planner + developer(s) | `feat/*` | 全套 |
+| `/dev:refactor <描述>` | 代码重构 | architect + planner + developer(s) | `refactor/*` | ARCH, PLAN, ACCEPTANCE |
+| `/dev:hotfix <问题>` | 线上紧急修复 | architect + developer | `hotfix/*` | ACCEPTANCE |
+
+### 只读模式
+
+| 命令 | 场景 | Agent | 产出 |
+|------|------|-------|------|
+| `/dev:review <目标>` | 代码审查 | architect | REVIEW.md |
+| `/dev:discuss <主题>` | 架构讨论/开会 | product + architect | MINUTES.md |
+| `/dev:investigate <问题>` | Bug 排查 | architect | INVESTIGATION.md |
+
+### 辅助命令
+
+| 命令 | 用途 |
+|------|------|
+| `/dev:status` | 查看当前工作流状态 |
 | `/dev:resume` | 恢复中断的工作流 |
 
-## 工作流级别
+## 所有模式通用参数
 
-| 级别 | 适用场景 | 流程 | Agent 数 |
-|------|---------|------|---------|
-| **Quick** | hotfix、单文件修改、紧急修复 | Product → 开发 → 验证 → 验收 | 2 |
-| **Standard** | fix、小功能、refactor | Product → 测试+架构 → 规划 → 开发 → 验证 → 验收 | 5 |
-| **Full** | 大型功能、跨模块、新模块 | 完整流程 | 7 |
+| 参数 | 说明 |
+|------|------|
+| `--git` | 强制使用 git（创建分支） |
+| `--no-git` | 跳过 git，在当前分支工作 |
 
-不指定级别时，在 Product 阶段后自动评估复杂度选择最合适的级别。
+## 模式衔接
+
+只读模式产出分析文档，自然衔接到代码修改模式：
+
+```
+/dev:investigate 排查bug → 建议用 /dev:fix 修复
+/dev:discuss 讨论方案 → 建议用 /dev:feat 实现
+/dev:review 审查代码 → 建议用 /dev:refactor 改进
+```
 
 ## 工作流程
 
 ```
-/dev:start [--quick|--standard|--full] <功能描述>
+/dev:start <描述>
     ↓
-1. 创建分支 (feat/fix/refactor/hotfix/release) + GitFlow 策略
+路由器自动检测 → 分发到模式命令
     ↓
-2. 产品讨论 → dev-product Agent（与用户交互，输出 PRD）
+    ┌─────────┬──────────┬───────────┬──────────┐
+    │ patch   │ fix      │ feat      │ refactor │
+    │ 2 min   │ 5-10 min │ 15-45 min │ 10-30min │
+    └─────────┴──────────┴───────────┴──────────┘
     ↓
-3. 复杂度评估 → 自动选择 Quick/Standard/Full
-    ↓
-   ┌──────────────────┬──────────────────────┬──────────────────────┐
-   │ Quick            │ Standard             │ Full                 │
-   │ 开发 → 验收      │ 测试+架构 → 规划     │ 测试+架构 → 自审     │
-   │                  │ → 开发 → 验收        │ → 规划 → 技术设计    │
-   │                  │                      │ → 开发 → 验收        │
-   └──────────────────┴──────────────────────┴──────────────────────┘
-    ↓
-用户自行 /git:finish 合并分支
+用户自行 /git:finish 合并分支（如果使用了 git）
 ```
 
-## GitFlow 分支策略
+## Agent 团队
 
-| 分支类型 | base_branch | 合并目标 |
-|---------|-------------|---------|
-| `hotfix/*` | main/master | main + develop |
-| `release/*` | develop | main + develop |
-| `fix/*` | develop | develop |
-| `refactor/*` | develop | develop |
-| `feat/*` | develop | develop |
+| Agent | 模型 | 职责 | 使用的模式 |
+|-------|------|------|-----------|
+| dev-product | opus | 需求讨论、PRD 输出 | feat, discuss |
+| dev-architect | opus | 架构设计、代码诊断、审查 | 全部模式 |
+| dev-planner | opus | 任务分解 | feat, refactor |
+| dev-tech-designer | sonnet | 详细技术方案 | feat (复杂) |
+| dev-developer | sonnet | 代码实现 | patch, fix, feat, refactor, hotfix |
+| dev-tester | sonnet | 测试设计 | feat |
+| dev-recorder | sonnet | 知识记录（显式触发） | 全部模式 |
 
-## 子分支（Epic Branching）
+## 知识库
 
-Standard/Full 级别支持子分支，命名规则 `<type>/<slug>-t<NN>`：
+项目知识积累在 `docs/knowledge/` 下：
 
-```
-feat/user-auth          ← 集成分支
-  feat/user-auth-t01    ← 子分支（任务 1）
-  feat/user-auth-t02    ← 子分支（任务 2）
-```
+- `architecture.md` — 架构决策
+- `conventions.md` — 编码规范
+- `gotchas.md` — 重复陷阱
+- `domain.md` — 业务核心
+- `methodology.md` — 方法论
 
-子分支由 dev workflow 自动创建，验证通过后合并回集成分支。
-Git 命令（`/git:start-task`、`/git:finish` 等）独立支持此命名规则。
-
-## Agent 列表
-
-| Agent | 模型 | 职责 | Quick | Standard | Full |
-|-------|------|------|-------|----------|------|
-| dev-product | opus | 需求讨论、PRD 输出 | ✅ | ✅ | ✅ |
-| dev-tester | sonnet | 测试用例设计、测试执行 | ❌ | ✅ | ✅ |
-| dev-architect | opus | 高层架构设计、模块划分 | ❌ | ✅ | ✅ |
-| dev-planner | opus | 任务分解、build/test 配置发现 | ❌ | ✅ | ✅ |
-| dev-tech-designer | sonnet | 详细技术实现方案 | ❌ | ❌ | ✅ |
-| dev-developer | sonnet | 代码实现、提交 | ✅ | ✅ | ✅ |
-| dev-recorder | sonnet | 经验记录（后台） | ❌ | ❌ | ✅ |
-
-## 产物文件
-
-每次工作流生成在 `.dev/plan/<branch-name>/` 下：
-
-`PRD.md` → `TEST-DESIGN.md` → `ARCHITECTURE.md` → `PLAN.md` → `TECH-DESIGN.md` → `TASK-LOG.md` → `ACCEPTANCE.md`
-
-（Quick 级别只生成 PRD.md、TASK-LOG.md、ACCEPTANCE.md）
+每次工作流完成后，recorder 严格过滤后记录高价值发现（宁可漏记，不要噪音）。
 
 ## 相关命令
 

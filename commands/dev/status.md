@@ -25,8 +25,7 @@ CURRENT_BRANCH=$(git branch --show-current)
 ### 3. 读取并展示状态
 
 读取 `.dev/config.yml` 获取：
-- `workflow.tier` — 工作流级别 (quick/standard/full)
-- `workflow.tier_source` — 级别来源 (manual/auto)
+- `workflow.mode` — 工作流模式 (patch/fix/feat/refactor/hotfix/review/discuss/investigate)
 - `git.base_branch` — 基础分支
 - `git.branch_type` — 分支类型
 - `sub_branches.enabled` — 是否启用子分支
@@ -36,7 +35,7 @@ CURRENT_BRANCH=$(git branch --show-current)
 
 读取以下文件并展示：
 
-**PLAN.md** — 展示任务总数和列表（Quick 级别可能不存在）
+**PLAN.md** — 展示任务总数和列表（patch/hotfix 模式可能不存在）
 
 **TASK-LOG.md** — 展示执行记录表格
 
@@ -55,13 +54,13 @@ git branch --list "<type>/<slug>-t*"
  DEV WORKFLOW STATUS
 ================================================================
  分支: <branch> (<branch_type>)
- 级别: <Quick/Standard/Full> (<auto/manual>)
+ 模式: <patch/fix/feat/refactor/hotfix/review/discuss/investigate>
  状态: <进行中/已完成>
 
  任务进度: X/Y 完成
  ┃████████░░░░░░░░░░░░░░░░░░░░░░░ 40%
 
- 测试: 通过 X/Y (如已有测试)
+ 知识库: <N> 条记录
 
  子分支:
   [merged]   feat/user-auth-t01 — Login page

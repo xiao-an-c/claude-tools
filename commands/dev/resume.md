@@ -26,7 +26,7 @@ allowed-tools:
 
 **唯一允许的操作：**
 
-- 读取工作流状态文件（PLAN.md, TASK-LOG.md, TEST-DESIGN.md, ARCHITECTURE.md, TECH-DESIGN.md, ACCEPTANCE.md）
+- 读取工作流状态文件（PLAN.md, TASK-LOG.md, TEST-DESIGN.md, ARCHITECTURE.md, TECH-DESIGN.md, ACCEPTANCE.md, PRD.md）
 - 读取 `.dev/config.yml` 项目配置
 - 执行 git 命令（查看状态）
 - 使用 Agent() spawn 各阶段 Agent，通过文件状态判断恢复点
@@ -52,139 +52,98 @@ CURRENT_BRANCH=$(git branch --show-current)
 
 如果当前在子分支上，读取 `.dev/plan/<parent-branch>/` 下的状态文件。
 
-读取 `.dev/config.yml` 获取项目配置。**关键：读取 `workflow.tier` 和 `sub_branches` 配置。**
+读取 `.dev/config.yml` 获取项目配置。**关键：读取 `workflow.mode` 和 `sub_branches` 配置。**
+
+如果 `workflow.mode` 不存在，尝试读取 `workflow.tier`（向后兼容）：
+
+| 旧 tier | 新 mode |
+|---------|---------|
+| quick | fix |
+| standard | feat |
+| full | feat |
 
 检查文件存在性：
-- `PRD.md` — 产品需求文档
-- `TEST-DESIGN.md` — 测试用例设计文档
-- `ARCHITECTURE.md` — 架构设计文档
-- `PLAN.md` — 任务规划
-- `TECH-DESIGN.md` — 技术设计文档
+- `PRD.md` — 产品需求文档（fix/feat 模式）
+- `TEST-DESIGN.md` — 测试用例设计文档（feat 模式）
+- `ARCHITECTURE.md` — 架构设计文档（feat/refactor 模式）
+- `PLAN.md` — 任务规划（feat/refactor 模式）
+- `TECH-DESIGN.md` — 技术设计文档（feat 复杂模式）
 - `TASK-LOG.md` — 执行记录
 - `ACCEPTANCE.md` — 验收说明书
 
-如果 PRD.md 不存在，提示 "未找到需求文档。使用 /dev:start 启动新工作流。"
+如果所有状态文件都不存在，提示 "未找到工作流状态。使用 /dev:start 启动新工作流。"
 
-**从 config 获取：**
-- `workflow.tier` — 工作流级别 (quick/standard/full)
-- `git.base_branch` — 基础分支（回退到 `develop`）
-- `git.branch_type` — 分支类型
-- `verification.commands` — 验证命令（回退到 PLAN.md 验证字段）
-- `build.dev_command` — 开发命令（回退到省略）
+### 3. 判断恢复点（按模式）
 
-### 3. 判断恢复点（按级别）
+根据 `workflow.mode` 和缺失文件判断恢复点：
 
-根据 `workflow.tier` 和缺失文件判断恢复点：
-
-#### Quick 级别的恢复点
+#### fix 模式的恢复点
 
 | 条件 | 恢复点 | 说明 |
 |------|--------|------|
-| PRD.md 不存在 | **Step 4** | 需重新执行产品讨论 |
-| TASK-LOG.md 为空或不存在 | **Step 10** | 直接开始开发 |
-| TASK-LOG.md 有待执行任务 | **Step 10** | 继续开发 |
-| 所有任务已完成，ACCEPTANCE.md 不存在 | **Step 13** | 生成验收说明书 |
-| ACCEPTANCE.md 已存在 | 已完成 | 提示工作流已完成 |
-
-Quick 级别不需要创建团队，直接内联 spawn developer。
-
-#### Standard 级别的恢复点
-
-| 条件 | 恢复点 | 说明 |
-|------|--------|------|
-| PRD.md 不存在 | **Step 4** | 需重新执行产品讨论 |
-| TEST-DESIGN.md 或 ARCHITECTURE.md 不存在 | **Step 6** | spawn architect + tester 并行执行 |
-| PLAN.md 不存在 | **Step 8** | spawn planner 执行任务规划 |
-| TASK-LOG.md 有待执行任务 | **Step 10** | spawn developer 继续开发循环 |
-| 所有任务已完成，ACCEPTANCE.md 不存在 | **Step 13** | 直接生成验收说明书 |
+| PRD.md 不存在 | **Step 4** | 重新执行架构师诊断 |
+| TASK-LOG.md 为空或不存在 | **Step 6** | 开始开发 |
+| TASK-LOG.md 有待执行任务 | **Step 6** | 继续开发 |
+| 任务已完成，ACCEPTANCE.md 不存在 | **Step 9** | 生成验收说明书 |
 | ACCEPTANCE.md 已存在 | 已完成 | 提示 /git:finish |
 
-#### Full 级别的恢复点
+不需要创建团队，直接内联 spawn。
+
+#### feat 模式的恢复点
 
 | 条件 | 恢复点 | 说明 |
 |------|--------|------|
-| PRD.md 不存在 | **Step 4** | 需重新执行产品讨论 |
-| TEST-DESIGN.md 不存在 | **Step 5** | spawn tester 执行测试设计 |
-| ARCHITECTURE.md 不存在 | **Step 6** | spawn architect 执行架构设计 |
-| PLAN.md 不存在 | **Step 8** | spawn planner 执行任务规划 |
-| TECH-DESIGN.md 不存在 | **Step 9** | spawn tech-designer 执行技术设计 |
-| TASK-LOG.md 有待执行任务 | **Step 10** | spawn developer 继续开发循环 |
-| 所有任务已完成，ACCEPTANCE.md 不存在 | **Step 13** | 直接生成验收说明书 |
-| ACCEPTANCE.md 已存在 | 已完成 | 提示工作流已完成 |
-| 有 FAILED 任务 | Step 10 | 询问用户：重试失败任务 / 跳过 / 终止 |
-| 有 BLOCKED 任务 | Step 10 | 询问用户如何处理阻塞 |
+| PRD.md 不存在 | **Step 4** | 重新执行产品讨论 |
+| TEST-DESIGN.md 或 ARCHITECTURE.md 不存在 | **Step 6** | spawn architect + tester 并行 |
+| PLAN.md 不存在 | **Step 7** | spawn planner |
+| TECH-DESIGN.md 不存在（复杂模式） | **Step 8** | spawn tech-designer |
+| TASK-LOG.md 有待执行任务 | **Step 9** | spawn developer(s) |
+| 所有任务已完成，ACCEPTANCE.md 不存在 | **Step 12** | 生成验收说明书 |
+| ACCEPTANCE.md 已存在 | 已完成 | 提示 /git:finish |
+| 有 FAILED 任务 | **Step 9** | 询问用户：重试/跳过/终止 |
 
-### 4. 恢复产品讨论（仅恢复点 = Step 4）
+#### refactor 模式的恢复点
 
-如果 PRD.md 不存在，以内联方式 spawn dev-product（与 /dev:start 的 Step 4 相同），然后继续。
+| 条件 | 恢复点 | 说明 |
+|------|--------|------|
+| ARCHITECTURE.md 不存在 | **Step 4** | 重新执行架构分析 |
+| PLAN.md 不存在 | **Step 6** | spawn planner |
+| TASK-LOG.md 有待执行任务 | **Step 7** | spawn developer(s) |
+| 所有任务已完成，ACCEPTANCE.md 不存在 | **Step 10** | 生成验收说明书 |
+| ACCEPTANCE.md 已存在 | 已完成 | 提示 /git:finish |
 
-### 5. 按恢复点 spawn Agent（按级别）
+#### hotfix 模式的恢复点
 
-**不使用团队。编排器直接根据恢复点 spawn 对应的 Agent，通过文件状态判断恢复点。**
+| 条件 | 恢复点 | 说明 |
+|------|--------|------|
+| TASK-LOG.md 为空或不存在 | **Step 5** | 开始开发 |
+| 任务已完成，ACCEPTANCE.md 不存在 | **Step 8** | 生成验收说明书 |
+| ACCEPTANCE.md 已存在 | 已完成 | 提示 /git:finish |
 
-#### Quick 级别：直接内联 spawn developer
+### 4. 按恢复点 spawn Agent
 
-与 `/dev:start` 的 Quick 模式一致，直接内联 spawn developer：
+**不使用团队。编排器直接根据恢复点 spawn 对应的 Agent。**
 
-```
-Agent(
-  subagent_type="dev-developer",
-  model="sonnet",
-  prompt="
-    <project_root><项目根目录绝对路径></project_root>
-    <config_path>.dev/config.yml</config_path>
-    <prd_path>.dev/plan/<branch-name>/PRD.md</prd_path>
-    你是开发者。直接根据 PRD.md 实现功能。不需要 PLAN.md 或 TECH-DESIGN.md。
-    实现完成后提交代码。
-  "
-)
-```
+spawn 参数与对应模式文件中对应 Step 的 Agent spawn 格式一致。具体格式请参考：
+- fix 模式 → `commands/dev/fix.md`
+- feat 模式 → `commands/dev/feat.md`
+- refactor 模式 → `commands/dev/refactor.md`
+- hotfix 模式 → `commands/dev/hotfix.md`
 
-#### Standard 级别：按需 spawn
-
-根据恢复点，spawn 对应的 Agent：
-
-| 恢复点 | spawn 策略 |
-|--------|-----------|
-| Step 6 | 并行 spawn architect + tester |
-| Step 8 | spawn planner |
-| Step 10 | spawn developer(s)（从 TASK-LOG.md 读取未完成的任务） |
-
-spawn 参数与 `/dev:start` 中对应 Step 的 Agent spawn 格式一致。
-
-#### Full 级别：按需 spawn
-
-根据恢复点，spawn 对应的 Agent：
-
-| 恢复点 | spawn 策略 |
-|--------|-----------|
-| Step 5 | spawn tester |
-| Step 6 | spawn architect |
-| Step 7 | spawn architect（自审） |
-| Step 8 | spawn planner |
-| Step 9 | spawn tech-designer |
-| Step 10 | spawn developer(s)（从 TASK-LOG.md 读取未完成的任务） |
-
-spawn 参数与 `/dev:start` 中对应 Step 的 Agent spawn 格式一致。
-
-### 6. 从恢复点继续执行
-
-**不再通过消息通知，直接 spawn Agent。** 按照 `/dev:start` 中对应 Step 的相同逻辑继续执行，遵守级别对应的步骤选择。
-
-### 7. 显示恢复信息
+### 5. 显示恢复信息
 
 ```
 ================================================================
  DEV WORKFLOW RESUMED
 ================================================================
  分支: <branch> (<branch_type>)
- 级别: <Quick/Standard/Full>
+ 模式: <fix/feat/refactor/hotfix>
  恢复点: Step <N> - <描述>
  已完成: <已完成阶段列表>
  剩余任务: X 个
 ================================================================
 ```
 
-### 8. 正常流程继续
+### 6. 正常流程继续
 
-从恢复点开始，后续流程与 `/dev:start` 完全一致。当所有工作完成后，执行 Step 13 的验收流程。
+从恢复点开始，后续流程与对应模式文件完全一致。当所有工作完成后，执行验收流程。
