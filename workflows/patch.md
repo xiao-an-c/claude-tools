@@ -35,27 +35,39 @@ defaults:
 
 ## 步骤
 
-### Step 1: 架构师快速分析
+### Step 1: 架构师快速分析 + 方案
 
 Type: agent
 Agent: dev-architect
 Model: opus
 Spawn: inline
-No files: true
 
 ```
 <change_request>${description}</change_request>
 <project_root>${project_root}</project_root>
 
-快速分析这个改动，返回以下信息（不要写任何文件）：
+快速分析这个改动，返回结构化的实施方案（不要写任何文件）：
 
-1. **涉及文件**: 列出需要修改的文件路径
-2. **改动方案**: 每个文件具体改什么（2-3 句话/文件）
-3. **风险点**: 是否有副作用或需要注意的地方
+## 实施方案
+
+### T-01: <任务标题>
+- **描述**: <具体做什么>
+- **文件**: <需要修改的文件路径>
+- **改动**: <每个文件具体改什么，2-3 句话>
+
+### T-02: ...（如需要）
+
+## 风险点
+<是否有副作用或需要注意的地方>
 
 如果改动描述不够明确，指出需要向用户澄清的问题。
+如果改动涉及交互变更，标注 `[UI]` 并说明交互细节。
 不要输出 ARCHITECTURE.md，不要写任何文件。
 ```
+
+**如果改动涉及交互变更（包含 `[UI]` 标注），需要向用户确认交互细节：**
+
+用 AskUserQuestion 确认交互需求，确保方案覆盖所有交互场景。
 
 ### Step 2: 开发者实现
 
@@ -67,11 +79,11 @@ Spawn: inline
 ```
 <project_root>${project_root}</project_root>
 
-直接实现以下改动（不需要 PRD、PLAN 或 TECH-DESIGN）：
+按以下方案实现改动（不需要创建文档文件）：
 
-<architect_proposal>
+<plan>
 ${step_1_result}
-</architect_proposal>
+</plan>
 
 <user_adjustments>
 ${user_adjustments}

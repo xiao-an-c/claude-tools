@@ -388,7 +388,7 @@ describe('CLI 模块', () => {
     // Agents 集成测试
     test('安装 dev 类别命令时应同时安装依赖的 agents', () => {
       // Arrange & Act
-      const result = cli.installCommands(['start'], 'dev', tempTargetDir);
+      const result = cli.installCommands(['run'], 'dev', tempTargetDir);
 
       // Assert - agents 应被安装
       expect(result.agents).toBeDefined();
@@ -593,13 +593,13 @@ describe('CLI 模块', () => {
       expect(() => cli.installSpecific('commit', null)).toThrow();
     });
 
-    test('安装 dev:start 命令时应同时安装 dev-* agents', () => {
+    test('安装 dev:run 命令时应同时安装 dev-* agents', () => {
       // Arrange & Act
-      cli.installSpecific('dev:start', tempTargetDir);
+      cli.installSpecific('dev:run', tempTargetDir);
 
       // Assert - dev:* 命令触发 agents 安装
-      const devStartFile = path.join(tempTargetDir, '.claude/commands/dev/start.md');
-      expect(fs.existsSync(devStartFile)).toBe(true);
+      const devRunFile = path.join(tempTargetDir, '.claude/commands/dev/run.md');
+      expect(fs.existsSync(devRunFile)).toBe(true);
 
       const agentsPath = path.join(tempTargetDir, '.claude/agents');
       expect(fs.existsSync(agentsPath)).toBe(true);

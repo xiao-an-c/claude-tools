@@ -32,7 +32,7 @@ defaults:
 
 ## 状态管理
 
-创建 `.dev/plan/fix-<slug>/` 目录，写入 PRD.md、TASK-LOG.md、ACCEPTANCE.md。
+创建 `.dev/plan/fix-<slug>/` 目录，写入 PRD.md、PLAN.md、TASK-LOG.md、ACCEPTANCE.md。
 
 ## 步骤
 
@@ -166,6 +166,7 @@ conventions:
 | Step | Agent | Status | Summary |
 |------|-------|--------|---------|
 | 诊断 | dev-architect | pending | - |
+| 规划 | dev-planner | pending | - |
 | 修复 | dev-developer | pending | - |
 | 记录 | dev-recorder | pending | - |
 ```
@@ -229,7 +230,51 @@ Spawn: inline
 3. 提取关键信息用于后续步骤：根因摘要、受影响文件列表、修复方案概述
 4. 更新 TASK-LOG.md 诊断行状态为 done
 
-### Step 5: 开发者修复
+### Step 5: 任务规划
+
+Type: agent
+Agent: dev-planner
+Model: opus
+Spawn: inline
+
+```
+<project_root>${project_root}</project_root>
+<prd_path>.dev/plan/fix-${slug}/PRD.md</prd_path>
+<plan_path>.dev/plan/fix-${slug}/PLAN.md</plan_path>
+
+你是规划师。基于 PRD.md（Bug Report），生成实现计划。
+
+1. 读取 PRD.md，理解 bug 根因和修复方案
+2. 将修复方案分解为具体的实现任务
+3. 每个 task 包含：标题、描述、涉及文件
+
+输出 PLAN.md：
+
+# 实现计划: fix/${slug}
+
+## 任务列表
+
+### T-01: <任务标题>
+- **描述**: <具体做什么>
+- **文件**: <涉及文件列表>
+- **复杂度**: low/medium
+- **依赖**: 无
+
+## 执行顺序
+T-01 → ...
+
+注意：
+- 这是 bug 修复，任务应该最小化，只修复问题不做额外重构
+- 涉及交互变更的任务需标注 `[UI]`
+```
+
+**Agent 返回后：**
+
+1. 确认 `.dev/plan/fix-$SLUG/PLAN.md` 已生成
+2. 提取任务数量和文件范围
+3. 更新 TASK-LOG.md 规划行状态为 done
+
+### Step 6: 开发者修复
 
 Type: agent
 Agent: dev-developer
@@ -240,13 +285,14 @@ Spawn: inline
 <project_root>${project_root}</project_root>
 <config_path>.dev/config.yml</config_path>
 <prd_path>.dev/plan/fix-${slug}/PRD.md</prd_path>
+<plan_path>.dev/plan/fix-${slug}/PLAN.md</plan_path>
 
 你是开发者。当前任务是 **bug 修复**。
 
-根据 PRD.md 中的诊断报告和修复方案，实施代码修复。
+根据 PLAN.md 中的任务列表，逐个实现修复。参考 PRD.md 中的诊断报告。
 
 要求：
-- 严格按照 PRD.md 中的修复方案修改文件
+- 严格按照 PLAN.md 中的任务逐个实现
 - 修复应该是最小化的：只改必要的代码，不做额外重构
 - 如果修复过程中发现新问题或方案需要调整，在返回摘要中说明
 - 实现完成后提交代码（commit message 格式: fix(<scope>): <简洁描述>）
@@ -261,7 +307,7 @@ ${user_adjustments}
 1. 更新 TASK-LOG.md 修复行状态为 done，填入摘要
 2. 记录 developer 返回的关键信息：实际修改了哪些文件、是否有方案调整
 
-### Step 6: 验证
+### Step 7: 验证
 
 Type: builtin
 Action: verify
@@ -286,7 +332,7 @@ Retry: 2
 
 **如果没有配置任何验证命令，跳过此步骤。**
 
-### Step 7: 记录
+### Step 8: 记录
 
 Type: agent
 Agent: dev-recorder
@@ -330,7 +376,7 @@ COMMIT_LOG=$(git log --oneline $BASE_BRANCH..HEAD 2>/dev/null || git log --oneli
 
 **Agent 返回后：** 确认 TASK-LOG.md 已更新。
 
-### Step 8: 验收
+### Step 9: 验收
 
 Type: builtin
 Action: generate_acceptance
@@ -375,7 +421,7 @@ ${commit_log}
 ${risk_notes}
 ```
 
-### Step 9: 最终摘要
+### Step 10: 最终摘要
 
 Type: builtin
 Action: display_summary
