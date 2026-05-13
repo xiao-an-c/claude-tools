@@ -41,12 +41,23 @@ Claude Tools 提供多种命令类别，按需安装使用。
 
 ### [dev] 开发工作流命令
 
-多 Agent 协作开发工作流命令集，自动化完成从需求讨论到验收的完整开发周期。
+场景驱动的多 Agent 协作开发工作流。工作流定义存储在 `.dev/workflows/` 中，路由器自动识别场景并匹配工作流，由通用执行器 `/dev:run` 机械执行：
 
 | 命令 | 用途 |
 |------|------|
-| `/dev:start` | 启动多 Agent 迭代开发工作流 |
-| `/dev:status` | 查看当前工作流状态和进度 |
+| `/dev:start` | 路由器入口，匹配工作流并执行 |
+| `/dev:start --run <name>` | 执行指定工作流 |
+| `/dev:start --list` | 列出所有可用工作流 |
+| `/dev:feat` | 新功能开发（完整团队协作） |
+| `/dev:fix` | Bug 诊断 + 修复 |
+| `/dev:refactor` | 代码重构 |
+| `/dev:patch` | 超轻量补丁（零 git 零文档） |
+| `/dev:hotfix` | 线上紧急修复 |
+| `/dev:review` | 代码审查（只读） |
+| `/dev:discuss` | 架构讨论（只读） |
+| `/dev:investigate` | Bug 排查（只读） |
+| `/dev:auto` | 即兴编排（不匹配预设模式时） |
+| `/dev:status` | 查看工作流状态和进度 |
 | `/dev:resume` | 恢复中断的工作流 |
 
 [查看 Dev 命令详情](/commands/dev/)
@@ -89,8 +100,10 @@ Claude Tools 提供多种命令类别，按需安装使用。
 ### 多 Agent 开发工作流
 
 ```bash
-/dev:start 添加用户登录功能    # 启动完整工作流
+/dev:start 添加用户登录功能    # 路由器自动选择模式
+/dev:feat 添加用户登录功能     # 手动指定新功能模式
+/dev:fix 登录后白屏            # Bug 修复模式
+/dev:patch 修个 typo           # 超轻量补丁
 /dev:status                    # 查看进度
 /dev:resume                    # 恢复中断的工作流
-```
 ```

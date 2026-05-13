@@ -37,5 +37,5 @@ features:
     details: 内置分支保护规则，防止误操作
   - icon: 🤖
     title: 多 Agent 协作
-    details: /dev:start 自动化开发流程，从需求讨论到验收的完整周期
+    details: /dev:start 路由器自动识别场景，分发到 9 种开发模式（feat/fix/refactor/patch/hotfix/review/discuss/investigate/auto）
 ---

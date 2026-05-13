@@ -18,7 +18,8 @@
   "files": [
     "bin/",
     "commands/",
-    "agents/"
+    "agents/",
+    "workflows/"
   ],
   "scripts": {
     "test": "jest",

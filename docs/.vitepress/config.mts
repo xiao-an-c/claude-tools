@@ -111,7 +111,16 @@ export default defineConfig({
             { text: '概览', link: '/commands/dev/' },
             { text: '/dev:start', link: '/commands/dev/start' },
             { text: '/dev:status', link: '/commands/dev/status' },
-            { text: '/dev:resume', link: '/commands/dev/resume' }
+            { text: '/dev:resume', link: '/commands/dev/resume' },
+            { text: '/dev:feat', link: '/commands/dev/feat' },
+            { text: '/dev:fix', link: '/commands/dev/fix' },
+            { text: '/dev:refactor', link: '/commands/dev/refactor' },
+            { text: '/dev:patch', link: '/commands/dev/patch' },
+            { text: '/dev:hotfix', link: '/commands/dev/hotfix' },
+            { text: '/dev:review', link: '/commands/dev/review' },
+            { text: '/dev:discuss', link: '/commands/dev/discuss' },
+            { text: '/dev:investigate', link: '/commands/dev/investigate' },
+            { text: '/dev:auto', link: '/commands/dev/auto' }
           ]
         }
       ],

@@ -9,7 +9,7 @@
 | 命令 | 用途 |
 |------|------|
 | `/dev:start [描述]` | 自动识别场景，分发到对应模式 |
-| `/dev:start --<mode> [描述]` | 手动指定模式（patch/fix/feat/refactor/hotfix/review/discuss/investigate） |
+| `/dev:start --<mode> [描述]` | 手动指定模式（patch/fix/feat/refactor/hotfix/review/discuss/investigate/auto） |
 
 ### 代码修改模式
 
@@ -20,6 +20,12 @@
 | `/dev:feat <功能>` | 新功能开发 | product + tester + architect + planner + developer(s) | `feat/*` | 全套 |
 | `/dev:refactor <描述>` | 代码重构 | architect + planner + developer(s) | `refactor/*` | ARCH, PLAN, ACCEPTANCE |
 | `/dev:hotfix <问题>` | 线上紧急修复 | architect + developer | `hotfix/*` | ACCEPTANCE |
+
+### 即兴编排
+
+| 命令 | 场景 | Agent | 产出 |
+|------|------|-------|------|
+| `/dev:auto <描述>` | 不匹配预设模式时，架构师动态设计工作流 | 按需组装 | WORKFLOW.md + 视流程而定 |
 
 ### 只读模式
 
@@ -60,10 +66,10 @@
     ↓
 路由器自动检测 → 分发到模式命令
     ↓
-    ┌─────────┬──────────┬───────────┬──────────┐
-    │ patch   │ fix      │ feat      │ refactor │
-    │ 2 min   │ 5-10 min │ 15-45 min │ 10-30min │
-    └─────────┴──────────┴───────────┴──────────┘
+    ┌─────────┬──────────┬───────────┬──────────┬──────────┐
+    │ patch   │ fix      │ feat      │ refactor │ auto     │
+    │ 2 min   │ 5-10 min │ 15-45 min │ 10-30min │ 视流程   │
+    └─────────┴──────────┴───────────┴──────────┴──────────┘
     ↓
 用户自行 /git:finish 合并分支（如果使用了 git）
 ```

@@ -73,9 +73,18 @@ CURRENT_BRANCH=$(git branch --show-current)
 
 如果所有状态文件都不存在，提示 "未找到工作流状态。使用 /dev:start 启动新工作流。"
 
-### 3. 判断恢复点（按模式）
+### 3. 判断恢复点
 
-根据 `workflow.mode` 和缺失文件判断恢复点：
+**优先使用通用恢复逻辑（基于工作流定义）：**
+
+读取 `.dev/workflows/${workflow.mode}.md`，按步骤表中的产出文件判断断点：
+
+1. 遍历工作流定义中的每个步骤
+2. 检查步骤的产出文件是否存在
+3. 第一个产出文件缺失的步骤即为恢复点
+4. 从该步骤开始，按工作流定义继续执行
+
+**如果工作流定义文件不存在（向后兼容），使用下方按模式的恢复表。**
 
 #### fix 模式的恢复点
 
@@ -124,11 +133,12 @@ CURRENT_BRANCH=$(git branch --show-current)
 
 **不使用团队。编排器直接根据恢复点 spawn 对应的 Agent。**
 
-spawn 参数与对应模式文件中对应 Step 的 Agent spawn 格式一致。具体格式请参考：
-- fix 模式 → `commands/dev/fix.md`
-- feat 模式 → `commands/dev/feat.md`
-- refactor 模式 → `commands/dev/refactor.md`
-- hotfix 模式 → `commands/dev/hotfix.md`
+spawn 参数与对应工作流定义中步骤的 Agent spawn 格式一致。参考：
+- fix 模式 → `.dev/workflows/fix.md` 或 `commands/dev/fix.md`
+- feat 模式 → `.dev/workflows/feat.md` 或 `commands/dev/feat.md`
+- refactor 模式 → `.dev/workflows/refactor.md` 或 `commands/dev/refactor.md`
+- hotfix 模式 → `.dev/workflows/hotfix.md` 或 `commands/dev/hotfix.md`
+- auto 模式 → `.dev/plan/<branch>/WORKFLOW.md`
 
 ### 5. 显示恢复信息
 

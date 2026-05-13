@@ -1,116 +1,123 @@
 # Dev 命令
 
-多 Agent 协作开发工作流命令集，自动化完成从需求讨论到验收的完整开发周期。
+场景驱动的多 Agent 协作开发工作流。通过路由器入口 `/dev:start` 自动识别场景，分发到对应的工作流执行。
 
-## 可用命令
+## 架构
+
+```
+/dev:start <描述>
+    ↓
+路由器匹配工作流（内置 + 已沉淀）
+    ↓
+/dev:run <workflow>  （通用执行器）
+    ↓
+读取 .dev/workflows/<workflow>.md → 机械执行步骤
+    ↓
+spawn Agent 完成 各阶段任务
+```
+
+**工作流即知识** — 工作流定义存储在 `.dev/workflows/` 目录中，每个工作流是一个独立的 Markdown 文件。`/dev:run` 作为通用执行器，机械地读取工作流定义并执行其中的步骤。新场景只需新增一个工作流文件。
+
+## 命令总览
+
+### 路由器
 
 | 命令 | 用途 |
 |------|------|
-| `/dev:start [描述]` | 启动完整开发工作流（产品 -> 测试设计 -> 架构 -> 规划 -> 技术设计 -> 开发 -> 验证） |
-| `/dev:status` | 查看当前工作流状态和进度 |
-| `/dev:resume` | 恢复中断的工作流 |
+| `/dev:start [描述]` | 自动识别场景，匹配工作流并执行 |
+| `/dev:start --<mode> [描述]` | 手动指定模式 |
+| `/dev:start --run <name>` | 执行指定工作流 |
+| `/dev:start --list` | 列出所有可用工作流 |
+| `/dev:start --delete <name>` | 删除已沉淀的工作流 |
 
-## 工作流程
+### 内置工作流
 
+| 命令 | 场景 | 步骤 | Git | 预期耗时 |
+|------|------|------|-----|---------|
+| [/dev:patch](./patch) | 小修小补，已知原因 | 4 | 无 | 2-3 min |
+| [/dev:fix](./fix) | Bug 修复，需诊断 | 10 | `fix/*` | 5-10 min |
+| [/dev:feat](./feat) | 新功能开发 | 13 | `feat/*` | 15-45 min |
+| [/dev:refactor](./refactor) | 代码重构 | 12 | `refactor/*` | 10-30 min |
+| [/dev:hotfix](./hotfix) | 线上紧急修复 | 8 | `hotfix/*` | 5-10 min |
+| [/dev:review](./review) | 代码审查 | - | 无（只读） | 5-10 min |
+| [/dev:discuss](./discuss) | 架构讨论/开会 | - | 无（只读） | 5-15 min |
+| [/dev:investigate](./investigate) | Bug 排查 | - | 无（只读） | 5-10 min |
+| [/dev:auto](./auto) | 即兴编排，动态设计 | 5 | 视流程 | 视流程 |
+
+### 辅助命令
+
+| 命令 | 用途 |
+|------|------|
+| [/dev:status](./status) | 查看当前工作流状态和进度 |
+| [/dev:resume](./resume) | 恢复中断的工作流 |
+
+## 工作流定义
+
+每个工作流是一个 Markdown 文件，包含 YAML frontmatter 和步骤定义：
+
+```yaml
+---
+name: feat
+display_name: "Feature Development"
+description: "完整功能开发流程"
+category: code-change
+defaults:
+  use_git: true
+  base_branch: develop
+  branch_type: feat
+---
 ```
-/dev:start <功能描述>
-    |
-1. 创建分支 (feat/fix/refactor) + 初始化 .dev/config.yml
-    |
-2. 产品讨论 -> dev-product Agent（与用户交互，输出 PRD）
-    |
-3. 创建团队 + 并行执行：测试设计 + 架构设计
-    |
-4. 架构自审 -> dev-architect Agent（审查修正）
-    |
-5. 任务规划 -> dev-planner Agent（任务分解 + 配置发现）
-    |
-6. 技术设计 -> dev-tech-designer Agent（每个任务的实现策略）
-    |
-7. 开发循环 -> dev-developer Agent（逐任务执行 + 提交）
-    |         支持多 developer 并行执行无文件冲突的任务
-    |
-8. 验证 -> 编排器直接执行验证命令
-    |         失败时 tester + developer 协作根因分析（最多 2 轮）
-    |
-9. 验收 -> 生成验收说明书 + 清理上下文
-    |
-用户自行 /git:finish 合并分支
-```
 
-## Agent 列表
+步骤使用 4 种原语：
 
-| Agent | 模型 | 职责 |
-|-------|------|------|
-| dev-product | opus | 需求讨论、项目发现、PRD 输出（唯一人类介入点） |
-| dev-architect | opus | 高层架构设计、模块划分、重构手法 |
-| dev-planner | opus | 任务分解、依赖分析、build/test 配置发现 |
-| dev-tech-designer | sonnet | 详细技术实现方案 |
-| dev-developer | sonnet | 代码实现、提交 |
-| dev-tester | sonnet | 测试用例设计、测试执行 |
-| dev-recorder | sonnet | 经验记录（后台） |
+| 原语 | 说明 | 示例 |
+|------|------|------|
+| `builtin` | 执行器内置动作 | parse_arguments, git_create_branch, verify |
+| `agent` | spawn 一个 agent | dev-architect, dev-developer |
+| `loop` | 循环执行子步骤 | 开发循环 |
+| `condition` | 条件执行 | `complexity == complex` 时才执行 |
+
+## Agent 团队
+
+| Agent | 模型 | 职责 | 使用的模式 |
+|-------|------|------|-----------|
+| dev-workflow-architect | opus | 工作流设计（auto 模式） | auto |
+| dev-product | opus | 需求讨论、PRD 输出 | feat, discuss |
+| dev-architect | opus | 架构设计、代码诊断、审查 | 全部模式 |
+| dev-planner | opus | 任务分解 | feat, refactor |
+| dev-tech-designer | sonnet | 详细技术方案 | feat (复杂) |
+| dev-developer | sonnet | 代码实现 | patch, fix, feat, refactor, hotfix |
+| dev-tester | sonnet | 测试设计 | feat |
+| dev-recorder | sonnet | 知识记录（后台） | 全部模式 |
 
 ## 核心原则
 
-1. **调度器模式** — 主命令只做调度，所有技术工作通过 Agent 委托
-2. **产品先行** — 先讨论需求再动手，产品讨论是唯一人类介入点
-3. **并行执行** — 测试设计和架构设计并行；多个 developer 可并行开发无冲突的任务
-4. **先设计再开发** — 架构 -> 规划 -> 技术设计 -> 开发，逐步细化
-5. **逐任务循环** — 开发 -> 验证 -> 决策是一个循环，每轮处理一个或多个任务
-6. **文件驱动** — 所有状态写入 `.dev/plan/<branch>/` 目录，不依赖上下文记忆
-7. **配置驱动** — 项目信息通过 `.dev/config.yml` 在各阶段自动发现和传递
+1. **工作流即知识** — 工作流定义独立于命令代码，存储在 `.dev/workflows/` 中
+2. **通用执行器** — `/dev:run` 机械执行工作流定义，不含业务逻辑
+3. **场景驱动** — 每个工作流对应一个真实的开发场景，不搞一刀切
+4. **按需 Agent** — patch 用 2 个 Agent，feat 用 5-7 个，按场景组装
+5. **文件驱动** — 所有状态写入 `.dev/plan/<branch>/` 目录，不依赖上下文记忆
+6. **可沉淀** — auto 模式动态设计的工作流可保存为可复用模板
 
-## 工作流架构
+## 模式衔接
+
+只读模式产出分析文档后，自然衔接到代码修改模式：
 
 ```
-+----------------------------------------------+
-|  Step 1-3: 解析 -> 创建分支 -> 初始化 config    |
-+---------------------+-------------------------+
-                      v
-            +------------------+
-            |  Step 4: Product |  一次性，与用户交互
-            |  输出 PRD        |  (唯一人类介入点)
-            +--------+---------+
-                     v
-            +------------------+
-            |  Step 5: 创建团队 |  创建所有任务 + spawn 全体成员
-            +--------+---------+
-                     v
-+----------------------------------------------+
-|  Step 6: 并行 — 测试设计 + 架构设计            |
-|  tester + architect 同时工作                    |
-+--------------------+-------------------------+
-                     v
-            +------------------+
-            |  Step 7: 架构自审 |  architect 审查自己的输出
-            +--------+---------+
-                     v
-            +------------------+
-            |  Step 8: 任务规划 |  planner 基于所有输入拆分任务
-            +--------+---------+
-                     v
-            +------------------+
-            |  Step 9: 技术设计 |  tech-designer 为每个任务设计实现策略
-            +--------+---------+
-                     v
-+----------------------------------------------+
-|  Step 10-12: 开发循环                           |
-|  developer <- > tech-designer/architect 可沟通   |
-|  验证失败 <- > tester + developer 可协作根因分析  |
-+--------------------+-------------------------+
-                     v (全部完成)
-            +------------------+
-            |  Step 13: 验收   |  生成验收说明书 + /clear
-            +------------------+
+/dev:investigate 排查 bug -> 建议用 /dev:fix 修复
+/dev:discuss 讨论方案 -> 建议用 /dev:feat 实现
+/dev:review 审查代码 -> 建议用 /dev:refactor 改进
 ```
 
 ## 分支类型
 
-| 关键词 | 分支类型 |
-|--------|---------|
-| 修复、bug、fix、错误 | `fix/<slug>` |
-| 重构、refactor、优化、清理 | `refactor/<slug>` |
-| 默认 | `feat/<slug>` |
+| 模式 | 分支类型 | 基础分支 |
+|------|---------|---------|
+| feat | `feat/<slug>` | develop |
+| fix | `fix/<slug>` | develop |
+| refactor | `refactor/<slug>` | develop |
+| hotfix | `hotfix/<slug>` | main/master |
+| patch | 无 | - |
 
 ## 状态文件
 
@@ -118,13 +125,21 @@
 
 | 文件 | 用途 |
 |------|------|
-| `PRD.md` | 产品需求文档（产品讨论产出） |
-| `TEST-DESIGN.md` | 测试用例设计文档（测试设计产出） |
-| `ARCHITECTURE.md` | 架构设计文档（架构设计产出） |
-| `PLAN.md` | 任务分解计划（规划产出） |
-| `TECH-DESIGN.md` | 技术设计文档（技术设计产出） |
-| `TASK-LOG.md` | 执行记录（逐任务跟踪） |
-| `ACCEPTANCE.md` | 验收说明书（全部完成后的产出） |
+| `WORKFLOW.md` | 动态工作流设计（auto 模式） |
+| `PRD.md` | 产品需求文档 / Bug 报告 |
+| `TEST-DESIGN.md` | 测试用例设计 |
+| `ARCHITECTURE.md` | 架构设计 / 重构分析 |
+| `PLAN.md` | 任务分解计划 |
+| `TECH-DESIGN.md` | 技术设计 |
+| `TASK-LOG.md` | 执行记录 |
+| `ACCEPTANCE.md` | 验收说明书 |
+
+## 通用参数
+
+| 参数 | 说明 |
+|------|------|
+| `--git` | 强制使用 git（创建分支） |
+| `--no-git` | 跳过 git，在当前分支工作 |
 
 ## 相关命令
 

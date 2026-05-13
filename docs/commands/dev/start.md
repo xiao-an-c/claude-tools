@@ -1,146 +1,93 @@
 # /dev:start
 
-启动多 Agent 团队协作开发工作流，覆盖从需求讨论到验收的完整流程。
+开发工作流路由器。自动识别场景，从工作流库匹配并执行对应的工作流。是所有开发工作流的统一入口。
 
 ## 用法
 
 ```bash
-/dev:start <功能描述>
+/dev:start [描述]                        # 自动识别场景并匹配工作流
+/dev:start --<mode> [描述]               # 手动指定模式
+/dev:start --run <name> [描述]           # 执行指定工作流
+/dev:start --list                        # 列出所有可用工作流
+/dev:start --delete <name>               # 删除已沉淀的工作流
 ```
 
-## 参数
+## 工作流发现
 
-- `功能描述`: 要开发的功能描述，支持中文。如 "添加用户登录功能"
+### 内置工作流
+
+| 模式 | 命令 | 说明 |
+|------|------|------|
+| `--patch` | `/dev:patch` | 极小改动，已知怎么改。零 git、零文档 |
+| `--fix` | `/dev:fix` | Bug 诊断 + 修复。架构师找根因，开发者修 |
+| `--feat` | `/dev:feat` | 新功能开发。完整团队协作，自适应复杂度 |
+| `--refactor` | `/dev:refactor` | 代码重构。架构师驱动，原子化步骤 |
+| `--hotfix` | `/dev:hotfix` | 线上紧急修复。最小流程，最大速度 |
+| `--review` | `/dev:review` | 代码审查。只读，产出审查报告 |
+| `--discuss` | `/dev:discuss` | 架构讨论。只读，产出会议纪要 |
+| `--investigate` | `/dev:investigate` | Bug 排查。只读，产出调查报告 |
+| `--auto` | `/dev:auto` | 即兴编排。workflow-architect 动态设计工作流 |
+
+### 已沉淀工作流
+
+扫描 `.dev/workflows/` 目录发现用户保存的自定义工作流。这些工作流的 `description` 字段用于匹配用户任务描述。
+
+### 匹配策略
+
+1. **显式模式** — `--<mode>` 标志直接路由到对应工作流
+2. **指定工作流** — `--run <name>` 使用指定工作流
+3. **自然语言匹配** — 从描述中提取关键词，按优先级匹配：
+   - 先匹配内置工作流关键词
+   - 再匹配已沉淀工作流的 description
+   - 无匹配 → `/dev:auto`
+
+**匹配到直接执行，不需要用户确认。** 工作流本身就是确定性的。
+
+所有模式支持 `--git` / `--no-git` 参数。
 
 ## 执行流程
 
-### 初始化阶段（一次性）
-
-| Step | 内容 | 产出 |
-|------|------|------|
-| 1 | 解析输入 | - |
-| 2 | 自动创建 git 分支（feat/fix/refactor） | 新分支 |
-| 3 | 初始化 `.dev/plan/<branch>/` 状态目录 + `.dev/config.yml` | TASK-LOG.md |
-| 4 | **产品讨论** — 与用户交互，澄清需求（唯一人类介入点） | PRD.md |
-
-### 团队创建 + 并行设计
-
-| Step | 内容 | 产出 |
-|------|------|------|
-| 5 | **创建团队** — 创建所有任务 + 按需 spawn Agent | TaskList |
-| 6 | **并行** — 测试设计 + 架构设计同时执行 | TEST-DESIGN.md + ARCHITECTURE.md |
-| 7 | **架构自审** — architect 审查修正自己的输出 | ARCHITECTURE.md（修正后） |
-| 8 | **任务规划** — 基于所有输入分解任务 + 发现 build/test 配置 | PLAN.md |
-| 9 | **技术设计** — 为每个任务设计详细实现策略 | TECH-DESIGN.md |
-
-### 开发循环（支持并行）
-
-| Step | 内容 | 产出 |
-|------|------|------|
-| 10 | **开发** — 逐任务执行（支持多个 developer 并行） | 代码 + 提交 |
-| 11 | **验证** — 执行验证命令，失败时 tester + developer 协作（最多 2 轮） | 测试结果 |
-| 12 | **决策** — 全部完成则进入验收，否则回到 Step 10 | 进度更新 |
-
-### 收尾阶段
-
-| Step | 内容 | 产出 |
-|------|------|------|
-| 13 | **验收** — 生成验收说明书 + 清理上下文 | ACCEPTANCE.md |
-
-## 按需 spawn 策略
-
-Agent 不一次性创建，只在任务可用时 spawn 对应角色，避免空闲等待：
-
-| 阶段 | spawn 的 Agent | 说明 |
-|------|---------------|------|
-| Step 5 Phase A | architect + tester + recorder | 并行设计阶段 |
-| Step 8 前 | planner | 规划阶段 |
-| Step 9 前 | tech-designer | 技术设计阶段 |
-| Step 10 | developer-1（+ developer-2, developer-3） | 根据可并行任务数决定实例数 |
-
-**多 developer 并行规则：**
-
-| 可并行任务数 | developer 实例数 | 策略 |
-|-------------|-----------------|------|
-| 1 | 1 | 单个 developer |
-| 2-3 | 2 | developer-1, developer-2 |
-| 4+ | 3 | developer-1, developer-2, developer-3（上限 3） |
-
-不同 developer 不应修改相同文件，有冲突的任务串行执行。
-
-## 分支类型判断
-
-根据功能描述关键词自动判断：
-
-- 包含 "修复"、"bug"、"fix"、"错误" -> `fix/<slug>`
-- 包含 "重构"、"refactor"、"优化"、"清理" -> `refactor/<slug>`
-- 默认 -> `feat/<slug>`
-
-## 验证策略
-
-- 验证命令来自 `.dev/config.yml` 的 `verification.commands`（优先）或 PLAN.md 的验证字段
-- 验证失败时，tester 和 developer 协作根因分析
-- 最多重试 2 轮，仍失败则记录 FAILED 继续下一个任务
-
-## 经验记录
-
-每个阶段完成后自动在后台 spawn recorder 记录经验，不阻断主流程：
-
-| 阶段 | 触发时机 |
-|------|---------|
-| product | 产品讨论完成后 |
-| architecture | 架构设计完成后 |
-| test_design | 测试设计完成后 |
-| planning | 任务规划完成后 |
-| tech_design | 技术设计完成后 |
-| development | 每个开发任务完成后 |
-| verification | 验证通过后 |
-| acceptance | 验收完成后 |
-
-## 输出示例
-
-启动时：
-
 ```
-================================================================
- DEV WORKFLOW STARTED
-================================================================
- 功能: 添加用户登录功能
- 分支: feat/user-login
-================================================================
+/dev:start <描述>
+    |
+Step 1: 解析 --<mode> / --run / --git / --no-git 标志
+    |
+Step 2: 扫描 .dev/workflows/ 匹配任务描述
+    |      有匹配 → 直接执行 commands/dev/run.md
+    |      无匹配 → 执行 commands/dev/auto.md
 ```
 
-完成时：
+路由器**只做分发**，不读源码、不分析代码、不 spawn Agent。
+
+## 管理命令
+
+| 命令 | 说明 |
+|------|------|
+| `/dev:start --list` | 列出所有可用工作流（内置 + 已沉淀） |
+| `/dev:start --delete <name>` | 删除已沉淀的工作流（需用户确认） |
+
+## 使用示例
+
+```bash
+/dev:start 添加用户登录功能          # 自动匹配 -> /dev:feat
+/dev:start 修复登录白屏 bug          # 自动匹配 -> /dev:fix
+/dev:start --patch 修个 typo         # 手动指定 -> /dev:patch
+/dev:start --run custom-migration 迁移数据库  # 指定工作流
+/dev:start --list                    # 查看可用工作流
+```
+
+## 模式衔接
+
+只读模式产出分析文档后，自然衔接到代码修改模式：
 
 ```
-================================================================
- DEV WORKFLOW COMPLETE
-================================================================
- 功能: 添加用户登录功能
- 分支: feat/user-login
- 任务: 完成 5/5
- 测试: 通过 12/12
- 提交: 8 个
- 验收说明书: .dev/plan/feat/user-login/ACCEPTANCE.md
-
- 下一步:
-   验收测试  -- 按验收说明书确认功能
-   /dev:status   -- 查看工作流状态
-   /git:finish   -- 合并到 develop
-================================================================
+/dev:investigate 排查 bug -> 建议用 /dev:fix 修复
+/dev:discuss 讨论方案 -> 建议用 /dev:feat 实现
+/dev:review 审查代码 -> 建议用 /dev:refactor 改进
 ```
-
-## 注意事项
-
-- 工作流是 **先设计再开发**，不是边写边想
-- 工作流支持 **并行开发**，多个 developer 可同时执行无文件冲突的任务
-- 主命令 **只做调度**，所有技术工作委托给子 Agent
-- 不要自动执行 `/git:finish`，由用户自行决定合并时机
-- 如果中途中断，使用 `/dev:resume` 恢复
-- 上下文使用超过 60% 时，编排器会输出进度摘要并建议 `/dev:resume`
 
 ## 相关命令
 
 - [/dev:status](./status) -- 查看工作流状态
 - [/dev:resume](./resume) -- 恢复中断的工作流
-- [/git:finish](../git/finish) -- 完成并合并分支
+- [/dev:auto](./auto) -- 即兴编排模式

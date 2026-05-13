@@ -5,6 +5,7 @@ const path = require('path');
 
 const TARGET_BASE = '.claude/commands';
 const AGENTS_TARGET_BASE = '.claude/agents';
+const WORKFLOWS_TARGET_BASE = '.dev/workflows';
 
 // 获取包目录
 function getPackageDir() {
@@ -75,8 +76,40 @@ function loadAgents() {
 
 // 命令类别到 agents 的依赖关系
 const CATEGORY_AGENT_DEPS = {
-  dev: ['dev-developer', 'dev-planner', 'dev-product', 'dev-recorder', 'dev-tester', 'dev-architect', 'dev-tech-designer']
+  dev: ['dev-developer', 'dev-planner', 'dev-product', 'dev-recorder', 'dev-tester', 'dev-architect', 'dev-tech-designer', 'dev-workflow-architect']
 };
+
+// 初始化工作流定义到 .dev/workflows/（不覆盖已有文件，保留用户定制）
+function initWorkflows(targetDir) {
+  const packageDir = getPackageDir();
+  const workflowsSource = path.join(packageDir, 'workflows');
+  const workflowsTarget = path.join(targetDir, WORKFLOWS_TARGET_BASE);
+
+  if (!fs.existsSync(workflowsSource)) {
+    return { installed: 0, skipped: 0 };
+  }
+
+  fs.mkdirSync(workflowsTarget, { recursive: true });
+
+  const files = fs.readdirSync(workflowsSource).filter(f => f.endsWith('.md'));
+  let installed = 0;
+  let skipped = 0;
+
+  files.forEach(file => {
+    const srcFile = path.join(workflowsSource, file);
+    const destFile = path.join(workflowsTarget, file);
+
+    if (fs.existsSync(destFile)) {
+      skipped++;
+    } else {
+      fs.copyFileSync(srcFile, destFile);
+      console.log(`   ✅ workflow:${file.replace('.md', '')}`);
+      installed++;
+    }
+  });
+
+  return { installed, skipped };
+}
 
 // 安装 agents
 function installAgents(agents, targetDir) {
@@ -203,7 +236,14 @@ function installCommands(commands, category, targetDir) {
     agentsResult = installAgents(deps, targetDir);
   }
 
-  return { installed, failed, agents: agentsResult };
+  // 初始化工作流定义（仅 dev 类别）
+  let workflowsResult = { installed: 0, skipped: 0 };
+  if (category === 'dev') {
+    console.log(`\n📋 初始化工作流定义:`);
+    workflowsResult = initWorkflows(targetDir);
+  }
+
+  return { installed, failed, agents: agentsResult, workflows: workflowsResult };
 }
 
 // 交互式选择
@@ -382,6 +422,7 @@ module.exports = {
   getCategoryDescription,
   installCommands,
   installAgents,
+  initWorkflows,
   installAll,
   installCategory,
   installSpecific,
@@ -391,7 +432,8 @@ module.exports = {
   main,
   TARGET_BASE,
   AGENTS_TARGET_BASE,
-  CATEGORY_AGENT_DEPS
+  CATEGORY_AGENT_DEPS,
+  WORKFLOWS_TARGET_BASE
 };
 
 // 只在直接运行时执行 main
