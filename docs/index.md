@@ -37,5 +37,5 @@ features:
     details: 内置分支保护规则，防止误操作
   - icon: 🤖
     title: 多 Agent 协作
-    details: /dev:start 路由器自动识别场景，分发到 9 种开发模式（feat/fix/refactor/patch/hotfix/review/discuss/investigate/auto）
+    details: /dev:run 通用执行器读取工作流定义，支持 6 种内置模式（patch/fix/feat/refactor/hotfix/auto）和自定义工作流
 ---

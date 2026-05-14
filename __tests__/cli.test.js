@@ -157,6 +157,7 @@ describe('CLI 模块', () => {
       expect(agents).toHaveProperty('dev-architect');
       expect(agents).toHaveProperty('dev-tech-designer');
       expect(agents).toHaveProperty('dev-workflow-architect');
+      expect(agents).toHaveProperty('dev-product');
     });
 
     test('应将 agent 文件名作为 key，原始文件名作为 value', () => {
@@ -400,6 +401,7 @@ describe('CLI 模块', () => {
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-architect.md'))).toBe(true);
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-tech-designer.md'))).toBe(true);
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-workflow-architect.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-product.md'))).toBe(true);
 
       // Assert - 工作流应被初始化
       expect(result.workflows).toBeDefined();
@@ -454,6 +456,7 @@ describe('CLI 模块', () => {
       expect(fs.existsSync(path.join(agentsPath, 'dev-architect.md'))).toBe(true);
       expect(fs.existsSync(path.join(agentsPath, 'dev-tech-designer.md'))).toBe(true);
       expect(fs.existsSync(path.join(agentsPath, 'dev-workflow-architect.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-product.md'))).toBe(true);
     });
 
     test('安装所有时应输出 agents 统计信息', () => {
@@ -511,6 +514,7 @@ describe('CLI 模块', () => {
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-architect.md'))).toBe(true);
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-tech-designer.md'))).toBe(true);
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-workflow-architect.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-product.md'))).toBe(true);
 
       mockExit.mockRestore();
     });
@@ -610,6 +614,7 @@ describe('CLI 模块', () => {
       expect(fs.existsSync(path.join(agentsPath, 'dev-architect.md'))).toBe(true);
       expect(fs.existsSync(path.join(agentsPath, 'dev-tech-designer.md'))).toBe(true);
       expect(fs.existsSync(path.join(agentsPath, 'dev-workflow-architect.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-product.md'))).toBe(true);
     });
   });
 

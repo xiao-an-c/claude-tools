@@ -71,7 +71,7 @@ CURRENT_BRANCH=$(git branch --show-current)
 - `TASK-LOG.md` — 执行记录
 - `ACCEPTANCE.md` — 验收说明书
 
-如果所有状态文件都不存在，提示 "未找到工作流状态。使用 /dev:start 启动新工作流。"
+如果所有状态文件都不存在，提示 "未找到工作流状态。使用 /dev:run <workflow> 启动新工作流。"
 
 ### 3. 判断恢复点
 

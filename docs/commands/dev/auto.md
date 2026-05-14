@@ -1,11 +1,11 @@
-# /dev:auto
+# auto 工作流
 
-即兴编排模式。分析任务后，架构师动态设计团队流程。适用于不匹配任何预设模式的场景。
+即兴编排模式。由 workflow-architect 动态设计团队流程，适用于不匹配任何预设工作流的场景。执行后可沉淀为可复用模板。
 
-## 用法
+## 调用
 
 ```bash
-/dev:auto [--git|--no-git] <任务描述>
+/dev:run auto [--git|--no-git] <任务描述>
 ```
 
 ## 参数
@@ -18,33 +18,36 @@
 
 ## 适用场景
 
-- 任务不匹配任何预设模式（不是单纯的 fix/feat/refactor）
-- 跨类型任务（如"迁移到新框架"同时涉及重构 + 新功能 + 测试）
+- 任务不匹配任何预设工作流（不是单纯的 fix/feat/refactor）
+- 跨类型复合任务（如迁移同时涉及重构 + 新功能 + 测试）
 - 不确定该怎么做的探索性工作
 - 多步骤复合任务
 
 ## 不适用
 
-- 任务明确匹配某个预设模式 -- 直接用那个模式更高效
+- 任务明确匹配某个预设工作流 — 直接用那个工作流更高效
 
 ## 执行流程
 
 ```
-/dev:auto 把项目从 JavaScript 迁移到 TypeScript
+/dev:run auto 把项目从 JavaScript 迁移到 TypeScript
     |
 Step 1: 解析参数 + 创建分支（可选）
     |
-Step 2: 架构师分析任务，设计工作流 (opus)
+Step 2: 工作流架构师设计工作流 -- dev-workflow-architect (opus)
 |        输出 WORKFLOW.md（步骤、并行策略、人类介入点）
     |
 Step 3: 用户确认/调整工作流
+|        按设计执行 / 简化流程 / 取消
     |
 Step 4: 按工作流逐步执行
 |        根据步骤表 spawn 对应 Agent
 |        支持并行执行无依赖的步骤
 |        人类介入点暂停等用户确认
     |
-Step 5: 验收 -> ACCEPTANCE.md
+Step 5: 提议沉淀（保存为可复用模板）
+    |
+Step 6: 验收 -> ACCEPTANCE.md
     |
 Done.
 ```
@@ -73,20 +76,19 @@ Done.
 
 ## 设计原则
 
-1. **最小步骤** -- 能用 2 步解决就不用 5 步
-2. **按需组装** -- 只调用必要的 Agent，不搞全套流水线
-3. **人类在环** -- 复杂决策点让用户参与，简单步骤自动执行
-4. **可中断** -- 任何步骤失败都可以 `/dev:resume` 恢复
+1. **最小步骤** — 能用 2 步解决就不用 5 步
+2. **按需组装** — 只调用必要的 Agent，不搞全套流水线
+3. **人类在环** — 复杂决策点让用户参与，简单步骤自动执行
+4. **可中断** — 任何步骤失败都可以 `/dev:resume` 恢复
 
-## 与路由器的关系
+## 沉淀工作流
 
-在 `/dev:start` 路由器中，`auto` 作为 fallback：无匹配时默认使用 `/dev:auto`。也可以直接调用。
+执行完成后，系统会询问是否保存为可复用模板。保存后，工作流文件写入 `.dev/workflows/<name>.md`，后续可通过 `/dev:run <name>` 直接调用。
 
 ## 相关命令
 
-- [/dev:start](./start) -- 路由器入口（可自动选择此模式）
-- [/dev:feat](./feat) -- 新功能开发
-- [/dev:fix](./fix) -- Bug 修复
-- [/dev:refactor](./refactor) -- 代码重构
+- [/dev:run feat](./feat) -- 新功能开发
+- [/dev:run fix](./fix) -- Bug 修复
+- [/dev:run refactor](./refactor) -- 代码重构
 - [/dev:status](./status) -- 查看工作流状态
 - [/dev:resume](./resume) -- 恢复中断的工作流

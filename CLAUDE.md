@@ -47,9 +47,8 @@ Agent 定义在 `agents/` 目录。
 
 工作流定义存储在 `workflows/` 目录（包内置）和 `.dev/workflows/`（项目级，可定制）。
 
-- `/dev:start` 是工作流入口——扫描 `.dev/workflows/`，匹配任务到工作流，匹配到直接执行
-- `/dev:run` 是通用执行器——读取工作流定义文件，机械执行每一步
-- `/dev:auto` 在无匹配时触发 `dev-workflow-architect` 动态设计工作流
+- `/dev:run <workflow>` 是通用执行器——读取工作流定义文件，机械执行每一步
+- `/dev:run auto` 在无匹配工作流时触发 `dev-workflow-architect` 动态设计工作流
 - 执行完动态工作流后可提议沉淀到 `.dev/workflows/` 供以后复用
 - 内置工作流：`patch`（超轻量）、`fix`（bug 修复）、`feat`（功能开发）、`refactor`（重构）、`hotfix`（紧急修复）
 

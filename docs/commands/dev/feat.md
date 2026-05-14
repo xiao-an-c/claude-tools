@@ -1,11 +1,11 @@
-# /dev:feat
+# feat 工作流
 
-新功能开发模式，旗舰级命令。自适应复杂度，完整团队协作（产品 + 架构 + 测试 + 规划 + 开发）。
+新功能开发模式，旗舰级工作流。自适应复杂度，完整团队协作（产品 + 架构 + 测试 + 规划 + 开发）。
 
-## 用法
+## 调用
 
 ```bash
-/dev:feat [--git|--no-git] <功能描述>
+/dev:run feat [--git|--no-git] <功能描述>
 ```
 
 ## 参数
@@ -20,14 +20,22 @@
 
 ## 适用场景
 
-- 新功能开发（1-8 个文件变更）
-- 需要完整的产品讨论、架构设计、测试设计
-- 团队协作，涉及多个 Agent 角色
+- 新功能开发（任何规模）
+- 需要产品需求讨论的改动
+- 涉及多模块、多文件的变更
+- 需要测试设计的功能
+
+## 不适用
+
+- 小改动，已知怎么改（用 `/dev:run patch`）
+- Bug 修复（用 `/dev:run fix`）
+- 代码结构改善，不改外部行为（用 `/dev:run refactor`）
+- 紧急线上修复（用 `/dev:run hotfix`）
 
 ## 执行流程
 
 ```
-/dev:feat 添加用户登录功能
+/dev:run feat 添加用户登录功能
     |
 Step 1: 解析输入（提取 --git/--no-git 和功能描述）
     |
@@ -50,12 +58,15 @@ Step 7: 任务规划 -- dev-planner (opus)
   └────────────┴────────────────┘
     |
 Step 9: 开发循环（逐任务 spawn developer，支持并行）
+    |        每个任务完成后：recorder 后台记录 + 验证 + 合并子分支
     |
-Step 10: 验证（build/lint/test）
+Step 10: Recorder -- 每任务完成后后台触发
     |
-Step 11: 验收 -- ACCEPTANCE.md
+Step 11: 验证（build/lint/test）
     |
-Step 12: 显示摘要，建议 /git:finish
+Step 12: 验收 -- ACCEPTANCE.md
+    |
+Step 13: 显示摘要，建议 /git:finish
 ```
 
 ## 自适应复杂度
@@ -68,8 +79,8 @@ Step 12: 显示摘要，建议 /git:finish
 | 预估变更文件 | 1-3 | 4+ |
 | 是否涉及新模块 | 否 | 是 |
 
-- **简单** -- 跳过技术设计，直接进入开发
-- **复杂** -- 架构师自审 -> 技术设计 -> 开发
+- **简单** — 跳过技术设计，直接进入开发
+- **复杂** — 架构师自审 → 技术设计 → 开发
 
 ## Agent 团队
 
@@ -100,9 +111,9 @@ Step 12: 显示摘要，建议 /git:finish
 ## 使用示例
 
 ```bash
-/dev:feat 添加用户登录功能
-/dev:feat --no-git 添加暗色主题切换
-/dev:feat --git 实现文件上传和预览
+/dev:run feat 添加用户登录功能
+/dev:run feat --no-git 添加暗色主题切换
+/dev:run feat --git 实现文件上传和预览
 ```
 
 ## 注意事项
@@ -113,9 +124,8 @@ Step 12: 显示摘要，建议 /git:finish
 
 ## 相关命令
 
-- [/dev:start](./start) -- 路由器入口（可自动选择此模式）
 - [/dev:status](./status) -- 查看工作流状态
 - [/dev:resume](./resume) -- 恢复中断的工作流
-- [/dev:fix](./fix) -- Bug 修复模式
-- [/dev:patch](./patch) -- 超轻量补丁模式
+- [/dev:run fix](./fix) -- Bug 修复模式
+- [/dev:run patch](./patch) -- 超轻量补丁模式
 - [/git:finish](../git/finish) -- 完成并合并分支

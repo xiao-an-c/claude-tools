@@ -1,6 +1,6 @@
 ---
 name: dev-developer
-description: 执行单个开发任务，编写代码并提交。由 /dev:start 编排器逐任务调用。
+description: 执行单个开发任务，编写代码并提交。由 /dev:run 工作流执行器逐任务调用。
 tools: [Read, Write, Edit, Bash, Glob, Grep, Agent]
 ---
 

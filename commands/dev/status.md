@@ -20,7 +20,7 @@ CURRENT_BRANCH=$(git branch --show-current)
 
 检查 `.dev/plan/<current-branch>/` 是否存在。如果在子分支上，也检查 `.dev/plan/<parent-branch>/`。
 
-如果不存在，提示 "未找到工作流状态文件。使用 /dev:start 启动工作流。"
+如果不存在，提示 "未找到工作流状态文件。使用 /dev:run <workflow> 启动工作流。"
 
 ### 3. 读取并展示状态
 

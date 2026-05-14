@@ -1,6 +1,6 @@
 ---
 name: dev-tech-designer
-description: 基于 PLAN.md 和 ARCHITECTURE.md 为每个任务设计详细技术实现方案，输出 TECH-DESIGN.md。由 /dev:start 编排器调用。
+description: 基于 PLAN.md 和 ARCHITECTURE.md 为每个任务设计详细技术实现方案，输出 TECH-DESIGN.md。由 /dev:run 工作流执行器调用。
 tools: [Read, Bash, Glob, Grep, Write]
 ---
 

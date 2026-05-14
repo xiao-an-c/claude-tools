@@ -1,6 +1,6 @@
 ---
 name: dev-planner
-description: 分析功能需求，读取代码库，生成结构化任务分解计划。由 /dev:start 编排器调用。
+description: 分析功能需求，读取代码库，生成结构化任务分解计划。由 /dev:run 工作流执行器调用。
 tools: [Read, Bash, Glob, Grep, Write, Agent]
 ---
 

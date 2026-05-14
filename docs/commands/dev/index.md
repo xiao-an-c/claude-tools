@@ -1,55 +1,56 @@
 # Dev 命令
 
-场景驱动的多 Agent 协作开发工作流。通过路由器入口 `/dev:start` 自动识别场景，分发到对应的工作流执行。
+场景驱动的多 Agent 协作开发工作流。通过 `/dev:run` 通用执行器读取工作流定义，机械执行每个步骤。
 
 ## 架构
 
 ```
-/dev:start <描述>
+/dev:run <workflow> [--git|--no-git] <描述>
     ↓
-路由器匹配工作流（内置 + 已沉淀）
+读取 .dev/workflows/<workflow>.md → 解析步骤定义
     ↓
-/dev:run <workflow>  （通用执行器）
+按步骤 spawn Agent 完成 各阶段任务
     ↓
-读取 .dev/workflows/<workflow>.md → 机械执行步骤
-    ↓
-spawn Agent 完成 各阶段任务
+产出状态文件 + 验收说明书
 ```
 
 **工作流即知识** — 工作流定义存储在 `.dev/workflows/` 目录中，每个工作流是一个独立的 Markdown 文件。`/dev:run` 作为通用执行器，机械地读取工作流定义并执行其中的步骤。新场景只需新增一个工作流文件。
 
-## 命令总览
+## 内置工作流
 
-### 路由器
+通过 `/dev:run <workflow-name>` 调用：
 
-| 命令 | 用途 |
-|------|------|
-| `/dev:start [描述]` | 自动识别场景，匹配工作流并执行 |
-| `/dev:start --<mode> [描述]` | 手动指定模式 |
-| `/dev:start --run <name>` | 执行指定工作流 |
-| `/dev:start --list` | 列出所有可用工作流 |
-| `/dev:start --delete <name>` | 删除已沉淀的工作流 |
+| 工作流 | 用途 | 步骤 | Git | 预期耗时 |
+|--------|------|------|-----|---------|
+| `/dev:run patch` | 小修小补，已知原因 | 4 | 无 | 2-3 min |
+| `/dev:run fix` | Bug 修复，需诊断 | 10 | `fix/*` | 5-10 min |
+| `/dev:run feat` | 新功能开发 | 13 | `feat/*` | 15-60 min |
+| `/dev:run refactor` | 代码重构 | 11 | `refactor/*` | 10-30 min |
+| `/dev:run hotfix` | 线上紧急修复 | 8 | `hotfix/*` | 3-5 min |
+| `/dev:run auto` | 即兴编排，动态设计 | 6 | 视流程 | 视流程 |
 
-### 内置工作流
+## 独立命令
 
-| 命令 | 场景 | 步骤 | Git | 预期耗时 |
-|------|------|------|-----|---------|
-| [/dev:patch](./patch) | 小修小补，已知原因 | 4 | 无 | 2-3 min |
-| [/dev:fix](./fix) | Bug 修复，需诊断 | 10 | `fix/*` | 5-10 min |
-| [/dev:feat](./feat) | 新功能开发 | 13 | `feat/*` | 15-45 min |
-| [/dev:refactor](./refactor) | 代码重构 | 12 | `refactor/*` | 10-30 min |
-| [/dev:hotfix](./hotfix) | 线上紧急修复 | 8 | `hotfix/*` | 5-10 min |
-| [/dev:review](./review) | 代码审查 | - | 无（只读） | 5-10 min |
-| [/dev:discuss](./discuss) | 架构讨论/开会 | - | 无（只读） | 5-15 min |
-| [/dev:investigate](./investigate) | Bug 排查 | - | 无（只读） | 5-10 min |
-| [/dev:auto](./auto) | 即兴编排，动态设计 | 5 | 视流程 | 视流程 |
-
-### 辅助命令
+这些命令不通过工作流执行器，而是独立的 Agent 交互：
 
 | 命令 | 用途 |
 |------|------|
+| [/dev:review](./review) | 代码审查（只读，无 Git） |
+| [/dev:discuss](./discuss) | 架构讨论/开会（只读，无 Git） |
+| [/dev:investigate](./investigate) | Bug 排查（只读，无 Git） |
 | [/dev:status](./status) | 查看当前工作流状态和进度 |
 | [/dev:resume](./resume) | 恢复中断的工作流 |
+
+## 通用执行器
+
+[/dev:run](./run) 是所有工作流的统一入口。它读取工作流定义文件，机械执行每个步骤：
+
+- `builtin` — 执行器内置动作（创建分支、初始化状态、验证等）
+- `agent` — spawn 一个 Agent（架构师、开发者等）
+- `loop` — 循环执行子步骤（如逐任务开发）
+- `condition` — 条件执行（如仅复杂模式执行技术设计）
+
+所有工作流支持 `--git` / `--no-git` 参数。
 
 ## 工作流定义
 
@@ -68,51 +69,33 @@ defaults:
 ---
 ```
 
-步骤使用 4 种原语：
-
-| 原语 | 说明 | 示例 |
-|------|------|------|
-| `builtin` | 执行器内置动作 | parse_arguments, git_create_branch, verify |
-| `agent` | spawn 一个 agent | dev-architect, dev-developer |
-| `loop` | 循环执行子步骤 | 开发循环 |
-| `condition` | 条件执行 | `complexity == complex` 时才执行 |
-
 ## Agent 团队
 
-| Agent | 模型 | 职责 | 使用的模式 |
-|-------|------|------|-----------|
-| dev-workflow-architect | opus | 工作流设计（auto 模式） | auto |
-| dev-product | opus | 需求讨论、PRD 输出 | feat, discuss |
-| dev-architect | opus | 架构设计、代码诊断、审查 | 全部模式 |
-| dev-planner | opus | 任务分解 | feat, refactor |
-| dev-tech-designer | sonnet | 详细技术方案 | feat (复杂) |
+| Agent | 模型 | 职责 | 使用的工作流 |
+|-------|------|------|-------------|
+| dev-product | opus | 需求讨论、PRD 输出 | feat |
+| dev-architect | opus | 架构设计、代码诊断 | patch, fix, feat, refactor, hotfix |
+| dev-planner | opus | 任务分解 | fix, feat, refactor, hotfix |
+| dev-tech-designer | sonnet | 详细技术方案 | feat (complex) |
 | dev-developer | sonnet | 代码实现 | patch, fix, feat, refactor, hotfix |
 | dev-tester | sonnet | 测试设计 | feat |
-| dev-recorder | sonnet | 知识记录（后台） | 全部模式 |
-
-## 核心原则
-
-1. **工作流即知识** — 工作流定义独立于命令代码，存储在 `.dev/workflows/` 中
-2. **通用执行器** — `/dev:run` 机械执行工作流定义，不含业务逻辑
-3. **场景驱动** — 每个工作流对应一个真实的开发场景，不搞一刀切
-4. **按需 Agent** — patch 用 2 个 Agent，feat 用 5-7 个，按场景组装
-5. **文件驱动** — 所有状态写入 `.dev/plan/<branch>/` 目录，不依赖上下文记忆
-6. **可沉淀** — auto 模式动态设计的工作流可保存为可复用模板
+| dev-recorder | sonnet | 知识记录（后台） | fix, feat, refactor, hotfix |
+| dev-workflow-architect | opus | 工作流设计 | auto |
 
 ## 模式衔接
 
 只读模式产出分析文档后，自然衔接到代码修改模式：
 
 ```
-/dev:investigate 排查 bug -> 建议用 /dev:fix 修复
-/dev:discuss 讨论方案 -> 建议用 /dev:feat 实现
-/dev:review 审查代码 -> 建议用 /dev:refactor 改进
+/dev:investigate 排查 bug -> 建议用 /dev:run fix 修复
+/dev:discuss 讨论方案 -> 建议用 /dev:run feat 实现
+/dev:review 审查代码 -> 建议用 /dev:run refactor 改进
 ```
 
 ## 分支类型
 
-| 模式 | 分支类型 | 基础分支 |
-|------|---------|---------|
+| 工作流 | 分支类型 | 基础分支 |
+|--------|---------|---------|
 | feat | `feat/<slug>` | develop |
 | fix | `fix/<slug>` | develop |
 | refactor | `refactor/<slug>` | develop |
