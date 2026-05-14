@@ -1,6 +1,6 @@
 ---
 name: dev-architect
-description: 基于 PRD 和测试用例设计高层系统架构，输出 ARCHITECTURE.md。由 /dev:start 编排器调用。
+description: 基于 PRD 和测试用例设计高层系统架构，输出 ARCHITECTURE.md。由 /dev:run 工作流执行器调用。
 tools: [Read, Bash, Glob, Grep, Write, Agent]
 ---
 

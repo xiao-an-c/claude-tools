@@ -1,6 +1,6 @@
 ---
 name: dev-tester
-description: 测试设计（规划后生成用例文档）和测试执行（开发后运行测试）。由 /dev:start 编排器调用。
+description: 测试设计（规划后生成用例文档）和测试执行（开发后运行测试）。由 /dev:run 工作流执行器调用。
 tools: [Read, Write, Edit, Bash, Glob, Grep, Agent]
 ---
 

@@ -16,6 +16,7 @@ Claude Tools 提供多种命令类别，按需安装使用。
 | `/git:start-refactor` | 开始代码重构 |
 | `/git:start-hotfix` | 开始紧急修复 |
 | `/git:start-release` | 创建发布分支 |
+| `/git:start-task` | 从当前分支创建任务子分支 |
 | `/git:commit` | 智能提交（自动前缀） |
 | `/git:sync` | 同步基础分支代码 |
 | `/git:wip` | 保存工作进度 |
@@ -41,12 +42,20 @@ Claude Tools 提供多种命令类别，按需安装使用。
 
 ### [dev] 开发工作流命令
 
-多 Agent 协作开发工作流命令集，自动化完成从需求讨论到验收的完整开发周期。
+场景驱动的多 Agent 协作开发工作流。工作流定义存储在 `.dev/workflows/` 中，通过 `/dev:run` 通用执行器调用：
 
 | 命令 | 用途 |
 |------|------|
-| `/dev:start` | 启动多 Agent 迭代开发工作流 |
-| `/dev:status` | 查看当前工作流状态和进度 |
+| `/dev:run patch <描述>` | 超轻量补丁（零 git 零文档） |
+| `/dev:run fix <描述>` | Bug 诊断 + 修复 |
+| `/dev:run feat <描述>` | 新功能开发（自适应复杂度） |
+| `/dev:run refactor <描述>` | 代码重构 |
+| `/dev:run hotfix <描述>` | 线上紧急修复 |
+| `/dev:run auto <描述>` | 即兴编排（不匹配预设模式时） |
+| `/dev:review` | 代码审查（只读） |
+| `/dev:discuss` | 架构讨论（只读） |
+| `/dev:investigate` | Bug 排查（只读） |
+| `/dev:status` | 查看工作流状态和进度 |
 | `/dev:resume` | 恢复中断的工作流 |
 
 [查看 Dev 命令详情](/commands/dev/)
@@ -89,8 +98,12 @@ Claude Tools 提供多种命令类别，按需安装使用。
 ### 多 Agent 开发工作流
 
 ```bash
-/dev:start 添加用户登录功能    # 启动完整工作流
-/dev:status                    # 查看进度
-/dev:resume                    # 恢复中断的工作流
-```
+/dev:run feat 添加用户登录功能     # 新功能开发
+/dev:run fix 登录后白屏            # Bug 修复模式
+/dev:run patch 修个 typo           # 超轻量补丁
+/dev:run hotfix 线上支付失败       # 紧急修复
+/dev:run refactor 重构工具函数     # 代码重构
+/dev:run auto 迁移到 TypeScript    # 即兴编排
+/dev:status                       # 查看进度
+/dev:resume                       # 恢复中断的工作流
 ```

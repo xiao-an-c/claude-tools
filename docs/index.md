@@ -37,5 +37,5 @@ features:
     details: 内置分支保护规则，防止误操作
   - icon: 🤖
     title: 多 Agent 协作
-    details: /dev:start 自动化开发流程，从需求讨论到验收的完整周期
+    details: /dev:run 通用执行器读取工作流定义，支持 6 种内置模式（patch/fix/feat/refactor/hotfix/auto）和自定义工作流
 ---

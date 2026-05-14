@@ -85,6 +85,7 @@ export default defineConfig({
             { text: '/git:start-hotfix', link: '/commands/git/start-hotfix' },
             { text: '/git:start-refactor', link: '/commands/git/start-refactor' },
             { text: '/git:start-release', link: '/commands/git/start-release' },
+            { text: '/git:start-task', link: '/commands/git/start-task' },
             { text: '/git:sync', link: '/commands/git/sync' },
             { text: '/git:wip', link: '/commands/git/wip' },
             { text: '/git:status', link: '/commands/git/status' },
@@ -109,9 +110,18 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: '概览', link: '/commands/dev/' },
-            { text: '/dev:start', link: '/commands/dev/start' },
+            { text: '/dev:run', link: '/commands/dev/run' },
             { text: '/dev:status', link: '/commands/dev/status' },
-            { text: '/dev:resume', link: '/commands/dev/resume' }
+            { text: '/dev:resume', link: '/commands/dev/resume' },
+            { text: '工作流: patch', link: '/commands/dev/patch' },
+            { text: '工作流: fix', link: '/commands/dev/fix' },
+            { text: '工作流: feat', link: '/commands/dev/feat' },
+            { text: '工作流: refactor', link: '/commands/dev/refactor' },
+            { text: '工作流: hotfix', link: '/commands/dev/hotfix' },
+            { text: '工作流: auto', link: '/commands/dev/auto' },
+            { text: '/dev:review', link: '/commands/dev/review' },
+            { text: '/dev:discuss', link: '/commands/dev/discuss' },
+            { text: '/dev:investigate', link: '/commands/dev/investigate' }
           ]
         }
       ],

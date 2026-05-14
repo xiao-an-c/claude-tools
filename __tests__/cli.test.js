@@ -50,7 +50,7 @@ describe('CLI 模块', () => {
     test('应返回 dev 类别的正确描述', () => {
       // Arrange
       const category = 'dev';
-      const expected = '开发工作流命令 (多 Agent 协作)';
+      const expected = '开发工作流命令 (场景驱动：patch/fix/feat/refactor/hotfix/review/discuss/investigate)';
 
       // Act
       const result = cli.getCategoryDescription(category);
@@ -156,6 +156,8 @@ describe('CLI 模块', () => {
       expect(agents).toHaveProperty('dev-tester');
       expect(agents).toHaveProperty('dev-architect');
       expect(agents).toHaveProperty('dev-tech-designer');
+      expect(agents).toHaveProperty('dev-workflow-architect');
+      expect(agents).toHaveProperty('dev-product');
     });
 
     test('应将 agent 文件名作为 key，原始文件名作为 value', () => {
@@ -191,23 +193,13 @@ describe('CLI 模块', () => {
   });
 
   describe('CATEGORY_AGENT_DEPS', () => {
-    test('应定义 dev 类别依赖 dev-* agents', () => {
-      // Arrange
-      const deps = cli.CATEGORY_AGENT_DEPS;
 
-      // Assert
-      expect(deps).toHaveProperty('dev');
-      expect(deps.dev).toEqual(
-        expect.arrayContaining(['dev-developer', 'dev-planner', 'dev-product', 'dev-recorder', 'dev-tester', 'dev-architect', 'dev-tech-designer'])
-      );
-    });
-
-    test('dev 类别应恰好依赖 7 个 agents', () => {
+    test('dev 类别应恰好依赖 8 个 agents', () => {
       // Arrange & Act
       const deps = cli.CATEGORY_AGENT_DEPS;
 
       // Assert
-      expect(deps.dev).toHaveLength(7);
+      expect(deps.dev).toHaveLength(8);
     });
 
     test('git 类别不应有 agent 依赖', () => {
@@ -216,6 +208,54 @@ describe('CLI 模块', () => {
 
       // Assert
       expect(deps).not.toHaveProperty('git');
+    });
+  });
+
+  describe('initWorkflows', () => {
+    let tempTargetDir;
+
+    beforeEach(() => {
+      tempTargetDir = fs.mkdtempSync(path.join(os.tmpdir(), 'claude-tools-test-'));
+    });
+
+    afterEach(() => {
+      fs.rmSync(tempTargetDir, { recursive: true, force: true });
+    });
+
+    test('应将工作流文件复制到 .dev/workflows/ 目录', () => {
+      // Act
+      const result = cli.initWorkflows(tempTargetDir);
+
+      // Assert
+      expect(result.installed).toBeGreaterThan(0);
+      expect(fs.existsSync(path.join(tempTargetDir, '.dev/workflows/patch.md'))).toBe(true);
+    });
+
+    test('不应覆盖已有的工作流文件', () => {
+      // Arrange - 创建一个已有的工作流文件
+      const workflowsPath = path.join(tempTargetDir, '.dev/workflows');
+      fs.mkdirSync(workflowsPath, { recursive: true });
+      fs.writeFileSync(path.join(workflowsPath, 'patch.md'), 'custom content');
+
+      // Act
+      const result = cli.initWorkflows(tempTargetDir);
+
+      // Assert - 原文件未被覆盖
+      expect(result.skipped).toBeGreaterThan(0);
+      expect(fs.readFileSync(path.join(workflowsPath, 'patch.md'), 'utf8')).toBe('custom content');
+    });
+
+    test('当 workflows 源目录不存在时应返回零', () => {
+      return jest.isolateModulesAsync(async () => {
+        jest.doMock('fs', () => ({
+          ...jest.requireActual('fs'),
+          existsSync: jest.fn().mockReturnValue(false)
+        }));
+
+        const cliWithMockedFs = require('../bin/cli.js');
+        const result = cliWithMockedFs.initWorkflows(tempTargetDir);
+        expect(result.installed).toBe(0);
+      });
     });
   });
 
@@ -349,7 +389,7 @@ describe('CLI 模块', () => {
     // Agents 集成测试
     test('安装 dev 类别命令时应同时安装依赖的 agents', () => {
       // Arrange & Act
-      const result = cli.installCommands(['start'], 'dev', tempTargetDir);
+      const result = cli.installCommands(['run'], 'dev', tempTargetDir);
 
       // Assert - agents 应被安装
       expect(result.agents).toBeDefined();
@@ -360,6 +400,13 @@ describe('CLI 模块', () => {
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-tester.md'))).toBe(true);
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-architect.md'))).toBe(true);
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-tech-designer.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-workflow-architect.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-product.md'))).toBe(true);
+
+      // Assert - 工作流应被初始化
+      expect(result.workflows).toBeDefined();
+      expect(result.workflows.installed).toBeGreaterThan(0);
+      expect(fs.existsSync(path.join(tempTargetDir, '.dev/workflows/patch.md'))).toBe(true);
     });
 
     test('安装 git 类别命令时不应安装 agents', () => {
@@ -408,6 +455,8 @@ describe('CLI 模块', () => {
       expect(fs.existsSync(path.join(agentsPath, 'dev-tester.md'))).toBe(true);
       expect(fs.existsSync(path.join(agentsPath, 'dev-architect.md'))).toBe(true);
       expect(fs.existsSync(path.join(agentsPath, 'dev-tech-designer.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-workflow-architect.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-product.md'))).toBe(true);
     });
 
     test('安装所有时应输出 agents 统计信息', () => {
@@ -464,6 +513,8 @@ describe('CLI 模块', () => {
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-tester.md'))).toBe(true);
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-architect.md'))).toBe(true);
       expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-tech-designer.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-workflow-architect.md'))).toBe(true);
+      expect(fs.existsSync(path.join(tempTargetDir, '.claude/agents/dev-product.md'))).toBe(true);
 
       mockExit.mockRestore();
     });
@@ -546,13 +597,13 @@ describe('CLI 模块', () => {
       expect(() => cli.installSpecific('commit', null)).toThrow();
     });
 
-    test('安装 dev:start 命令时应同时安装 dev-* agents', () => {
+    test('安装 dev:run 命令时应同时安装 dev-* agents', () => {
       // Arrange & Act
-      cli.installSpecific('dev:start', tempTargetDir);
+      cli.installSpecific('dev:run', tempTargetDir);
 
       // Assert - dev:* 命令触发 agents 安装
-      const devStartFile = path.join(tempTargetDir, '.claude/commands/dev/start.md');
-      expect(fs.existsSync(devStartFile)).toBe(true);
+      const devRunFile = path.join(tempTargetDir, '.claude/commands/dev/run.md');
+      expect(fs.existsSync(devRunFile)).toBe(true);
 
       const agentsPath = path.join(tempTargetDir, '.claude/agents');
       expect(fs.existsSync(agentsPath)).toBe(true);
@@ -562,6 +613,8 @@ describe('CLI 模块', () => {
       expect(fs.existsSync(path.join(agentsPath, 'dev-tester.md'))).toBe(true);
       expect(fs.existsSync(path.join(agentsPath, 'dev-architect.md'))).toBe(true);
       expect(fs.existsSync(path.join(agentsPath, 'dev-tech-designer.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-workflow-architect.md'))).toBe(true);
+      expect(fs.existsSync(path.join(agentsPath, 'dev-product.md'))).toBe(true);
     });
   });
 
