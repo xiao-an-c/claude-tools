@@ -3,7 +3,7 @@ layout: home
 
 hero:
   name: "Claude Tools"
-  text: "可扩展的 Claude Code 命令集"
+  text: "可扩展的 Claude Code 技能集"
   tagline: 简化 Git 工作流，自动化开发流程，提升开发效率
   actions:
     - theme: brand
@@ -29,13 +29,10 @@ features:
   - icon: 🎯
     title: 智能提交
     details: 自动识别分支类型，生成符合规范的 commit 信息
-  - icon: 🧪
-    title: 测试辅助
-    details: 基于 AAA 模式的单元测试生成、审查和覆盖率分析
   - icon: 🛡️
     title: 安全操作
     details: 内置分支保护规则，防止误操作
   - icon: 🤖
     title: 多 Agent 协作
-    details: /dev:run 通用执行器读取工作流定义，支持 6 种内置模式（patch/fix/feat/refactor/hotfix/auto）和自定义工作流
+    details: dev-flow run 通用执行器读取工作流定义，支持 6 种内置模式（patch/fix/feat/refactor/hotfix/auto）和自定义工作流
 ---

@@ -7,46 +7,44 @@
 确保你已安装 Node.js 18+ 并在项目根目录执行：
 
 ```bash
-npx github:xiao-an-c/claude-tools
+npx skills add xiao-an-c/claude-tools
 ```
 
 如果使用 `npm` 镜像源，请先恢复默认源或确保 GitHub 包可访问。
 
-### 如何只安装个别命令？
+### 如何只安装个别技能？
 
 ```bash
-# 只安装 git 类别
-npx github:xiao-an-c/claude-tools -c git
+# 只安装 git-flow 技能
+npx skills add xiao-an-c/claude-tools -s git-flow
 
-# 只安装特定命令
-npx github:xiao-an-c/claude-tools --commands commit,sync
+# 只安装 dev-flow 技能
+npx skills add xiao-an-c/claude-tools -s dev-flow
 ```
 
 ### .claude/commands 目录应该提交到 git 吗？
 
-不需要。.claude 目录属于个人开发环境配置，建议添加到 `.gitignore`：
+Claude Tools 使用 Skills 架构，不再通过 `.claude/commands/` 目录安装。如果你有其他 `.claude/` 目录下的个人配置，建议添加到 `.gitignore`：
 
 ```bash
 echo ".claude/" >> .gitignore
 ```
 
-团队中的每个成员可以独立安装自己需要的命令。
+团队中的每个成员可以独立安装自己需要的技能。
 
-### 安装后命令不生效？
+### 安装后技能不生效？
 
-确保命令文件已正确安装到项目根目录的 `.claude/commands/` 下：
+确保技能已正确安装。在 Claude Code 中输入 `/` 查看可用技能列表，检查 `git-flow` 和 `dev-flow` 是否出现在列表中。如果未出现，重新运行安装命令：
 
 ```bash
-ls .claude/commands/git/
+npx skills add xiao-an-c/claude-tools -s git-flow
 ```
-
-如果没有文件，重新运行安装命令。如果使用 Claude Code 的旧版本，请确认命令文件格式兼容。
 
 ## Git 工作流
 
 ### master 和 main 有什么区别？
 
-项目自动支持两种命名方式。初始化时（`/git:init`）会检测现有主分支名：
+项目自动支持两种命名方式。初始化时（`git-flow init`）会检测现有主分支名：
 
 - 已有 `master` → 使用 `master`
 - 已有 `main` → 使用 `main`
@@ -67,13 +65,13 @@ ls .claude/commands/git/
 git reset HEAD~1
 
 # 2. 创建正确的功能分支
-/git:start-feat my-feature
+git-flow start-feat my-feature
 
 # 3. 提交代码
-/git:commit 我的更改
+git-flow commit 我的更改
 ```
 
-### 如何撤销 /git:finish 的合并？
+### 如何撤销 git-flow finish 的合并？
 
 ```bash
 # 找到合并前的 commit
@@ -103,7 +101,7 @@ git push --force origin develop
 
 ### 如何处理合并冲突？
 
-`/git:sync` 同步时可能出现冲突：
+`git-flow sync` 同步时可能出现冲突：
 
 1. 查看冲突文件：`git status`
 2. 编辑文件解决冲突（搜索 `<<<<<<<`、`=======`、`>>>>>>>` 标记）
@@ -116,7 +114,7 @@ git push --force origin develop
 
 ### commit 前缀是自动生成的吗？
 
-是的。`/git:commit` 会根据当前分支类型自动添加前缀：
+是的。`git-flow commit` 会根据当前分支类型自动添加前缀：
 
 | 分支 | 生成格式 |
 |------|---------|
@@ -140,30 +138,6 @@ scope 会根据修改的文件路径自动推断。
 - `src/api/*` → scope: `api`
 - `src/components/UserCard/*` → scope: `UserCard`
 
-## Test 命令
-
-### /test:generate 支持哪些框架？
-
-支持 Jest 和 Vitest。命令会自动检测项目中的测试框架配置。
-
-### 生成的测试文件放在哪里？
-
-默认放在 `tests/` 目录，保持与源文件相同的相对路径：
-
-```
-src/utils/parser.ts → tests/utils/parser.test.ts
-src/api/client.ts   → tests/api/client.test.ts
-```
-
-### 覆盖率阈值在哪里配置？
-
-优先级从高到低：
-
-1. `jest.config.js/ts/mjs` → `coverageThreshold.global`
-2. `package.json` → `jest.coverageThreshold`
-3. `vitest.config.js/ts` → `test.coverage.thresholds`
-4. 默认值: 80%
-
 ## 故障排除
 
 ### 命令提示 "Not a git repository"？
@@ -172,7 +146,7 @@ src/api/client.ts   → tests/api/client.test.ts
 
 ```bash
 git init     # 如果不是 git 仓库
-/git:init    # 初始化分支结构
+git-flow init    # 初始化分支结构
 ```
 
 ### "Branch not found" 错误？
@@ -183,13 +157,13 @@ git init     # 如果不是 git 仓库
 git branch -a
 ```
 
-如果不存在，运行 `/git:init` 创建。
+如果不存在，运行 `git-flow init` 创建。
 
 ### 推送被拒绝（rejected）？
 
 ```bash
 # 拉取远程最新代码
-/git:sync
+git-flow sync
 
 # 如果仍有冲突，手动解决后重试
 ```

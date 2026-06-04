@@ -1,11 +1,11 @@
-# /dev:resume
+# dev-flow resume
 
 恢复中断的开发工作流，从上次进度继续执行。
 
 ## 用法
 
 ```bash
-/dev:resume
+dev-flow resume
 ```
 
 ## 执行流程
@@ -29,13 +29,13 @@
 - `TASK-LOG.md` — 执行记录
 - `ACCEPTANCE.md` — 验收说明书
 
-如果所有状态文件都不存在，提示"未找到工作流状态。使用 `/dev:run <workflow>` 启动新工作流。"
+如果所有状态文件都不存在，提示"未找到工作流状态。使用 `dev-flow run <workflow>` 启动新工作流。"
 
 ### 3. 判断恢复点
 
 **优先使用通用恢复逻辑（基于工作流定义）：**
 
-读取 `.dev/workflows/${workflow.mode}.md`（或包内置 `workflows/${workflow.mode}.md`），按步骤表中的产出文件判断断点：
+读取 `.dev/workflows/${workflow.mode}.md`（或 `skills/dev-flow/workflows/${workflow.mode}.md`），按步骤表中的产出文件判断断点：
 
 1. 遍历工作流定义中的每个步骤
 2. 检查步骤的产出文件是否存在
@@ -114,10 +114,10 @@ spawn 参数与对应工作流定义中步骤的 Agent spawn 格式一致，参�
 - 必须在 `feat/*`、`fix/*`、`refactor/*`、`hotfix/*` 或 `release/*` 分支执行
 - 子分支（如 `feat/user-auth-t01`）也支持恢复
 - 需要有 `.dev/plan/<branch>/` 目录和对应的状态文件
-- 如果没有活跃的工作流，使用 `/dev:run <workflow>` 启动新工作流
+- 如果没有活跃的工作流，使用 `dev-flow run <workflow>` 启动新工作流
 
 ## 相关命令
 
-- [/dev:run](./run) -- 启动工作流
-- [/dev:status](./status) -- 查看工作流状态
-- [/git:finish](../git/finish) -- 完成并合并分支
+- [dev-flow run](./run) -- 启动工作流
+- [dev-flow status](./status) -- 查看工作流状态
+- [git-flow finish](../git/finish) -- 完成并合并分支

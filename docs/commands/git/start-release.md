@@ -1,11 +1,11 @@
-# /git:start-release
+# git-flow start-release
 
 创建发布分支 release/v*，用于版本预发布测试。
 
 ## 用法
 
 ```bash
-/git:start-release [version]
+git-flow start-release [version]
 ```
 
 ## 参数
@@ -35,7 +35,7 @@
 📋 发布流程:
 1. 在此分支进行测试和 Bug 修复
 2. 更新 package.json 中的版本号
-3. 测试通过后使用 /git:publish 发布到 master
+3. 测试通过后使用 git-flow publish 发布到 master
 4. 发布会自动同步回 develop
 
 ⚠️  注意: release 分支只允许 Bug 修复，不添加新功能
@@ -45,13 +45,13 @@
 
 ```bash
 # 1. 创建发布分支
-/git:start-release v1.2.0
+git-flow start-release v1.2.0
 
 # 2. 测试和 Bug 修复
-/git:commit 修复测试问题
+git-flow commit 修复测试问题
 
 # 3. 发布到 master
-/git:publish
+git-flow publish
 ```
 
 ::: warning 注意
@@ -60,6 +60,6 @@ release 分支只允许 Bug 修复，不添加新功能。
 
 ## 相关命令
 
-- [/git:publish](./publish) - 发布到 master
-- [/git:commit](./commit) - 智能提交
-- [/git:finish](./finish) - 完成并合并分支
+- [git-flow publish](./publish) - 发布到 master
+- [git-flow commit](./commit) - 智能提交
+- [git-flow finish](./finish) - 完成并合并分支

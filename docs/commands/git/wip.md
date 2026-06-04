@@ -1,11 +1,11 @@
-# /git:wip
+# git-flow wip
 
 保存工作进度（WIP commit 或 stash）。
 
 ## 用法
 
 ```bash
-/git:wip
+git-flow wip
 ```
 
 ## 功能
@@ -58,5 +58,5 @@ git stash push -m "WIP: [branch] @ [timestamp]"
 
 ## 相关命令
 
-- [/git:commit](./commit) - 智能提交
-- [/git:status](./status) - 查看分支状态
+- [git-flow commit](./commit) - 智能提交
+- [git-flow status](./status) - 查看分支状态

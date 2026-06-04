@@ -1,11 +1,11 @@
-# /dev:review
+# dev-flow review
 
 代码审查模式（只读）。架构师审查代码质量，发现问题，提供建议。不修改任何文件。
 
 ## 用法
 
 ```bash
-/dev:review <审查目标>
+dev-flow review <审查目标>
 ```
 
 ## 参数
@@ -22,13 +22,13 @@
 
 ## 不适用
 
-- 想直接改代码 -- 用 `/dev:fix` 或 `/dev:refactor`
-- 想讨论方案 -- 用 `/dev:discuss`
+- 想直接改代码 -- 用 `dev-flow fix` 或 `dev-flow refactor`
+- 想讨论方案 -- 用 `dev-flow discuss`
 
 ## 执行流程
 
 ```
-/dev:review src/components/Login.tsx
+dev-flow review src/components/Login.tsx
     |
 Step 1: 解析审查目标
     |
@@ -65,13 +65,13 @@ Done. 建议后续命令
 
 | 发现 | 建议下一步 |
 |------|-----------|
-| 有严重 bug | `/dev:fix <问题描述>` |
-| 有设计改进 | `/dev:refactor <重构建议>` |
+| 有严重 bug | `dev-flow fix <问题描述>` |
+| 有设计改进 | `dev-flow refactor <重构建议>` |
 | 整体 OK | 可以合并 |
 
 ## 相关命令
 
-- [/dev:discuss](./discuss) -- 架构讨论
-- [/dev:investigate](./investigate) -- Bug 排查
-- [/dev:fix](./fix) -- Bug 修复
-- [/dev:refactor](./refactor) -- 代码重构
+- [dev-flow discuss](./discuss) -- 架构讨论
+- [dev-flow investigate](./investigate) -- Bug 排查
+- [dev-flow fix](./fix) -- Bug 修复
+- [dev-flow refactor](./refactor) -- 代码重构

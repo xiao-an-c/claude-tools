@@ -5,7 +5,7 @@
 ## 调用
 
 ```bash
-/dev:run patch <改动描述>
+dev-flow run patch <改动描述>
 ```
 
 ## 适用场景
@@ -16,14 +16,14 @@
 
 ## 不适用
 
-- 涉及 3+ 文件的改动（用 `/dev:run fix`）
-- 需要新分支、PR（用 `/dev:run feat` 或 `/dev:run fix`）
-- 需要测试设计（用 `/dev:run feat`）
+- 涉及 3+ 文件的改动（用 `dev-flow run fix`）
+- 需要新分支、PR（用 `dev-flow run feat` 或 `dev-flow run fix`）
+- 需要测试设计（用 `dev-flow run feat`）
 
 ## 执行流程
 
 ```
-/dev:run patch 修复登录按钮在移动端不显示的问题
+dev-flow run patch 修复登录按钮在移动端不显示的问题
     |
 Step 1: 架构师快速分析 (opus) -> 方案摘要（口头，不写文件）
     |
@@ -52,10 +52,10 @@ Done. 不创建分支，不生成文档，不写 .dev/ 目录。
 ## 注意事项
 
 - 不创建分支、不生成文档、不写 `.dev/` 目录
-- 如果改动涉及 3+ 文件，建议使用 `/dev:run fix` 或 `/dev:run feat`
+- 如果改动涉及 3+ 文件，建议使用 `dev-flow run fix` 或 `dev-flow run feat`
 
 ## 相关命令
 
-- [/dev:run fix](./fix) -- Bug 修复模式（有 git、有文档）
-- [/dev:run feat](./feat) -- 新功能开发
-- [/dev:run hotfix](./hotfix) -- 紧急修复
+- [dev-flow run fix](./fix) -- Bug 修复模式（有 git、有文档）
+- [dev-flow run feat](./feat) -- 新功能开发
+- [dev-flow run hotfix](./hotfix) -- 紧急修复

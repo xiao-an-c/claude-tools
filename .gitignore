@@ -26,6 +26,8 @@ docs/.vitepress/dist/
 docs/.vitepress/cache/
 
 # GSD
-
 .planning
 .dev
+
+# Reference projects
+project/

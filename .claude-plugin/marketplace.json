@@ -1,0 +1,26 @@
+{
+  "name": "claude-tools",
+  "owner": {
+    "name": "xiao-an-c"
+  },
+  "metadata": {
+    "description": "可扩展的 Claude Code 技能集，包含 Git Flow 分支管理工作流和多 Agent 协作开发工作流。",
+    "version": "0.8.0"
+  },
+  "plugins": [
+    {
+      "name": "git-flow",
+      "description": "Git Flow 分支管理工作流，支持 feat/fix/refactor/hotfix/release 分支和 Epic Branching 父子分支模式。",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/git-flow"]
+    },
+    {
+      "name": "dev-flow",
+      "description": "多 Agent 协作开发工作流，编排 8 个专项 Agent（产品、架构、规划、设计、开发、测试、工作流、知识记录）覆盖完整开发生命周期。",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/dev-flow"]
+    }
+  ]
+}

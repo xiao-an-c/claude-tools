@@ -1,11 +1,11 @@
-# /git:start-fix
+# git-flow start-fix
 
 开始 Bug 修复，从 develop 创建 fix/* 分支。
 
 ## 用法
 
 ```bash
-/git:start-fix [description]
+git-flow start-fix [description]
 ```
 
 ## 参数
@@ -31,24 +31,24 @@
 ```
 ✅ 已创建修复分支: `fix/login-error`
 📌 基础分支: develop
-💡 提示: 修复完成后使用 /git:finish 合并分支
+💡 提示: 修复完成后使用 git-flow finish 合并分支
 ```
 
 ## 完整工作流
 
 ```bash
 # 1. 开始修复
-/git:start-fix login-error
+git-flow start-fix login-error
 
 # 2. 修复并提交
-/git:commit 修复登录失败问题
+git-flow commit 修复登录失败问题
 
 # 3. 完成修复
-/git:finish
+git-flow finish
 ```
 
 ## 相关命令
 
-- [/git:commit](./commit) - 智能提交
-- [/git:finish](./finish) - 完成并合并分支
-- [/git:start-feat](./start-feat) - 开始新功能
+- [git-flow commit](./commit) - 智能提交
+- [git-flow finish](./finish) - 完成并合并分支
+- [git-flow start-feat](./start-feat) - 开始新功能

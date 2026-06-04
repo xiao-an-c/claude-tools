@@ -1,11 +1,11 @@
-# /dev:discuss
+# dev-flow discuss
 
 架构讨论模式（只读）。产品经理主持，架构师做技术顾问，你做决策。不修改任何代码。
 
 ## 用法
 
 ```bash
-/dev:discuss <讨论主题>
+dev-flow discuss <讨论主题>
 ```
 
 ## 参数
@@ -23,14 +23,14 @@
 
 ## 不适用
 
-- 已经知道怎么做 -- 用 `/dev:feat` 或 `/dev:fix`
-- 想审查代码质量 -- 用 `/dev:review`
-- 想排查 bug -- 用 `/dev:investigate`
+- 已经知道怎么做 -- 用 `dev-flow feat` 或 `dev-flow fix`
+- 想审查代码质量 -- 用 `dev-flow review`
+- 想排查 bug -- 用 `dev-flow investigate`
 
 ## 执行流程
 
 ```
-/dev:discuss 用户权限系统怎么设计
+dev-flow discuss 用户权限系统怎么设计
     |
 Step 1: 解析讨论主题
     |
@@ -67,12 +67,12 @@ Done. 建议具体开发模式
 
 | 决策 | 建议下一步 |
 |------|-----------|
-| 实现新功能 | `/dev:feat <功能描述>` |
-| 重构现有代码 | `/dev:refactor <重构描述>` |
-| 修复问题 | `/dev:fix <问题描述>` |
+| 实现新功能 | `dev-flow feat <功能描述>` |
+| 重构现有代码 | `dev-flow refactor <重构描述>` |
+| 修复问题 | `dev-flow fix <问题描述>` |
 
 ## 相关命令
 
-- [/dev:review](./review) -- 代码审查
-- [/dev:feat](./feat) -- 新功能开发
-- [/dev:refactor](./refactor) -- 代码重构
+- [dev-flow review](./review) -- 代码审查
+- [dev-flow feat](./feat) -- 新功能开发
+- [dev-flow refactor](./refactor) -- 代码重构

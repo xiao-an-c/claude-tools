@@ -1,11 +1,11 @@
-# /git:finish
+# git-flow finish
 
 完成当前工作，合并分支到目标分支。
 
 ## 用法
 
 ```bash
-/git:finish
+git-flow finish
 ```
 
 ## 功能
@@ -20,7 +20,7 @@
 |---------|---------|
 | feat/fix/refactor | 合并到 develop |
 | hotfix | 合并到 master（打 tag）+ develop |
-| release | 提示使用 /git:publish |
+| release | 提示使用 git-flow publish |
 | develop/master | 禁止操作 |
 
 ## 执行流程
@@ -83,12 +83,12 @@ git push origin develop
 ```
 
 ::: warning 注意
-release 分支请使用 /git:publish 发布到 master。
+release 分支请使用 git-flow publish 发布到 master。
 :::
 
 ## 相关命令
 
-- [/git:commit](./commit) - 智能提交
-- [/git:sync](./sync) - 同步基础分支
-- [/git:publish](./publish) - 发布 release 分支
-- [/git:abort](./abort) - 放弃当前分支
+- [git-flow commit](./commit) - 智能提交
+- [git-flow sync](./sync) - 同步基础分支
+- [git-flow publish](./publish) - 发布 release 分支
+- [git-flow abort](./abort) - 放弃当前分支

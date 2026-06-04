@@ -1,11 +1,11 @@
-# /git:status
+# git-flow status
 
 查看当前分支状态和下一步建议。
 
 ## 用法
 
 ```bash
-/git:status
+git-flow status
 ```
 
 ## 功能
@@ -47,9 +47,9 @@
 ╚════════════════════════════════════════════════╝
 
 💡 建议操作:
-1. 提交更改: /git:commit
-2. 同步代码: /git:sync
-3. 完成开发: /git:finish
+1. 提交更改: git-flow commit
+2. 同步代码: git-flow sync
+3. 完成开发: git-flow finish
 ```
 
 ## 不同分支类型的建议
@@ -64,6 +64,6 @@
 
 ## 相关命令
 
-- [/git:commit](./commit) - 智能提交
-- [/git:sync](./sync) - 同步基础分支
-- [/git:finish](./finish) - 完成并合并分支
+- [git-flow commit](./commit) - 智能提交
+- [git-flow sync](./sync) - 同步基础分支
+- [git-flow finish](./finish) - 完成并合并分支

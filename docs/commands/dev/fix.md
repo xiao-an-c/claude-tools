@@ -5,7 +5,7 @@ Bug 修复模式。架构师诊断根因，开发者实施修复。包含文档�
 ## 调用
 
 ```bash
-/dev:run fix [--git|--no-git] <问题描述>
+dev-flow run fix [--git|--no-git] <问题描述>
 ```
 
 ## 参数
@@ -25,14 +25,14 @@ Bug 修复模式。架构师诊断根因，开发者实施修复。包含文档�
 
 ## 不适用
 
-- 一行修改、配置调整（用 `/dev:run patch`）
-- 紧急线上 hotfix（用 `/dev:run hotfix`）
-- 大规模重构（用 `/dev:run refactor`）
+- 一行修改、配置调整（用 `dev-flow run patch`）
+- 紧急线上 hotfix（用 `dev-flow run hotfix`）
+- 大规模重构（用 `dev-flow run refactor`）
 
 ## 执行流程
 
 ```
-/dev:run fix 登录后页面白屏，控制台报 TypeError
+dev-flow run fix 登录后页面白屏，控制台报 TypeError
     |
 Step 1: 解析参数（use_git + 问题描述）
     |
@@ -80,15 +80,15 @@ Step 10: 显示摘要
 ## 使用示例
 
 ```bash
-/dev:run fix 登录后页面白屏
-/dev:run fix --no-git 修复表单验证不生效的问题
+dev-flow run fix 登录后页面白屏
+dev-flow run fix --no-git 修复表单验证不生效的问题
 ```
 
 ## 相关命令
 
-- [/dev:run patch](./patch) -- 超轻量补丁（已知原因的小修复）
-- [/dev:run hotfix](./hotfix) -- 紧急线上修复
-- [/dev:investigate](./investigate) -- 只排查不修复
-- [/dev:status](./status) -- 查看工作流状态
-- [/dev:resume](./resume) -- 恢复中断的工作流
-- [/git:finish](../git/finish) -- 完成并合并分支
+- [dev-flow run patch](./patch) -- 超轻量补丁（已知原因的小修复）
+- [dev-flow run hotfix](./hotfix) -- 紧急线上修复
+- [dev-flow investigate](./investigate) -- 只排查不修复
+- [dev-flow status](./status) -- 查看工作流状态
+- [dev-flow resume](./resume) -- 恢复中断的工作流
+- [git-flow finish](../git/finish) -- 完成并合并分支

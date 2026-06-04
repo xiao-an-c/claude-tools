@@ -1,0 +1,8 @@
+{
+  "name": "git-flow",
+  "version": "0.8.0",
+  "category": "Git / Workflow",
+  "description": "Git Flow 分支管理工作流，支持 feat/fix/refactor/hotfix/release 分支和 Epic Branching 父子分支模式",
+  "homepage": "https://github.com/xiao-an-c/claude-tools/tree/main/skills/git-flow",
+  "compat": ["claude-code"]
+}

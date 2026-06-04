@@ -5,7 +5,7 @@
 ## 调用
 
 ```bash
-/dev:run feat [--git|--no-git] <功能描述>
+dev-flow run feat [--git|--no-git] <功能描述>
 ```
 
 ## 参数
@@ -27,15 +27,15 @@
 
 ## 不适用
 
-- 小改动，已知怎么改（用 `/dev:run patch`）
-- Bug 修复（用 `/dev:run fix`）
-- 代码结构改善，不改外部行为（用 `/dev:run refactor`）
-- 紧急线上修复（用 `/dev:run hotfix`）
+- 小改动，已知怎么改（用 `dev-flow run patch`）
+- Bug 修复（用 `dev-flow run fix`）
+- 代码结构改善，不改外部行为（用 `dev-flow run refactor`）
+- 紧急线上修复（用 `dev-flow run hotfix`）
 
 ## 执行流程
 
 ```
-/dev:run feat 添加用户登录功能
+dev-flow run feat 添加用户登录功能
     |
 Step 1: 解析输入（提取 --git/--no-git 和功能描述）
     |
@@ -66,7 +66,7 @@ Step 11: 验证（build/lint/test）
     |
 Step 12: 验收 -- ACCEPTANCE.md
     |
-Step 13: 显示摘要，建议 /git:finish
+Step 13: 显示摘要，建议 git-flow finish
 ```
 
 ## 自适应复杂度
@@ -111,21 +111,21 @@ Step 13: 显示摘要，建议 /git:finish
 ## 使用示例
 
 ```bash
-/dev:run feat 添加用户登录功能
-/dev:run feat --no-git 添加暗色主题切换
-/dev:run feat --git 实现文件上传和预览
+dev-flow run feat 添加用户登录功能
+dev-flow run feat --no-git 添加暗色主题切换
+dev-flow run feat --git 实现文件上传和预览
 ```
 
 ## 注意事项
 
 - 工作流是先设计再开发，不是边写边想
 - 支持并行开发，多个 developer 可同时执行无文件冲突的任务
-- 如果中途中断，使用 `/dev:resume` 恢复
+- 如果中途中断，使用 `dev-flow resume` 恢复
 
 ## 相关命令
 
-- [/dev:status](./status) -- 查看工作流状态
-- [/dev:resume](./resume) -- 恢复中断的工作流
-- [/dev:run fix](./fix) -- Bug 修复模式
-- [/dev:run patch](./patch) -- 超轻量补丁模式
-- [/git:finish](../git/finish) -- 完成并合并分支
+- [dev-flow status](./status) -- 查看工作流状态
+- [dev-flow resume](./resume) -- 恢复中断的工作流
+- [dev-flow run fix](./fix) -- Bug 修复模式
+- [dev-flow run patch](./patch) -- 超轻量补丁模式
+- [git-flow finish](../git/finish) -- 完成并合并分支

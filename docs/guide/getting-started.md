@@ -12,89 +12,60 @@
 ### 交互式安装（推荐）
 
 ```bash
-npx github:xiao-an-c/claude-tools
+npx skills add xiao-an-c/claude-tools
 ```
 
 然后按照提示选择要安装的命令类别。
 
-### 安装所有命令
+### 安装所有技能
 
 ```bash
-npx github:xiao-an-c/claude-tools --all
+npx skills add xiao-an-c/claude-tools -s git-flow
+npx skills add xiao-an-c/claude-tools -s dev-flow
 ```
 
-### 安装指定类别
+### 安装指定技能
 
 ```bash
-# 只安装 git 命令
-npx github:xiao-an-c/claude-tools -c git
-```
-
-### 安装指定命令
-
-```bash
-# 只安装 commit 和 sync 命令
-npx github:xiao-an-c/claude-tools --commands commit,sync
+# 只安装 git-flow 技能
+npx skills add xiao-an-c/claude-tools -s git-flow
 ```
 
 ## 验证安装
 
-安装完成后，你可以在项目中看到 `.claude/commands/` 目录：
+安装完成后，可以通过以下方式验证技能是否正确安装：
 
-```bash
-ls .claude/commands/git/
-```
+在 Claude Code 中输入 `/` 查看可用技能列表，应该能看到 `git-flow` 和 `dev-flow` 相关的命令。
 
 ## 第一个工作流
 
 ### 1. 初始化项目
 
 ```bash
-/git:init
+git-flow init
 ```
 
 ### 2. 开始新功能
 
 ```bash
-/git:start-feat add-user-profile
+git-flow start-feat add-user-profile
 ```
 
 ### 3. 开发并提交
 
 ```bash
 # ... 编写代码 ...
-/git:commit 添加用户资料页面
+git-flow commit 添加用户资料页面
 ```
 
 ### 4. 完成功能
 
 ```bash
-/git:finish
-```
-
-## 测试工作流
-
-### 1. 生成单元测试
-
-```bash
-/test:generate src/utils/parser.ts
-```
-
-### 2. 审查测试质量
-
-```bash
-/test:review tests/utils/parser.test.ts
-```
-
-### 3. 分析覆盖率
-
-```bash
-/test:coverage
+git-flow finish
 ```
 
 ## 下一步
 
 - 查看 [Git 命令](/commands/git/) 了解所有可用命令
-- 查看 [Test 命令](/commands/test/) 了解测试辅助命令
 - 阅读 [Git 分支规范](/specs/git-branch-spec) 了解工作流详情
 - 遇到问题？查阅 [常见问题](/guide/faq)

@@ -1,11 +1,11 @@
-# /git:init
+# git-flow init
 
 初始化项目 Git 分支规范，创建 master/develop 分支结构。
 
 ## 用法
 
 ```bash
-/git:init
+git-flow init
 ```
 
 ## 功能
@@ -43,12 +43,12 @@
 ║ ✅ 开发分支: develop                            ║
 ╠════════════════════════════════════════════════╣
 ║ 📌 下一步:                                      ║
-║    /git:start-feat [description] 开始新功能     ║
-║    /git:start-fix [description] 开始修复        ║
+║    git-flow start-feat [description] 开始新功能     ║
+║    git-flow start-fix [description] 开始修复        ║
 ╚════════════════════════════════════════════════╝
 ```
 
 ## 相关命令
 
-- [/git:start-feat](./start-feat) - 开始新功能开发
-- [/git:status](./status) - 查看分支状态
+- [git-flow start-feat](./start-feat) - 开始新功能开发
+- [git-flow status](./status) - 查看分支状态

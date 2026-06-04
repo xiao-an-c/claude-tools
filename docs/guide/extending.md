@@ -1,113 +1,132 @@
-# 扩展新类别
+# 扩展新技能
 
-Claude Tools 支持扩展新的命令类别和工作流。你可以创建自定义命令集并贡献给社区。
+Claude Tools 基于 Skills（技能）架构，支持扩展新的命令类别和工作流。你可以创建自定义技能并贡献给社区。
 
-## 创建新命令类别
+## 创建新技能
 
 ### 1. 创建目录结构
 
-在项目根目录的 `commands/` 下创建新的类别目录：
+在 `skills/` 目录下创建新的技能目录：
 
 ```
-commands/
-├── git/          # 现有 Git 命令
-├── test/         # 现有 Test 命令
-├── dev/          # 现有 Dev 命令
-└── deploy/       # 新类别
-    ├── release.md
-    └── rollback.md
+skills/
+├── git-flow/         # 现有 Git Flow 技能
+├── dev-flow/         # 现有 Dev Flow 技能
+└── my-skill/         # 新技能
+    ├── SKILL.md          # 技能定义（必须）
+    ├── manifest.json     # 版本和兼容性元数据（必须）
+    ├── README.md         # 英文说明（可选）
+    ├── README.zh-CN.md   # 中文说明（可选）
+    ├── commands/         # 命令文件（可选）
+    ├── agents/           # Agent 定义（可选）
+    └── workflows/        # 工作流定义（可选）
 ```
 
-### 2. 创建命令文件
+### 2. 创建 SKILL.md
 
-每个命令是一个 Markdown 文件，使用结构化格式编写：
+每个技能必须包含 `SKILL.md`，使用 YAML frontmatter + Markdown 格式：
+
+```yaml
+---
+name: my-skill
+description: 触发条件描述，当用户输入匹配时激活此技能
+---
+
+# My Skill
+
+技能的详细说明和使用方式。
+```
+
+**Frontmatter 字段说明：**
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `name` | 是 | 技能名称，使用 kebab-case 格式，如 `git-flow` |
+| `description` | 是 | 触发条件描述，Claude Code 据此判断何时激活此技能 |
+
+### 3. 创建 manifest.json
+
+每个技能必须包含 `manifest.json`，提供版本和兼容性信息：
+
+```json
+{
+  "name": "my-skill",
+  "version": "0.1.0",
+  "category": "My Category",
+  "description": "技能的简短描述",
+  "homepage": "https://github.com/<owner>/<repo>/tree/main/skills/my-skill",
+  "compat": ["claude-code"]
+}
+```
+
+**Manifest 字段说明：**
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `name` | 是 | 技能名称，与 SKILL.md 保持一致 |
+| `version` | 是 | 语义化版本号 |
+| `category` | 是 | 技能分类 |
+| `description` | 是 | 技能简短描述 |
+| `homepage` | 是 | 技能主页 URL |
+| `compat` | 是 | 兼容平台列表，目前支持 `claude-code` |
+
+### 4. 创建命令文件（可选）
+
+命令放在 `skills/<skill-name>/commands/` 目录下，每个命令是一个 Markdown 文件：
 
 ```markdown
 ---
-name: deploy:release
-description: 部署发布命令
+name: my-skill:action
+description: 命令描述
 allowed-tools:
   - Bash
+  - Read
+  - Write
+  - Edit
   - AskUserQuestion
 ---
 
 <objective>
-执行部署发布流程
+命令的目标
 </objective>
 
 <rules>
-- 只部署到配置的环境
-- 每次部署前必须确认
-- 回滚方案必须提前准备
+- 约束规则
 </rules>
 
 <process>
-1. 检查部署环境
-2. 执行部署
-3. 验证部署结果
+执行流程概览
 </process>
 
 <execution>
-## 具体执行步骤
-
-1. 读取部署配置
-2. 按环境执行部署脚本
-3. 运行健康检查
-4. 输出部署报告
+具体执行步骤
 </execution>
 ```
 
-### 3. 注册类别描述
+### 5. 创建 Agent 定义（可选）
 
-在 `bin/cli.js` 的 `getCategoryDescription()` 函数中添加新类别的描述：
+如果技能需要多 Agent 协作，在 `skills/<skill-name>/agents/` 目录下创建 Agent 定义文件：
 
-```javascript
-function getCategoryDescription(category) {
-  const descriptions = {
-    git: 'Git 工作流命令 (feat/fix/hotfix/release)',
-    test: '单元测试命令 (generate/review/coverage/snapshot)',
-    dev: '开发工作流命令 (场景驱动：patch/fix/feat/refactor/hotfix/review/discuss/investigate)',
-    deploy: '部署命令 (release/rollback)'  // 新增
-  };
-  return descriptions[category] || `${category} 命令`;
-}
+```
+skills/my-skill/agents/
+├── my-agent-planner.md
+├── my-agent-developer.md
+└── my-agent-reviewer.md
 ```
 
-**注意：** `loadCategories()` 会自动扫描 `commands/` 目录发现新类别，但描述需要手动添加。未添加描述的类别会回退到 `<类别名> 命令`。
+### 6. 创建工作流（可选）
 
-### 4. 如果新类别需要 Agent
-
-如果新命令需要 spawn Agent，需要在 `bin/cli.js` 的 `CATEGORY_AGENT_DEPS` 中注册依赖：
-
-```javascript
-const CATEGORY_AGENT_DEPS = {
-  dev: ['dev-developer', 'dev-planner', 'dev-product', 'dev-recorder', 'dev-tester', 'dev-architect', 'dev-tech-designer', 'dev-workflow-architect'],
-  deploy: ['deploy-agent']  // 新增
-};
-```
-
-**关键约束：新增/修改 Agent 需同步三处：**
-
-1. **`bin/cli.js`** — `CATEGORY_AGENT_DEPS` 映射（手动维护，不会自动发现）
-2. **`__tests__/cli.test.js`** — 更新 `loadAgents`、依赖断言、安装相关断言
-3. **文档** — 如果 Agent 参与工作流，需更新流程文档
-
-## 创建自定义工作流
-
-工作流是 Markdown 文件，放在 `workflows/` 目录下（包内置）或 `.dev/workflows/` 目录下（项目级）。安装时 `bin/cli.js` 将 `workflows/` 复制到 `.dev/workflows/`（不覆盖已有文件）。
-
-### 工作流文件格式
+工作流放在 `skills/<skill-name>/workflows/` 目录下：
 
 ```yaml
 ---
 name: my-workflow
 display_name: "My Workflow"
-description: "自定义工作流描述"
+description: "工作流描述"
 category: code-change
 defaults:
   use_git: true
   base_branch: develop
-  branch_type: feat
 ---
 
 # Workflow: My Workflow
@@ -122,47 +141,21 @@ defaults:
 Type: builtin
 Action: parse_arguments
 ...
-
-### Step 2: 架构分析
-
-Type: agent
-Agent: dev-architect
-Model: opus
-Spawn: inline
-...
 ```
 
-### 步骤类型
+### 7. 注册到插件市场
 
-| 类型 | 说明 |
-|------|------|
-| `builtin` | 执行器内置动作（创建分支、初始化状态等） |
-| `agent` | spawn 一个 Agent |
-| `loop` | 循环执行子步骤 |
-| `condition` | 条件执行 |
+在 `.claude-plugin/marketplace.json` 的 `plugins` 数组中注册新技能：
 
-### 可用 Agent
-
-| Agent | 模型 | 职责 |
-|-------|------|------|
-| dev-product | opus | 需求讨论、PRD 输出 |
-| dev-architect | opus | 架构设计、代码分析 |
-| dev-planner | opus | 任务分解 |
-| dev-tech-designer | sonnet | 详细技术方案 |
-| dev-developer | sonnet | 代码实现 |
-| dev-tester | sonnet | 测试设计 |
-| dev-recorder | sonnet | 知识记录 |
-| dev-workflow-architect | opus | 工作流设计（auto 模式） |
-
-### 调用自定义工作流
-
-创建工作流文件后，通过 `/dev:run <workflow-name>` 调用：
-
+```json
+{
+  "name": "my-skill",
+  "description": "新技能的描述",
+  "source": "./",
+  "strict": false,
+  "skills": ["./skills/my-skill"]
+}
 ```
-/dev:run my-workflow 完成数据库迁移
-```
-
-自定义工作流优先于内置工作流（`.dev/workflows/` 优先于包内置的 `workflows/`）。
 
 ## 命令文件格式详解
 
@@ -170,9 +163,9 @@ Spawn: inline
 
 | 字段 | 必填 | 说明 |
 |------|------|------|
-| `name` | 是 | 命令名称，格式：`类别:命令`，如 `deploy:release` |
+| `name` | 是 | 命令名称，格式：`技能名:命令`，如 `my-skill:release` |
 | `description` | 是 | 简短描述，显示在命令列表中 |
-| `allowed-tools` | 是 | 命令可使用的工具列表，参考下方可用工具 |
+| `allowed-tools` | 是 | 命令可使用的工具列表 |
 
 **可用工具列表：**
 
@@ -245,23 +238,23 @@ Spawn: inline
 📊 统计数据
 ```
 
-## 调试命令
+## 调试技能
 
-新命令开发过程中，可以通过以下方式调试：
+新技能开发过程中，可以通过以下方式调试：
 
-1. **检查格式**: 确保 frontmatter 和区块标记正确闭合
-2. **本地测试**: 将命令文件放入 `.claude/commands/` 后直接在 Claude Code 中调用
-3. **查看日志**: Claude Code 会显示命令读取情况，观察是否有解析错误
+1. **检查格式**: 确保 SKILL.md 和 manifest.json 格式正确
+2. **本地测试**: 使用 `npx skills add` 从本地路径安装技能
+3. **查看日志**: Claude Code 会显示技能加载情况，观察是否有解析错误
 
-## 提交新命令
+## 提交新技能
 
-如果你是项目贡献者，按以下步骤提交新命令：
+如果你是项目贡献者，按以下步骤提交新技能：
 
-1. 在 `commands/` 下创建命令文件
-2. 在 `bin/cli.js` 的 `getCategoryDescription()` 中注册类别描述
-3. 如果命令需要 Agent，在 `CATEGORY_AGENT_DEPS` 中注册
-4. 更新 `__tests__/cli.test.js` 中的相关断言
-5. 更新文档
+1. 在 `skills/` 下创建技能目录，包含 SKILL.md 和 manifest.json
+2. 添加命令、Agent、工作流等（如需要）
+3. 编写 README.md 和 README.zh-CN.md
+4. 在 `.claude-plugin/marketplace.json` 中注册技能
+5. 更新版本号
 6. 提交 Pull Request
 
-欢迎提交 PR 添加新的命令类别！
+欢迎提交 PR 添加新的技能！

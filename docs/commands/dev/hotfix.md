@@ -5,7 +5,7 @@
 ## 调用
 
 ```bash
-/dev:run hotfix [--git|--no-git] <问题描述>
+dev-flow run hotfix [--git|--no-git] <问题描述>
 ```
 
 ## 参数
@@ -24,14 +24,14 @@
 
 ## 不适用
 
-- 非紧急的常规 bug（用 `/dev:run fix`）
-- 需要详细诊断和测试设计（用 `/dev:run fix` 或 `/dev:investigate`）
-- 大规模重构（用 `/dev:run refactor`）
+- 非紧急的常规 bug（用 `dev-flow run fix`）
+- 需要详细诊断和测试设计（用 `dev-flow run fix` 或 `dev-flow investigate`）
+- 大规模重构（用 `dev-flow run refactor`）
 
 ## 执行流程
 
 ```
-/dev:run hotfix 线上登录接口返回500
+dev-flow run hotfix 线上登录接口返回500
     |
 Step 1: 解析参数 + 创建 hotfix/* 分支（从 main/master）
     |
@@ -47,7 +47,7 @@ Step 6: 最小验证（build + 现有测试）
     |
 Step 7: Recorder (sonnet)
     |
-Step 8: 验收 -> ACCEPTANCE.md + 提示 /git:finish
+Step 8: 验收 -> ACCEPTANCE.md + 提示 git-flow finish
 ```
 
 ## 与其他修复工作流的区别
@@ -62,12 +62,12 @@ Step 8: 验收 -> ACCEPTANCE.md + 提示 /git:finish
 
 ## 注意事项
 
-- hotfix 分支需要合并到 main + develop，完成后请运行 `/git:finish`
-- 如果信息不足，建议先切换到 `/dev:investigate` 排查
+- hotfix 分支需要合并到 main + develop，完成后请运行 `git-flow finish`
+- 如果信息不足，建议先切换到 `dev-flow investigate` 排查
 
 ## 相关命令
 
-- [/dev:run fix](./fix) -- 常规 Bug 修复
-- [/dev:investigate](./investigate) -- Bug 排查（只读）
-- [/dev:run patch](./patch) -- 超轻量补丁
-- [/git:finish](../git/finish) -- 完成并合并分支
+- [dev-flow run fix](./fix) -- 常规 Bug 修复
+- [dev-flow investigate](./investigate) -- Bug 排查（只读）
+- [dev-flow run patch](./patch) -- 超轻量补丁
+- [git-flow finish](../git/finish) -- 完成并合并分支

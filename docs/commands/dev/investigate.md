@@ -1,11 +1,11 @@
-# /dev:investigate
+# dev-flow investigate
 
 Bug 排查模式（只读）。探索问题，定位根因，不修改任何代码。产出调查报告，为后续修复提供依据。
 
 ## 用法
 
 ```bash
-/dev:investigate <问题描述>
+dev-flow investigate <问题描述>
 ```
 
 ## 参数
@@ -22,14 +22,14 @@ Bug 排查模式（只读）。探索问题，定位根因，不修改任何代�
 
 ## 不适用
 
-- 已经知道原因，直接修 -- 用 `/dev:fix`
-- 线上紧急故障 -- 用 `/dev:hotfix`
-- 需要修改代码 -- 用 `/dev:fix` 或 `/dev:patch`
+- 已经知道原因，直接修 -- 用 `dev-flow fix`
+- 线上紧急故障 -- 用 `dev-flow hotfix`
+- 需要修改代码 -- 用 `dev-flow fix` 或 `dev-flow patch`
 
 ## 执行流程
 
 ```
-/dev:investigate 用户登录后偶尔被踢出
+dev-flow investigate 用户登录后偶尔被踢出
     |
 Step 1: 解析问题描述
     |
@@ -57,14 +57,14 @@ Done. 建议后续修复命令
 
 | 发现 | 建议下一步 |
 |------|-----------|
-| 确认是 bug | `/dev:fix <问题描述>` |
-| 是设计缺陷 | `/dev:refactor <重构建议>` |
-| 需要新功能支持 | `/dev:feat <功能描述>` |
-| 原因不明 | 继续调查或 `/dev:discuss` 讨论 |
+| 确认是 bug | `dev-flow fix <问题描述>` |
+| 是设计缺陷 | `dev-flow refactor <重构建议>` |
+| 需要新功能支持 | `dev-flow feat <功能描述>` |
+| 原因不明 | 继续调查或 `dev-flow discuss` 讨论 |
 
 ## 相关命令
 
-- [/dev:fix](./fix) -- Bug 修复
-- [/dev:hotfix](./hotfix) -- 紧急修复
-- [/dev:review](./review) -- 代码审查
-- [/dev:discuss](./discuss) -- 架构讨论
+- [dev-flow fix](./fix) -- Bug 修复
+- [dev-flow hotfix](./hotfix) -- 紧急修复
+- [dev-flow review](./review) -- 代码审查
+- [dev-flow discuss](./discuss) -- 架构讨论

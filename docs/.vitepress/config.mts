@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: "Claude Tools",
-  description: "可扩展的 Claude Code 命令集",
+  description: "可扩展的 Claude Code 技能集",
   lang: 'zh-CN',
 
   // GitHub Pages 部署配置
@@ -40,12 +40,12 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '指南', link: '/guide/' },
-      { text: '命令', link: '/commands/' },
-      { text: 'Dev', link: '/commands/dev/' },
+      { text: 'git-flow', link: '/commands/git/' },
+      { text: 'dev-flow', link: '/commands/dev/' },
       { text: '规范', link: '/specs/git-branch-spec' },
       { text: 'FAQ', link: '/guide/faq' },
       {
-        text: 'v0.5.0',
+        text: 'v0.8.0',
         items: [
           { text: 'GitHub', link: 'https://github.com/xiao-an-c/claude-tools' }
         ]
@@ -68,60 +68,49 @@ export default defineConfig({
       ],
       '/commands/': [
         {
-          text: '命令概览',
+          text: '技能概览',
           items: [
-            { text: '所有命令', link: '/commands/' }
+            { text: '所有技能', link: '/commands/' }
           ]
         },
         {
-          text: 'Git 命令',
+          text: 'Git 技能',
           collapsed: false,
           items: [
             { text: '概览', link: '/commands/git/' },
-            { text: '/git:init', link: '/commands/git/init' },
-            { text: '/git:commit', link: '/commands/git/commit' },
-            { text: '/git:start-feat', link: '/commands/git/start-feat' },
-            { text: '/git:start-fix', link: '/commands/git/start-fix' },
-            { text: '/git:start-hotfix', link: '/commands/git/start-hotfix' },
-            { text: '/git:start-refactor', link: '/commands/git/start-refactor' },
-            { text: '/git:start-release', link: '/commands/git/start-release' },
-            { text: '/git:start-task', link: '/commands/git/start-task' },
-            { text: '/git:sync', link: '/commands/git/sync' },
-            { text: '/git:wip', link: '/commands/git/wip' },
-            { text: '/git:status', link: '/commands/git/status' },
-            { text: '/git:finish', link: '/commands/git/finish' },
-            { text: '/git:publish', link: '/commands/git/publish' },
-            { text: '/git:abort', link: '/commands/git/abort' }
+            { text: 'git-flow init', link: '/commands/git/init' },
+            { text: 'git-flow commit', link: '/commands/git/commit' },
+            { text: 'git-flow start-feat', link: '/commands/git/start-feat' },
+            { text: 'git-flow start-fix', link: '/commands/git/start-fix' },
+            { text: 'git-flow start-hotfix', link: '/commands/git/start-hotfix' },
+            { text: 'git-flow start-refactor', link: '/commands/git/start-refactor' },
+            { text: 'git-flow start-release', link: '/commands/git/start-release' },
+            { text: 'git-flow start-task', link: '/commands/git/start-task' },
+            { text: 'git-flow sync', link: '/commands/git/sync' },
+            { text: 'git-flow wip', link: '/commands/git/wip' },
+            { text: 'git-flow status', link: '/commands/git/status' },
+            { text: 'git-flow finish', link: '/commands/git/finish' },
+            { text: 'git-flow publish', link: '/commands/git/publish' },
+            { text: 'git-flow abort', link: '/commands/git/abort' }
           ]
         },
         {
-          text: 'Test 命令',
-          collapsed: false,
-          items: [
-            { text: '概览', link: '/commands/test/' },
-            { text: '/test:generate', link: '/commands/test/generate' },
-            { text: '/test:snapshot', link: '/commands/test/snapshot' },
-            { text: '/test:review', link: '/commands/test/review' },
-            { text: '/test:coverage', link: '/commands/test/coverage' }
-          ]
-        },
-        {
-          text: 'Dev 命令',
+          text: 'Dev 技能',
           collapsed: false,
           items: [
             { text: '概览', link: '/commands/dev/' },
-            { text: '/dev:run', link: '/commands/dev/run' },
-            { text: '/dev:status', link: '/commands/dev/status' },
-            { text: '/dev:resume', link: '/commands/dev/resume' },
+            { text: 'dev-flow run', link: '/commands/dev/run' },
+            { text: 'dev-flow status', link: '/commands/dev/status' },
+            { text: 'dev-flow resume', link: '/commands/dev/resume' },
             { text: '工作流: patch', link: '/commands/dev/patch' },
             { text: '工作流: fix', link: '/commands/dev/fix' },
             { text: '工作流: feat', link: '/commands/dev/feat' },
             { text: '工作流: refactor', link: '/commands/dev/refactor' },
             { text: '工作流: hotfix', link: '/commands/dev/hotfix' },
             { text: '工作流: auto', link: '/commands/dev/auto' },
-            { text: '/dev:review', link: '/commands/dev/review' },
-            { text: '/dev:discuss', link: '/commands/dev/discuss' },
-            { text: '/dev:investigate', link: '/commands/dev/investigate' }
+            { text: 'dev-flow review', link: '/commands/dev/review' },
+            { text: 'dev-flow discuss', link: '/commands/dev/discuss' },
+            { text: 'dev-flow investigate', link: '/commands/dev/investigate' }
           ]
         }
       ],

@@ -1,11 +1,11 @@
-# /git:start-feat
+# git-flow start-feat
 
 开始新功能开发，从 develop 创建 feat/* 分支。
 
 ## 用法
 
 ```bash
-/git:start-feat [description]
+git-flow start-feat [description]
 ```
 
 ## 参数
@@ -31,24 +31,24 @@
 ```
 ✅ 已创建功能分支: `feat/user-profile`
 📌 基础分支: develop
-💡 提示: 开发完成后使用 /git:finish 合并分支
+💡 提示: 开发完成后使用 git-flow finish 合并分支
 ```
 
 ## 完整工作流
 
 ```bash
 # 1. 开始功能
-/git:start-feat user-profile
+git-flow start-feat user-profile
 
 # 2. 开发并提交
-/git:commit 添加用户资料页面
+git-flow commit 添加用户资料页面
 
 # 3. 完成功能
-/git:finish
+git-flow finish
 ```
 
 ## 相关命令
 
-- [/git:commit](./commit) - 智能提交
-- [/git:finish](./finish) - 完成并合并分支
-- [/git:start-fix](./start-fix) - 开始 Bug 修复
+- [git-flow commit](./commit) - 智能提交
+- [git-flow finish](./finish) - 完成并合并分支
+- [git-flow start-fix](./start-fix) - 开始 Bug 修复

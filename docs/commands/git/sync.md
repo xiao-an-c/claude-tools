@@ -1,11 +1,11 @@
-# /git:sync
+# git-flow sync
 
 同步基础分支的最新代码到当前分支。
 
 ## 用法
 
 ```bash
-/git:sync
+git-flow sync
 ```
 
 ## 功能
@@ -57,6 +57,6 @@
 
 ## 相关命令
 
-- [/git:status](./status) - 查看分支状态
-- [/git:commit](./commit) - 智能提交
-- [/git:finish](./finish) - 完成并合并分支
+- [git-flow status](./status) - 查看分支状态
+- [git-flow commit](./commit) - 智能提交
+- [git-flow finish](./finish) - 完成并合并分支

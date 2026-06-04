@@ -1,11 +1,11 @@
-# /git:abort
+# git-flow abort
 
 放弃当前分支，安全删除。
 
 ## 用法
 
 ```bash
-/git:abort
+git-flow abort
 ```
 
 ## 功能
@@ -78,6 +78,6 @@ git checkout -b [branch-name] [commit-hash]
 
 ## 相关命令
 
-- [/git:finish](./finish) - 完成并合并分支
-- [/git:status](./status) - 查看分支状态
-- [/git:wip](./wip) - 保存工作进度
+- [git-flow finish](./finish) - 完成并合并分支
+- [git-flow status](./status) - 查看分支状态
+- [git-flow wip](./wip) - 保存工作进度

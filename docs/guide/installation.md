@@ -1,23 +1,17 @@
 # 安装详解
 
-## 命令行选项
-
-| 选项 | 简写 | 说明 |
-|------|------|------|
-| `--all` | `-a` | 安装所有命令 |
-| `--list` | `-l` | 列出所有可用命令 |
-| `--category <name>` | `-c` | 安装指定类别 |
-| `--commands <cmd1,cmd2>` | | 安装指定命令 |
-| `--help` | `-h` | 显示帮助信息 |
-
 ## 安装方式
 
 ### 从 GitHub 安装（推荐）
 
-最简单的方式是使用 npx 直接从 GitHub 安装：
+使用 `npx skills add` 直接从 GitHub 安装技能：
 
 ```bash
-npx github:xiao-an-c/claude-tools --all
+# 安装 Git Flow 技能
+npx skills add xiao-an-c/claude-tools -s git-flow
+
+# 安装 Dev Flow 技能
+npx skills add xiao-an-c/claude-tools -s dev-flow
 ```
 
 ### 本地开发安装
@@ -28,30 +22,48 @@ npx github:xiao-an-c/claude-tools --all
 git clone https://github.com/xiao-an-c/claude-tools.git
 cd claude-tools
 npm install
-node bin/cli.js --all
 ```
+
+本地开发时可以修改 `skills/` 目录下的技能文件，然后使用 `npx skills add` 从本地路径安装进行测试。
 
 ### 安装到指定项目
 
 ```bash
-# 安装到指定路径
-npx github:xiao-an-c/claude-tools --all /path/to/project
+# 在目标项目目录中执行
+cd /path/to/project
+npx skills add xiao-an-c/claude-tools -s git-flow
 ```
 
-## 安装位置
+## 技能结构
 
-命令会被安装到目标项目的 `.claude/commands/` 目录：
+安装后，技能会被 Claude Code 识别并加载：
 
 ```
-your-project/
-└── .claude/
-    └── commands/
-        └── git/
-            ├── init.md
-            ├── commit.md
-            └── ...
+skills/
+├── git-flow/
+│   ├── SKILL.md              # 技能定义
+│   ├── manifest.json         # 版本信息
+│   ├── commands/             # 命令文件
+│   │   ├── init.md
+│   │   ├── commit.md
+│   │   └── ...
+│   ├── README.md
+│   └── README.zh-CN.md
+└── dev-flow/
+    ├── SKILL.md
+    ├── manifest.json
+    ├── commands/             # 命令文件
+    ├── agents/               # Agent 定义
+    ├── workflows/            # 工作流定义
+    ├── README.md
+    └── README.zh-CN.md
 ```
 
-::: tip
-建议将 `.claude/` 目录添加到 `.gitignore`，因为这是个人偏好设置。
-:::
+## VitePress 文档本地开发
+
+如果你需要运行文档站点：
+
+```bash
+npm run docs:dev            # 启动文档开发服务器
+npm run docs:build          # 构建文档
+```

@@ -1,11 +1,11 @@
-# /git:publish
+# git-flow publish
 
 发布 release 分支到 master（自动生成 Release Notes、打 tag 并同步回 develop）。
 
 ## 用法
 
 ```bash
-/git:publish
+git-flow publish
 ```
 
 ## 前置条件
@@ -127,6 +127,6 @@ git push origin develop
 
 ## 相关命令
 
-- [/git:start-release](./start-release) - 创建发布分支
-- [/git:finish](./finish) - 完成功能分支
-- [/git:commit](./commit) - 智能提交
+- [git-flow start-release](./start-release) - 创建发布分支
+- [git-flow finish](./finish) - 完成功能分支
+- [git-flow commit](./commit) - 智能提交

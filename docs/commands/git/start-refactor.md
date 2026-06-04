@@ -1,11 +1,11 @@
-# /git:start-refactor
+# git-flow start-refactor
 
 开始代码重构，从 develop 创建 refactor/* 分支。
 
 ## 用法
 
 ```bash
-/git:start-refactor [description]
+git-flow start-refactor [description]
 ```
 
 ## 参数
@@ -31,24 +31,24 @@
 ```
 ✅ 已创建重构分支: `refactor/api-layer`
 📌 基础分支: develop
-💡 提示: 重构完成后使用 /git:finish 合并分支
+💡 提示: 重构完成后使用 git-flow finish 合并分支
 ```
 
 ## 重构工作流
 
 ```bash
 # 1. 开始重构
-/git:start-refactor api-layer
+git-flow start-refactor api-layer
 
 # 2. 重构并提交
-/git:commit 重构 API 调用层
+git-flow commit 重构 API 调用层
 
 # 3. 完成重构
-/git:finish
+git-flow finish
 ```
 
 ## 相关命令
 
-- [/git:commit](./commit) - 智能提交
-- [/git:finish](./finish) - 完成并合并分支
-- [/git:start-feat](./start-feat) - 开始新功能
+- [git-flow commit](./commit) - 智能提交
+- [git-flow finish](./finish) - 完成并合并分支
+- [git-flow start-feat](./start-feat) - 开始新功能

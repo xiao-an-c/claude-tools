@@ -1,11 +1,11 @@
-# /git:start-task
+# git-flow start-task
 
 从当前集成分支创建任务子分支，自动编号。
 
 ## 用法
 
 ```bash
-/git:start-task [描述]
+git-flow start-task [描述]
 ```
 
 ## 功能
@@ -40,7 +40,7 @@
 
 ## 相关命令
 
-- [/git:finish](./finish) - 合并子分支到父分支
-- [/git:sync](./sync) - 从父分支同步代码
-- [/git:status](./status) - 查看父子分支状态
-- [/git:commit](./commit) - 智能提交
+- [git-flow finish](./finish) - 合并子分支到父分支
+- [git-flow sync](./sync) - 从父分支同步代码
+- [git-flow status](./status) - 查看父子分支状态
+- [git-flow commit](./commit) - 智能提交

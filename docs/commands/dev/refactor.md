@@ -5,7 +5,7 @@
 ## 调用
 
 ```bash
-/dev:run refactor [--git|--no-git] <重构描述>
+dev-flow run refactor [--git|--no-git] <重构描述>
 ```
 
 ## 参数
@@ -28,14 +28,14 @@
 
 ## 不适用
 
-- 新功能开发（用 `/dev:run feat`）
-- Bug 修复（用 `/dev:run fix` 或 `/dev:run patch`）
+- 新功能开发（用 `dev-flow run feat`）
+- Bug 修复（用 `dev-flow run fix` 或 `dev-flow run patch`）
 - 需要新测试设计的改动（重构应保持现有测试通过）
 
 ## 执行流程
 
 ```
-/dev:run refactor 重构 src/utils 工具函数，消除重复代码
+dev-flow run refactor 重构 src/utils 工具函数，消除重复代码
     |
 Step 1: 解析输入（--git/--no-git + 重构描述）
     |
@@ -58,7 +58,7 @@ Step 9: 任务循环决策
     |
 Step 10: 生成 ACCEPTANCE.md（前后对比 + 重构清单）
     |
-Step 11: 显示摘要，建议 /git:finish
+Step 11: 显示摘要，建议 git-flow finish
 ```
 
 ## 核心原则
@@ -93,14 +93,14 @@ Step 11: 显示摘要，建议 /git:finish
 ## 使用示例
 
 ```bash
-/dev:run refactor 重构工具函数，消除重复代码
-/dev:run refactor --no-git 简化 Login 组件的条件逻辑
+dev-flow run refactor 重构工具函数，消除重复代码
+dev-flow run refactor --no-git 简化 Login 组件的条件逻辑
 ```
 
 ## 相关命令
 
-- [/dev:run feat](./feat) -- 新功能开发
-- [/dev:run fix](./fix) -- Bug 修复
-- [/dev:review](./review) -- 代码审查（发现需要重构的代码）
-- [/dev:status](./status) -- 查看工作流状态
-- [/git:finish](../git/finish) -- 完成并合并分支
+- [dev-flow run feat](./feat) -- 新功能开发
+- [dev-flow run fix](./fix) -- Bug 修复
+- [dev-flow review](./review) -- 代码审查（发现需要重构的代码）
+- [dev-flow status](./status) -- 查看工作流状态
+- [git-flow finish](../git/finish) -- 完成并合并分支

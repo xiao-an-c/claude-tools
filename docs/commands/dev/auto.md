@@ -5,7 +5,7 @@
 ## 调用
 
 ```bash
-/dev:run auto [--git|--no-git] <任务描述>
+dev-flow run auto [--git|--no-git] <任务描述>
 ```
 
 ## 参数
@@ -30,11 +30,11 @@
 ## 执行流程
 
 ```
-/dev:run auto 把项目从 JavaScript 迁移到 TypeScript
+dev-flow run auto 把项目从 JavaScript 迁移到 TypeScript
     |
 Step 1: 解析参数 + 创建分支（可选）
     |
-Step 2: 工作流架构师设计工作流 -- dev-workflow-architect (opus)
+Step 2: 工作流架构师设计工作流 -- dev-flow-architect (opus)
 |        输出 WORKFLOW.md（步骤、并行策略、人类介入点）
     |
 Step 3: 用户确认/调整工作流
@@ -79,16 +79,16 @@ Done.
 1. **最小步骤** — 能用 2 步解决就不用 5 步
 2. **按需组装** — 只调用必要的 Agent，不搞全套流水线
 3. **人类在环** — 复杂决策点让用户参与，简单步骤自动执行
-4. **可中断** — 任何步骤失败都可以 `/dev:resume` 恢复
+4. **可中断** — 任何步骤失败都可以 `dev-flow resume` 恢复
 
 ## 沉淀工作流
 
-执行完成后，系统会询问是否保存为可复用模板。保存后，工作流文件写入 `.dev/workflows/<name>.md`，后续可通过 `/dev:run <name>` 直接调用。
+执行完成后，系统会询问是否保存为可复用模板。保存后，工作流文件写入 `.dev/workflows/<name>.md`，后续可通过 `dev-flow run <name>` 直接调用。
 
 ## 相关命令
 
-- [/dev:run feat](./feat) -- 新功能开发
-- [/dev:run fix](./fix) -- Bug 修复
-- [/dev:run refactor](./refactor) -- 代码重构
-- [/dev:status](./status) -- 查看工作流状态
-- [/dev:resume](./resume) -- 恢复中断的工作流
+- [dev-flow run feat](./feat) -- 新功能开发
+- [dev-flow run fix](./fix) -- Bug 修复
+- [dev-flow run refactor](./refactor) -- 代码重构
+- [dev-flow status](./status) -- 查看工作流状态
+- [dev-flow resume](./resume) -- 恢复中断的工作流

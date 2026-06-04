@@ -1,11 +1,11 @@
-# /dev:status
+# dev-flow status
 
 查看当前开发工作流状态和进度。
 
 ## 用法
 
 ```bash
-/dev:status
+dev-flow status
 ```
 
 ## 功能
@@ -51,9 +51,9 @@
  | T-03 | 功能标题     | 待执行 | -      |
 
  下一步:
-   /dev:resume  — 继续执行未完成的步骤
-   /git:status  — 查看 git 分支状态
-   /git:finish  — 合并到 develop
+   dev-flow resume  — 继续执行未完成的步骤
+   git-flow status  — 查看 git 分支状态
+   git-flow finish  — 合并到 develop
 ```
 
 ## 信息来源
@@ -61,7 +61,7 @@
 命令读取以下信息：
 
 - **`.dev/config.yml`** — 工作流模式、分支类型、子分支配置
-- **工作流定义** — `.dev/workflows/${mode}.md`（优先）或包内置 `workflows/${mode}.md`，获取步骤列表和名称
+- **工作流定义** — `.dev/workflows/${mode}.md`（优先）或 `skills/dev-flow/workflows/${mode}.md`，获取步骤列表和名称
 - **`.dev/plan/<branch>/`** — 各步骤的产出文件（判断完成状态）
 - **TASK-LOG.md** — 执行记录表格
 - **ACCEPTANCE.md** — 如果存在，标记为已完成
@@ -72,6 +72,6 @@
 
 ## 相关命令
 
-- [/dev:run](./run) -- 启动工作流
-- [/dev:resume](./resume) -- 恢复工作流
-- [/git:status](../git/status) -- 查看 git 分支状态
+- [dev-flow run](./run) -- 启动工作流
+- [dev-flow resume](./resume) -- 恢复工作流
+- [git-flow status](../git/status) -- 查看 git 分支状态

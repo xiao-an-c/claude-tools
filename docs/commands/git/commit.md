@@ -1,11 +1,11 @@
-# /git:commit
+# git-flow commit
 
 智能提交，根据分支类型自动添加 commit 前缀。
 
 ## 用法
 
 ```bash
-/git:commit [message]
+git-flow commit [message]
 ```
 
 ## 功能
@@ -52,10 +52,10 @@
 ```
 ✅ 提交成功: `feat(user): 添加用户资料页面`
 📊 当前分支: `feat/user-profile`
-💡 提示: 使用 /git:sync 同步基础分支，或 /git:finish 完成开发
+💡 提示: 使用 git-flow sync 同步基础分支，或 git-flow finish 完成开发
 ```
 
 ## 相关命令
 
-- [/git:sync](./sync) - 同步基础分支代码
-- [/git:finish](./finish) - 完成并合并分支
+- [git-flow sync](./sync) - 同步基础分支代码
+- [git-flow finish](./finish) - 完成并合并分支

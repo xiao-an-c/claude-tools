@@ -1,11 +1,11 @@
-# /dev:run
+# dev-flow run
 
 通用工作流执行器。读取工作流定义文件，机械执行每个步骤。
 
 ## 用法
 
 ```bash
-/dev:run <workflow-name> [--git|--no-git] <描述>
+dev-flow run <workflow-name> [--git|--no-git] <描述>
 ```
 
 ## 参数
@@ -31,10 +31,10 @@
 ## 执行流程
 
 ```
-/dev:run feat 添加用户登录功能
+dev-flow run feat 添加用户登录功能
     ↓
 1. 加载工作流定义
-   优先 .dev/workflows/feat.md，不存在则用包内置的 workflows/feat.md
+   优先 .dev/workflows/feat.md，不存在则用 skills/dev-flow/workflows/feat.md
     ↓
 2. 解析 YAML frontmatter（defaults、步骤定义）
     ↓
@@ -81,7 +81,7 @@ Agent(
 
 ### loop
 
-读取循环源（如 PLAN.md 中的任务列表），对每个项执行子步骤。上下文超过 60% 时建议 `/dev:resume`。
+读取循环源（如 PLAN.md 中的任务列表），对每个项执行子步骤。上下文超过 60% 时建议 `dev-flow resume`。
 
 ### condition
 
@@ -105,16 +105,16 @@ AskUserQuestion: "要保存为可复用的模板吗？"
 
 - **Agent spawn 失败**：重试 1 次，仍然失败则报告用户
 - **验证失败**：按工作流 Retry 配置重试，耗尽后记录 FAILED
-- **上下文 > 60%**：输出进度摘要，建议 `/dev:resume`
+- **上下文 > 60%**：输出进度摘要，建议 `dev-flow resume`
 
 ## 自定义工作流
 
-在项目的 `.dev/workflows/` 目录下创建 `<name>.md` 文件，按照内置工作流的格式编写，即可通过 `/dev:run <name>` 调用。自定义工作流优先于内置工作流。
+在项目的 `.dev/workflows/` 目录下创建 `<name>.md` 文件，按照内置工作流的格式编写，即可通过 `dev-flow run <name>` 调用。自定义工作流优先于内置工作流。
 
 ## 相关命令
 
-- [/dev:status](./status) -- 查看工作流状态
-- [/dev:resume](./resume) -- 恢复中断的工作流
-- [/dev:review](./review) -- 代码审查（独立命令）
-- [/dev:discuss](./discuss) -- 架构讨论（独立命令）
-- [/dev:investigate](./investigate) -- Bug 排查（独立命令）
+- [dev-flow status](./status) -- 查看工作流状态
+- [dev-flow resume](./resume) -- 恢复中断的工作流
+- [dev-flow review](./review) -- 代码审查（独立命令）
+- [dev-flow discuss](./discuss) -- 架构讨论（独立命令）
+- [dev-flow investigate](./investigate) -- Bug 排查（独立命令）
