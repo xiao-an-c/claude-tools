@@ -126,20 +126,7 @@ tools: [Read, Write, Edit, Bash, Glob, Grep, Agent]
 6. **不写具体测试代码** — 只描述"测什么"和"怎么测"，代码由 developer 编写
 7. **操作步骤用自然语言描述** — 如"打开 Provider 面板 → 点击添加按钮 → 填写名称 → 点击确认"
 
-**完成后，后台 spawn recorder：**
-
-```
-- agent: dev-recorder
-  model: sonnet
-  task: 记录test_design阶段发现的项目知识（如果无新知识则静默退出）。
-  params:
-    - phase: test_design
-    - branch_name: <branch_name>
-    - project_root: <project_root>
-    - knowledge_dir: .dev/doc/
-    - notes: <测试策略选择、覆盖思路、发现的测试难点，如果没有就写 无>
-```
-
+**只返回以下格式：**
 **只返回以下格式：**
 
 ```
@@ -185,10 +172,6 @@ tools: [Read, Write, Edit, Bash, Glob, Grep, Agent]
 ```
 test(<scope>): 添加 <功能> 单元测试和 E2E 测试
 ```
-
-#### 3.5 记录经验
-
-后台 spawn recorder 记录测试阶段经验。
 
 #### 3.6 输出
 

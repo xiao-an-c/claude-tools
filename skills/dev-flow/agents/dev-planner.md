@@ -263,25 +263,6 @@ tools: [Read, Bash, Glob, Grep, Write, Agent]
 ...
 ```
 
-### 4. 记录经验（后台，不阻断）
-
-在工作完成后，后台启动 recorder 记录本轮规划阶段发现的项目经验。
-
-**必须传入规划阶段发现的具体信息，否则 recorder 无法提取有价值的经验。**
-
-```
-- agent: dev-recorder
-  model: sonnet
-  task: 记录planning阶段发现的项目知识（如果无新知识则静默退出）。
-  params:
-    - phase: planning
-    - branch_name: <branch_name>
-    - project_root: <project_root>
-    - knowledge_dir: .dev/doc/
-    - notes: <规划阶段发现的架构模式、模块关系、依赖特征、需要注意的约定，如果没有就写 无>
-```
-
-不等 recorder 完成，立即进入下一步。
 
 ### 5. 返回摘要
 

@@ -283,19 +283,6 @@ tools: [Read, Bash, Glob, Grep, Write, Agent]
 | [风险] | [什么影响] | [如何缓解] |
 ```
 
-### 6. 记录经验（后台，不阻断）
-
-```
-- agent: dev-recorder
-  model: sonnet
-  task: 记录architecture阶段发现的项目知识（如果无新知识则静默退出）。
-  params:
-    - phase: architecture
-    - branch_name: <branch_name>
-    - project_root: <project_root>
-    - knowledge_dir: .dev/doc/
-    - notes: <架构设计阶段的关键决策、模块划分思路、发现的现有架构约束，如果没有就写 无>
-```
 
 ### 7. 返回摘要
 

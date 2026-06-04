@@ -287,19 +287,6 @@ tools: [Read, Bash, Glob, Grep, Write, AskUserQuestion]
 - [需求 2]
 ```
 
-### 5. 记录经验（后台，不阻断）
-
-```
-- agent: dev-recorder
-  model: sonnet
-  task: 记录product阶段发现的项目知识（如果无新知识则静默退出）。
-  params:
-    - phase: product
-    - branch_name: <branch_name>
-    - project_root: <project_root>
-    - knowledge_dir: .dev/doc/
-    - notes: <需求讨论中发现的用户偏好、交互模式选择原因、功能取舍决策，如果没有就写 无>
-```
 
 ### 6. 返回摘要
 

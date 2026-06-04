@@ -129,19 +129,6 @@ interface ExampleType {
 ...
 ```
 
-### 4. 记录经验（后台，不阻断）
-
-```
-- agent: dev-recorder
-  model: sonnet
-  task: 记录tech_design阶段发现的项目知识（如果无新知识则静默退出）。
-  params:
-    - phase: tech_design
-    - branch_name: <branch_name>
-    - project_root: <project_root>
-    - knowledge_dir: .dev/doc/
-    - notes: <技术设计阶段发现的关键实现决策、跨任务依赖模式、需要注意的代码约定，如果没有就写 无>
-```
 
 ### 5. 返回摘要
 

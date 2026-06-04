@@ -121,29 +121,8 @@ git add <修改的文件列表>
 git commit -m "<提交信息>"
 ```
 
-### 5. 记录经验（后台，不阻断）
 
-在提交完成后，后台启动 recorder 记录本轮发现的项目经验。
 
-**注意：必须传入具体的任务信息，否则 recorder 无法提取有价值的经验。**
-
-```
-- agent: dev-recorder
-  model: sonnet
-  task: 记录development阶段发现的项目知识（如果无新知识则静默退出）。
-  params:
-    - phase: development
-    - branch_name: <branch_name>
-    - project_root: <project_root>
-    - knowledge_dir: .dev/doc/
-    - notes: <开发过程中遇到的问题、踩的坑、发现的模式，如果没有就写 无>
-    - task_id: <T-XX>
-    - task_title: <任务标题>
-    - changed_files: <本任务实际修改/创建的文件列表>
-    - commit_hash: <刚才的提交短哈希>
-```
-
-不等 recorder 完成，立即返回摘要。
 
 ### 6. 返回摘要
 
