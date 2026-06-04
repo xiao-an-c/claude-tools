@@ -121,7 +121,7 @@ tools: [Read, Write, Edit, Bash, Glob, Grep, Agent]
 
 ```
 Agent(
-  subagent_type="dev-recorder",
+  subagent_type="general-purpose",
   model="sonnet",
   run_in_background=true,
   prompt="

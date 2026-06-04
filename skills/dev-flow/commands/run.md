@@ -22,6 +22,7 @@ allowed-tools:
 本 Skill 中的路径解析规则：
 
 - `workflows/<name>.md` — 相对于**本 Skill 的 Base directory**（包内置工作流，一定存在）
+- `agents/<name>.md` — 相对于**本 Skill 的 Base directory**（Agent 角色定义，运行时加载）
 - `.dev/workflows/<name>.md` — 相对于**用户项目根目录**（用户自定义覆盖，仅 auto 沉淀时生成，默认不存在）
 - `.dev/config.yml`、`.dev/plan/...` — 相对于**用户项目根目录**（运行时状态）
 
@@ -41,6 +42,7 @@ Skill 加载时 Claude Code 会提供 Base directory 上下文。
 **只允许：**
 
 - 读取工作流定义文件（`.dev/workflows/*.md`、`workflows/*.md`）
+- 读取 Agent 角色定义（`agents/*.md`）用于注入到 prompt
 - 读取状态文件（`.dev/config.yml`、TASK-LOG.md、PRD.md 等）
 - 获取 git 信息
 - 通过 `Agent()` spawn agent
@@ -64,16 +66,26 @@ Skill 加载时 Claude Code 会提供 Base directory 上下文。
 
 #### Type: agent
 
-spawn Agent，将 prompt 模板中的 `${variable}` 替换为运行时值：
+**Agent 定义加载（关键步骤）：** 本技能不使用自定义 Agent 类型。所有 Agent 统一以 `general-purpose` 类型 spawn，Agent 的角色指令通过运行时加载实现。
+
+spawn 前必须执行以下步骤：
+
+1. 从工作流步骤中提取 Agent 名称（如 `dev-architect`、`dev-developer`）
+2. 读取 Skill Base directory 下的 `agents/<name>.md` 文件
+3. 去除 YAML frontmatter（`---...---` 之间的内容），保留 Markdown 正文作为 `agent_role`
+4. **精简 agent_role**：跳过 `## 团队通信` 或 `## Team Communication` 段落（仅用于 team 模式，inline spawn 时是死代码）
+5. 组合最终 prompt：`agent_role + "\n\n## 任务\n" + <工作流中的任务 prompt>`
+6. Spawn：
 
 ```
 Agent(
-  subagent_type="<Agent>",
+  subagent_type="general-purpose",
   model="<Model>",
-  prompt="<解析后的 prompt>"
+  prompt="<agent_role + 任务 prompt>"
 )
 ```
 
+- 如果 `agents/<name>.md` 文件不存在，直接使用工作流中的 prompt（不做拼接）
 - 有 `parallel_with` 时同时 spawn 多个 agent
 - 收集返回值，更新 TASK-LOG.md
 

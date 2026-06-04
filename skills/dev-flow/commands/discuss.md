@@ -58,7 +58,7 @@ Done. 建议具体开发模式
 
 ```
 Agent(
-  subagent_type="dev-product",
+  subagent_type="general-purpose",
   model="opus",
   prompt="
     <discussion_topic><讨论主题></discussion_topic>
@@ -88,7 +88,7 @@ Agent(
 
 ```
 Agent(
-  subagent_type="dev-architect",
+  subagent_type="general-purpose",
   model="opus",
   prompt="
     <discussion_topic><讨论主题></discussion_topic>
@@ -162,7 +162,7 @@ YYYY-MM-DD
 
 ```
 Agent(
-  subagent_type="dev-recorder",
+  subagent_type="general-purpose",
   model="sonnet",
   prompt="
     <knowledge_dir>docs/knowledge/</knowledge_dir>

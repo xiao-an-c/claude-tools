@@ -89,9 +89,11 @@ Action: execute_workflow
 
 spawn 模板：
 
+**Agent 定义加载：** spawn 前，先读取 Skill Base directory 下的 `agents/<name>.md`，去除 YAML frontmatter 和团队通信段，将角色定义注入到 prompt 开头。
+
 ```
 Agent(
-  subagent_type="<agent-type>",
+  subagent_type="general-purpose",
   model="<model>",
   prompt="
     <project_root>${project_root}</project_root>
@@ -115,7 +117,7 @@ Agent(
 
 ```
 Agent(
-  subagent_type="dev-recorder",
+  subagent_type="general-purpose",
   model="sonnet",
   prompt="
     <knowledge_dir>docs/knowledge/</knowledge_dir>

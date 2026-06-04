@@ -26,8 +26,11 @@ allowed-tools:
 
 本 Skill 中的路径解析规则：
 
-- `commands/<name>.md`、`workflows/<name>.md`、`agents/<name>.md` — 相对于**本 Skill 的 Base directory**
+- `commands/<name>.md`、`workflows/<name>.md` — 相对于**本 Skill 的 Base directory**
+- `agents/<name>.md` — 相对于**本 Skill 的 Base directory**（Agent 角色定义，编排器在 spawn 前运行时加载并注入到 prompt）
 - `.dev/config.yml`、`.dev/plan/...`、`.dev/workflows/<name>.md` — 相对于**用户项目根目录**（运行时状态和用户自定义覆盖）
+
+**所有 Agent 统一以 `general-purpose` 类型 spawn。** Agent 的角色指令通过运行时加载 `agents/<name>.md` 实现，不依赖自定义 Agent 类型注册。
 
 Skill 加载时 Claude Code 会提供 Base directory 上下文。
 

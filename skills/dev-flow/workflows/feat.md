@@ -296,9 +296,11 @@ Spawn: parallel
 
 **并行 spawn tester 和 architect，同时运行：**
 
+**Agent 定义加载：** spawn 前，先读取 Skill Base directory 下的 `agents/dev-tester.md` 和 `agents/dev-architect.md`，去除 YAML frontmatter 和团队通信段，将角色定义注入到 prompt 开头。
+
 ```
 Agent(
-  subagent_type="dev-tester",
+  subagent_type="general-purpose",
   model="sonnet",
   prompt="
     <mode>design_only</mode>
@@ -313,7 +315,7 @@ Agent(
 )
 parallel_with:
 Agent(
-  subagent_type="dev-architect",
+  subagent_type="general-purpose",
   model="opus",
   prompt="
     <project_root>${project_root}</project_root>

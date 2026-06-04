@@ -58,7 +58,7 @@ review 模式不使用 git、不创建分支。
 
 ```
 Agent(
-  subagent_type="dev-architect",
+  subagent_type="general-purpose",
   model="opus",
   prompt="
     <review_target><审查目标></review_target>
@@ -116,7 +116,7 @@ Agent(
 
 ```
 Agent(
-  subagent_type="dev-recorder",
+  subagent_type="general-purpose",
   model="sonnet",
   prompt="
     <knowledge_dir>docs/knowledge/</knowledge_dir>

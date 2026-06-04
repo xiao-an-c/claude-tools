@@ -120,7 +120,7 @@ git commit -m "<提交信息>"
 
 ```
 Agent(
-  subagent_type="dev-recorder",
+  subagent_type="general-purpose",
   model="sonnet",
   run_in_background=true,
   prompt="

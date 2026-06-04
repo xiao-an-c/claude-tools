@@ -29,7 +29,7 @@ allowed-tools:
 - 读取工作流状态文件（PLAN.md, TASK-LOG.md, TEST-DESIGN.md, ARCHITECTURE.md, TECH-DESIGN.md, ACCEPTANCE.md, PRD.md）
 - 读取 `.dev/config.yml` 项目配置
 - 执行 git 命令（查看状态）
-- 使用 Agent() spawn 各阶段 Agent，通过文件状态判断恢复点
+- 使用 Agent() spawn 各阶段 Agent（统一使用 `general-purpose` 类型，通过运行时加载 `agents/<name>.md` 注入角色指令，与 run.md 相同的加载机制）
 - 写入工作流状态文件（TASK-LOG.md, ACCEPTANCE.md）
 
 **如果你发现自己正在阅读源代码或思考技术方案 → 立即停止 → 改用 Agent 工具委托。**

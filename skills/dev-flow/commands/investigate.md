@@ -54,7 +54,7 @@ Done. 建议 dev-flow fix 或 dev-flow feat
 
 ```
 Agent(
-  subagent_type="dev-architect",
+  subagent_type="general-purpose",
   model="opus",
   prompt="
     <investigation_request><问题描述></investigation_request>
@@ -116,7 +116,7 @@ Agent(
 
 ```
 Agent(
-  subagent_type="dev-recorder",
+  subagent_type="general-purpose",
   model="sonnet",
   prompt="
     <knowledge_dir>docs/knowledge/</knowledge_dir>

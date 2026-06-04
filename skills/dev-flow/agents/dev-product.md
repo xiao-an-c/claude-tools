@@ -282,7 +282,7 @@ tools: [Read, Bash, Glob, Grep, Write, AskUserQuestion]
 
 ```
 Agent(
-  subagent_type="dev-recorder",
+  subagent_type="general-purpose",
   model="sonnet",
   run_in_background=true,
   prompt="
