@@ -42,28 +42,16 @@ Agent: dev-architect
 Model: opus
 Spawn: inline
 
-```
-<change_request>${description}</change_request>
-<project_root>${project_root}</project_root>
-
-快速分析这个改动，返回结构化的实施方案（不要写任何文件）：
-
-## 实施方案
-
-### T-01: <任务标题>
-- **描述**: <具体做什么>
-- **文件**: <需要修改的文件路径>
-- **改动**: <每个文件具体改什么，2-3 句话>
-
-### T-02: ...（如需要）
-
-## 风险点
-<是否有副作用或需要注意的地方>
-
-如果改动描述不够明确，指出需要向用户澄清的问题。
-如果改动涉及交互变更，标注 `[UI]` 并说明交互细节。
-不要输出 ARCHITECTURE.md，不要写任何文件。
-```
+- agent: dev-architect
+  model: opus
+  task: |
+    快速分析改动，返回结构化的实施方案（不要写任何文件）。
+    如果改动描述不够明确，指出需要向用户澄清的问题。
+    如果改动涉及交互变更，标注 [UI] 并说明交互细节。
+    不要输出 ARCHITECTURE.md，不要写任何文件。
+  params:
+    - change_request: ${description}
+    - project_root
 
 **如果改动涉及交互变更（包含 `[UI]` 标注），需要向用户确认交互细节：**
 
@@ -76,23 +64,17 @@ Agent: dev-developer
 Model: sonnet
 Spawn: inline
 
-```
-<project_root>${project_root}</project_root>
-
-按以下方案实现改动（不需要创建文档文件）：
-
-<plan>
-${step_1_result}
-</plan>
-
-<user_adjustments>
-${user_adjustments}
-</user_adjustments>
-
-要求：
-- 直接修改文件，不需要创建任何设计文档
-- 实现完成后提交代码（commit message 用简洁的中文描述改动）
-```
+- agent: dev-developer
+  model: sonnet
+  task: |
+    按方案实现改动（不需要创建文档文件）。
+    要求：
+    - 直接修改文件，不需要创建任何设计文档
+    - 实现完成后提交代码（commit message 用简洁的中文描述改动）
+  params:
+    - project_root
+    - plan: ${step_1_result}
+    - user_adjustments: ${user_adjustments}
 
 ### Step 3: 验证
 

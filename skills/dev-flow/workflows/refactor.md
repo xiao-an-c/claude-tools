@@ -220,76 +220,26 @@ Agent: dev-architect
 Model: opus
 Spawn: inline
 
-以内联方式 spawn 架构师，分析代码并识别坏味道，输出重构计划。
+- agent: dev-architect
+  model: opus
+  task: |
+    纯重构任务，不需要 PRD 和 TEST-DESIGN。
+    1. 读取 refactor_request 中指定的代码文件和目录
+    2. 识别代码坏味道（重复代码、过长函数、过大类、过长参数列、发散式变化、霰弹式修改、依恋情结、数据泥团、基本类型偏执、switch 惊悚等）
+    3. 对每个坏味道，从《重构》中选择合适的重构手法
+    4. 制定分步重构计划，确保每步是原子的、可验证的
+    5. 将分析结果写入 architecture_path
 
-```
-<refactor_request>${description}</refactor_request>
-<project_root>${project_root}</project_root>
-<config_path>.dev/config.yml</config_path>
-<architecture_path>.dev/plan/refactor-${slug}/ARCHITECTURE.md</architecture_path>
-
-你是架构师。这是一个纯重构任务，不需要 PRD 和 TEST-DESIGN。
-
-你的任务：
-1. 读取 <refactor_request> 中指定的代码文件和目录
-2. 识别代码坏味道（重复代码、过长函数、过大类、过长参数列、发散式变化、霰弹式修改、依恋情结、数据泥团、基本类型偏执、switch 惊悚等）
-3. 对每个坏味道，从《重构》中选择合适的重构手法
-4. 制定分步重构计划，确保每步是原子的、可验证的
-5. 将分析结果写入 <architecture_path>
-
-输出格式要求：
-
-```markdown
-# 重构架构分析: <重构描述>
-
-## 概要
-
-| 字段 | 值 |
-|------|-----|
-| 重构范围 | [涉及的模块/目录] |
-| 坏味道数 | N |
-| 重构手法数 | M |
-| 预估步骤 | K |
-| 风险等级 | 低/中/高 |
-
-## 代码坏味道
-
-| 坏味道 | 位置 | 严重度 | 重构手法 |
-|--------|------|--------|---------|
-| [坏味道类型] | [文件/函数] | 高/中/低 | [选用的重构手法] |
-
-## 重构计划
-
-### Step 1: [重构步骤名称]
-- **手法:** [Martin Fowler 重构手法名称]
-- **范围:** [涉及的文件和函数]
-- **说明:** [具体操作描述]
-- **验证:** [如何确认此步未破坏行为]
-
-### Step 2: [重构步骤名称]
-...
-
-## 风险与注意事项
-
-| 风险 | 影响 | 缓解策略 |
-|------|------|---------|
-| [风险] | [影响] | [策略] |
-
-## 重构前后对比预期
-
-### 结构变化
-[描述重构前后的代码结构变化]
-
-### 预期改善
-[列出可衡量的改善指标]
-```
-
-重要原则：
-- 每个重构步骤必须足够小，独立执行后测试应仍然通过
-- 遵循 Martin Fowler 的小步前进原则
-- 先消除最严重的坏味道，再处理次要的
-- 记录每步使用的具体重构手法名称
-```
+    重要原则：
+    - 每个重构步骤必须足够小，独立执行后测试应仍然通过
+    - 遵循 Martin Fowler 的小步前进原则
+    - 先消除最严重的坏味道，再处理次要的
+    - 记录每步使用的具体重构手法名称
+  params:
+    - refactor_request: ${description}
+    - project_root
+    - config_path: .dev/config.yml
+    - architecture_path: .dev/plan/refactor-${slug}/ARCHITECTURE.md
 
 **Agent 返回后：**
 1. 确认 ARCHITECTURE.md 已生成
@@ -302,30 +252,26 @@ Agent: dev-planner
 Model: opus
 Spawn: inline
 
-将架构师的重构步骤拆分为可执行的开发任务。
-
-```
-<project_root>${project_root}</project_root>
-<config_path>.dev/config.yml</config_path>
-<plan_path>.dev/plan/refactor-${slug}/PLAN.md</plan_path>
-<architecture_path>.dev/plan/refactor-${slug}/ARCHITECTURE.md</architecture_path>
-<branch_type>refactor</branch_type>
-<branch_name>refactor/${slug}</branch_name>
-
-你是规划师。这是一个纯重构任务，不需要 PRD 和 TEST-DESIGN。
-
-请基于 ARCHITECTURE.md 中的重构计划，将每个重构步骤拆分为原子任务。
-
-重构任务的特别要求：
-- 每个任务对应一个原子重构操作（一个 commit）
-- 任务粒度：每个任务应是单一重构手法（如"提炼函数"、"搬移方法"）
-- 每个任务的验证必须包括：运行已有测试确认行为未改变
-- 任务之间保持严格的顺序依赖，确保中间状态都是稳定的
-- 不要设计新测试，只依赖现有测试验证行为保持
-- commit type 统一使用 refactor
-
-输出 PLAN.md 到 <plan_path>。
-```
+- agent: dev-planner
+  model: opus
+  task: |
+    纯重构任务，不需要 PRD 和 TEST-DESIGN。
+    基于 ARCHITECTURE.md 中的重构计划，将每个重构步骤拆分为原子任务。
+    重构任务的特别要求：
+    - 每个任务对应一个原子重构操作（一个 commit）
+    - 任务粒度：每个任务应是单一重构手法（如"提炼函数"、"搬移方法"）
+    - 每个任务的验证必须包括：运行已有测试确认行为未改变
+    - 任务之间保持严格的顺序依赖，确保中间状态都是稳定的
+    - 不要设计新测试，只依赖现有测试验证行为保持
+    - commit type 统一使用 refactor
+    输出 PLAN.md。
+  params:
+    - project_root
+    - config_path: .dev/config.yml
+    - plan_path: .dev/plan/refactor-${slug}/PLAN.md
+    - architecture_path: .dev/plan/refactor-${slug}/ARCHITECTURE.md
+    - branch_type: refactor
+    - branch_name: refactor/${slug}
 
 **等待 planner 返回。** 确认 PLAN.md 已生成，记录任务数量。
 
@@ -360,29 +306,28 @@ git checkout -b refactor/${slug}-t<NN>
 
 ##### 6b. spawn developer
 
-```
-<project_root>${project_root}</project_root>
-<config_path>.dev/config.yml</config_path>
-<plan_path>.dev/plan/refactor-${slug}/PLAN.md</plan_path>
-<task_id>${task_id}</task_id>
-<task_title>${task_title}</task_title>
-<task_description>${task_description}</task_description>
-<task_files>${task_files}</task_files>
-<task_verification>${task_verification}</task_verification>
-<branch_type>refactor</branch_type>
-
-你是开发者。这是一个重构任务。
-
-重构任务的特别要求：
-- 只做结构改善，不改变外部行为
-- 严格遵循重构手法描述，不做额外的"顺便"改动
-- 保持现有的代码风格和模式
-- 不要引入新依赖
-- 不要修改测试文件（除非重构步骤明确要求调整测试以适应新结构）
-- commit type 使用 refactor
-
-实现完成后提交代码。
-```
+- agent: dev-developer
+  model: sonnet
+  task: |
+    重构任务。
+    重构任务的特别要求：
+    - 只做结构改善，不改变外部行为
+    - 严格遵循重构手法描述，不做额外的"顺便"改动
+    - 保持现有的代码风格和模式
+    - 不要引入新依赖
+    - 不要修改测试文件（除非重构步骤明确要求调整测试以适应新结构）
+    - commit type 使用 refactor
+    实现完成后提交代码。
+  params:
+    - project_root
+    - config_path: .dev/config.yml
+    - plan_path: .dev/plan/refactor-${slug}/PLAN.md
+    - task_id: ${task_id}
+    - task_title: ${task_title}
+    - task_description: ${task_description}
+    - task_files: ${task_files}
+    - task_verification: ${task_verification}
+    - branch_type: refactor
 
 **等待 developer 返回摘要。**
 
@@ -398,17 +343,19 @@ Spawn: background
 
 在 developer 完成后，后台启动 recorder 记录重构经验。不等 recorder 完成，立即进入 Step 8。
 
-```
-<phase>development</phase>
-<task_id>${task_id}</task_id>
-<task_title>${task_title}</task_title>
-<branch_name>refactor/${slug}</branch_name>
-<changed_files>${changed_files}</changed_files>
-<commit_hash>${commit_hash}</commit_hash>
-<project_root>${project_root}</project_root>
-<knowledge_dir>docs/knowledge/</knowledge_dir>
-<notes>${recorder_notes}</notes>
-```
+- agent: dev-recorder
+  model: sonnet
+  task: 记录重构任务的经验知识。
+  params:
+    - phase: development
+    - task_id: ${task_id}
+    - task_title: ${task_title}
+    - branch_name: refactor/${slug}
+    - changed_files: ${changed_files}
+    - commit_hash: ${commit_hash}
+    - project_root
+    - knowledge_dir: docs/knowledge/
+    - notes: ${recorder_notes}
 
 #### Step 8: 验证 + 合并子分支
 

@@ -28,6 +28,10 @@ allowed-tools:
 - 想审查代码质量（用 `dev-flow review`）
 - 想排查 bug（用 `dev-flow investigate`）
 
+## Agent 加载机制
+
+所有 Agent 通过 **Agent Loader 协议** 加载：读取 Skill Base directory 下的 `agents/<name>.md`，去除 YAML frontmatter 和团队通信段，拼接 task + params 作为最终 prompt。
+
 ## 流程
 
 ```
@@ -54,64 +58,46 @@ Done. 建议具体开发模式
 
 ### Step 2: 产品经理开场
 
-以内联方式 spawn dev-product，做讨论前的准备：
+加载 `agents/dev-product.md`，以讨论主持模式 spawn：
 
-```
-Agent(
-  subagent_type="general-purpose",
-  model="opus",
-  prompt="
-    <discussion_topic><讨论主题></discussion_topic>
-    <project_root><项目根目录绝对路径></project_root>
-    <knowledge_dir>docs/knowledge/</knowledge_dir>
-
-    你是讨论主持人。不要写 PRD，不要写文件。
-
+- agent: dev-product
+  model: opus
+  task: |
+    讨论主持模式（不要写 PRD，不要写文件）。
     1. 阅读项目结构和相关代码，理解当前状态
     2. 阅读知识库，了解已有约束和约定
     3. 向用户提问，澄清讨论的核心问题：
        - 你最关心什么？（性能/安全/可维护性/开发速度）
        - 有什么约束？（时间/技术栈/兼容性）
        - 成功标准是什么？
-
     通过 AskUserQuestion 与用户互动。最多 3 轮提问。
     每轮聚焦一个关键问题。
-
     完成后，总结你收集到的上下文，不要写任何文件。
-  "
-)
-```
+  params:
+    - discussion_topic: ${讨论主题}
+    - project_root
+    - knowledge_dir: docs/knowledge/
 
 ### Step 3: 架构师分析 + 多轮讨论
 
-基于产品经理收集的上下文，spawn 架构师进行分析，然后与用户多轮讨论：
+加载 `agents/dev-architect.md`，以技术顾问模式 spawn：
 
-```
-Agent(
-  subagent_type="general-purpose",
-  model="opus",
-  prompt="
-    <discussion_topic><讨论主题></discussion_topic>
-    <project_root><项目根目录绝对路径></project_root>
-    <knowledge_dir>docs/knowledge/</knowledge_dir>
-    <product_context>
-    <产品经理收集的上下文>
-    </product_context>
-
-    你是技术顾问。基于讨论主题和上下文：
-
+- agent: dev-architect
+  model: opus
+  task: |
+    技术顾问模式（不要写 ARCHITECTURE.md）。
+    基于讨论主题和上下文：
     1. 分析 2-3 个可行方案（包括利弊）
     2. 给出你的推荐（及原因）
     3. 指出每个方案的风险和代价
-
     通过 AskUserQuestion 与用户讨论。最多 3 轮。
     每轮针对一个方案深入讨论，回答用户的疑问。
-
-    不要写 ARCHITECTURE.md。口头分析和讨论。
-    完成后，输出讨论结论。
-  "
-)
-```
+    口头分析和讨论。完成后，输出讨论结论。
+  params:
+    - discussion_topic: ${讨论主题}
+    - project_root
+    - knowledge_dir: docs/knowledge/
+    - product_context: ${产品经理收集的上下文}
 
 **讨论格式**：架构师通过 AskUserQuestion 展示方案，用户选择或追问，反复直到满意。
 
@@ -158,21 +144,15 @@ YYYY-MM-DD
 
 ### Step 5: Recorder
 
-如果讨论中有值得记录的架构决策：
+如果讨论中有值得记录的架构决策，加载 `agents/dev-recorder.md`：
 
-```
-Agent(
-  subagent_type="general-purpose",
-  model="sonnet",
-  prompt="
-    <knowledge_dir>docs/knowledge/</knowledge_dir>
-    <phase>discussion</phase>
-    <notes>
-    <讨论中的关键决策和原因，如为什么选A不选B>
-    </notes>
-  "
-)
-```
+- agent: dev-recorder
+  model: sonnet
+  task: 记录讨论中的关键决策和原因。
+  params:
+    - knowledge_dir: docs/knowledge/
+    - phase: discussion
+    - notes: ${讨论中的关键决策和原因，如为什么选A不选B}
 
 ### 完成提示
 

@@ -178,50 +178,25 @@ Agent: dev-architect
 Model: opus
 Spawn: inline
 
-```
-<bug_description>${bug_description}</bug_description>
-<project_root>${project_root}</project_root>
-<config_path>.dev/config.yml</config_path>
-<prd_path>.dev/plan/fix-${slug}/PRD.md</prd_path>
+- agent: dev-architect
+  model: opus
+  task: |
+    bug 诊断（不是架构设计）。执行以下分析：
+    1. 复现路径：根据描述，推断 bug 的触发条件和复现步骤
+    2. 根因分析：阅读相关源代码，定位 bug 的根本原因
+    3. 影响范围：列出所有受影响的文件和模块
+    4. 修复方案：提出具体的修复方法，每个文件需要改什么、为什么
+    5. 风险评估：修复可能引入的副作用，需要回归测试的范围
 
-你是架构师，当前任务是 **bug 诊断**（不是架构设计）。
+    将诊断结果写入 prd_path，格式为 Bug Report（不是产品需求文档）。
+    同时更新 config_path 中的 project、source_layout、build、test、verification、conventions 段。
 
-请执行以下分析：
-
-1. **复现路径**: 根据描述，推断 bug 的触发条件和复现步骤
-2. **根因分析**: 阅读相关源代码，定位 bug 的根本原因
-3. **影响范围**: 列出所有受影响的文件和模块
-4. **修复方案**: 提出具体的修复方法，每个文件需要改什么、为什么
-5. **风险评估**: 修复可能引入的副作用，需要回归测试的范围
-
-将诊断结果写入 <prd_path>，格式为 Bug Report（不是产品需求文档）：
-
-```markdown
-# Bug Report: <bug 简述>
-
-## 症状
-<用户描述的 bug 现象>
-
-## 根因
-<根本原因分析>
-
-## 受影响文件
-- <file1>: <为什么受影响>
-- <file2>: <为什么受影响>
-
-## 修复方案
-- <file1>: <具体改动>
-- <file2>: <具体改动>
-
-## 风险点
-- <风险1>
-- <风险2>
-```
-
-同时更新 <config_path> 中的 project、source_layout、build、test、verification、conventions 段（根据项目实际情况自动发现填充）。
-
-完成后返回简要摘要：根因（1 句话）+ 受影响文件数 + 修复方案概述。
-```
+    完成后返回简要摘要：根因（1 句话）+ 受影响文件数 + 修复方案概述。
+  params:
+    - bug_description: ${bug_description}
+    - project_root
+    - config_path: .dev/config.yml
+    - prd_path: .dev/plan/fix-${slug}/PRD.md
 
 **Agent 返回后：**
 
@@ -237,36 +212,19 @@ Agent: dev-planner
 Model: opus
 Spawn: inline
 
-```
-<project_root>${project_root}</project_root>
-<prd_path>.dev/plan/fix-${slug}/PRD.md</prd_path>
-<plan_path>.dev/plan/fix-${slug}/PLAN.md</plan_path>
-
-你是规划师。基于 PRD.md（Bug Report），生成实现计划。
-
-1. 读取 PRD.md，理解 bug 根因和修复方案
-2. 将修复方案分解为具体的实现任务
-3. 每个 task 包含：标题、描述、涉及文件
-
-输出 PLAN.md：
-
-# 实现计划: fix/${slug}
-
-## 任务列表
-
-### T-01: <任务标题>
-- **描述**: <具体做什么>
-- **文件**: <涉及文件列表>
-- **复杂度**: low/medium
-- **依赖**: 无
-
-## 执行顺序
-T-01 → ...
-
-注意：
-- 这是 bug 修复，任务应该最小化，只修复问题不做额外重构
-- 涉及交互变更的任务需标注 `[UI]`
-```
+- agent: dev-planner
+  model: opus
+  task: |
+    基于 PRD.md（Bug Report），生成实现计划。
+    1. 读取 PRD.md，理解 bug 根因和修复方案
+    2. 将修复方案分解为具体的实现任务
+    3. 每个 task 包含：标题、描述、涉及文件
+    注意：这是 bug 修复，任务应该最小化，只修复问题不做额外重构。
+    输出 PLAN.md。
+  params:
+    - project_root
+    - prd_path: .dev/plan/fix-${slug}/PRD.md
+    - plan_path: .dev/plan/fix-${slug}/PLAN.md
 
 **Agent 返回后：**
 
@@ -281,26 +239,21 @@ Agent: dev-developer
 Model: sonnet
 Spawn: inline
 
-```
-<project_root>${project_root}</project_root>
-<config_path>.dev/config.yml</config_path>
-<prd_path>.dev/plan/fix-${slug}/PRD.md</prd_path>
-<plan_path>.dev/plan/fix-${slug}/PLAN.md</plan_path>
-
-你是开发者。当前任务是 **bug 修复**。
-
-根据 PLAN.md 中的任务列表，逐个实现修复。参考 PRD.md 中的诊断报告。
-
-要求：
-- 严格按照 PLAN.md 中的任务逐个实现
-- 修复应该是最小化的：只改必要的代码，不做额外重构
-- 如果修复过程中发现新问题或方案需要调整，在返回摘要中说明
-- 实现完成后提交代码（commit message 格式: fix(<scope>): <简洁描述>）
-
-<user_adjustments>
-${user_adjustments}
-</user_adjustments>
-```
+- agent: dev-developer
+  model: sonnet
+  task: |
+    bug 修复。根据 PLAN.md 中的任务列表，逐个实现修复。参考 PRD.md 中的诊断报告。
+    要求：
+    - 严格按照 PLAN.md 中的任务逐个实现
+    - 修复应该是最小化的：只改必要的代码，不做额外重构
+    - 如果修复过程中发现新问题或方案需要调整，在返回摘要中说明
+    - 实现完成后提交代码（commit message 格式: fix(<scope>): <简洁描述>）
+  params:
+    - project_root
+    - config_path: .dev/config.yml
+    - prd_path: .dev/plan/fix-${slug}/PRD.md
+    - plan_path: .dev/plan/fix-${slug}/PLAN.md
+    - user_adjustments: ${user_adjustments}
 
 **Agent 返回后：**
 
@@ -352,27 +305,23 @@ COMMIT_HASH=$(git log --oneline -1 --format="%h")
 COMMIT_LOG=$(git log --oneline $BASE_BRANCH..HEAD 2>/dev/null || git log --oneline -5)
 ```
 
-```
-<project_root>${project_root}</project_root>
-<config_path>.dev/config.yml</config_path>
-<knowledge_dir>docs/knowledge/</knowledge_dir>
-<task_log_path>.dev/plan/fix-${slug}/TASK-LOG.md</task_log_path>
-
-你是经验记录员。记录本次 bug 修复的完整信息。
-
-**修复信息：**
-- Bug 描述: ${bug_description}
-- 根因: ${root_cause_summary}
-- 修复方案: ${fix_plan_summary}
-- 变更文件: ${changed_files}
-- Commit: ${commit_hash}
-- Commit 日志: ${commit_log}
-- 验证结果: ${verification_result}
-
-更新 TASK-LOG.md，填写所有步骤的状态和摘要。
-
-完成后返回简要记录摘要。
-```
+- agent: dev-recorder
+  model: sonnet
+  task: |
+    记录本次 bug 修复的完整信息。更新 TASK-LOG.md，填写所有步骤的状态和摘要。
+    完成后返回简要记录摘要。
+  params:
+    - project_root
+    - config_path: .dev/config.yml
+    - knowledge_dir: docs/knowledge/
+    - task_log_path: .dev/plan/fix-${slug}/TASK-LOG.md
+    - bug_description: ${bug_description}
+    - root_cause_summary: ${root_cause_summary}
+    - fix_plan_summary: ${fix_plan_summary}
+    - changed_files: ${changed_files}
+    - commit_hash: ${commit_hash}
+    - commit_log: ${commit_log}
+    - verification_result: ${verification_result}
 
 **Agent 返回后：** 确认 TASK-LOG.md 已更新。
 

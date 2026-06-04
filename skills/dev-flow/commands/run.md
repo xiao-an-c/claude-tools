@@ -50,6 +50,90 @@ Skill 加载时 Claude Code 会提供 Base directory 上下文。
 
 **如果你正在阅读源码或思考技术方案 → 立即停止 → spawn Agent。**
 
+## Agent Step 规格（Agent Step Specification）
+
+工作流中的 agent 步骤使用声明式格式，**不包含** `Agent()` 调用或角色指令。格式如下：
+
+```yaml
+Type: agent
+Spawn: inline | parallel | background
+
+- agent: <name>           # 对应 agents/<name>.md
+  model: opus | sonnet
+  task: |                  # 只描述"做什么"，不描述"你是谁"
+    基于 PRD.md 生成测试用例设计文档 TEST-DESIGN.md
+  params:                  # 需要注入到 prompt 的上下文变量
+    - project_root
+    - config_path: .dev/plan/${branch_name}/TEST-DESIGN.md
+    - prd_path
+```
+
+多个 agent 并行时，用列表声明每个 agent：
+
+```yaml
+Type: agent
+Spawn: parallel
+
+- agent: dev-tester
+  model: sonnet
+  task: ...
+  params: ...
+
+- agent: dev-architect
+  model: opus
+  task: ...
+  params: ...
+```
+
+## Agent Loader 协议（强制执行）
+
+遇到 `Type: agent` 步骤时，**必须**执行以下加载流程。这是 spawn 的唯一方式，不允许跳过。
+
+### 1. 读取 agent 角色定义
+
+从 Skill Base directory 读取 `agents/<name>.md`。
+
+如果文件不存在，报错并终止该步骤。
+
+### 2. 处理角色定义
+
+```
+原文 → 去除 YAML frontmatter（---...--- 之间的所有内容）
+     → 跳过 ## 团队通信 段落（从标题到下一个同级/更高级标题之间的全部内容）
+     → 得到 agent_role（纯 Markdown 正文）
+```
+
+### 3. 组合最终 prompt
+
+```
+final_prompt = agent_role
+             + "\n\n## 任务\n\n"
+             + <task 字段内容>
+             + "\n\n## 上下文\n\n"
+             + <params 中的变量，格式化为 XML 标签>
+```
+
+params 格式化规则：
+- 简单值：`<param_name>${value}</param_name>`
+- 路径值：`<param_name>${resolved_path}</param_name>`
+- 变量引用（如 `${project_root}`）替换为实际值
+
+### 4. Spawn
+
+```
+Agent(
+  subagent_type="general-purpose",
+  model="<model>",
+  prompt="<final_prompt>"
+)
+```
+
+**并行 spawn（Spawn: parallel）：** 多个 agent 同时 spawn，等待全部完成。
+
+**后台 spawn（Spawn: background）：** spawn 后不等待返回，立即继续下一步。
+
+**内联 spawn（Spawn: inline）：** spawn 后等待返回，处理结果。
+
 ## 执行流程
 
 ### 1. 加载工作流
@@ -66,26 +150,8 @@ Skill 加载时 Claude Code 会提供 Base directory 上下文。
 
 #### Type: agent
 
-**Agent 定义加载（关键步骤）：** 本技能不使用自定义 Agent 类型。所有 Agent 统一以 `general-purpose` 类型 spawn，Agent 的角色指令通过运行时加载实现。
+使用上述 **Agent Loader 协议** 加载 agent 角色定义，组合 task + params，spawn。
 
-spawn 前必须执行以下步骤：
-
-1. 从工作流步骤中提取 Agent 名称（如 `dev-architect`、`dev-developer`）
-2. 读取 Skill Base directory 下的 `agents/<name>.md` 文件
-3. 去除 YAML frontmatter（`---...---` 之间的内容），保留 Markdown 正文作为 `agent_role`
-4. **精简 agent_role**：跳过 `## 团队通信` 或 `## Team Communication` 段落（仅用于 team 模式，inline spawn 时是死代码）
-5. 组合最终 prompt：`agent_role + "\n\n## 任务\n" + <工作流中的任务 prompt>`
-6. Spawn：
-
-```
-Agent(
-  subagent_type="general-purpose",
-  model="<Model>",
-  prompt="<agent_role + 任务 prompt>"
-)
-```
-
-- 如果 `agents/<name>.md` 文件不存在，直接使用工作流中的 prompt（不做拼接）
 - 有 `parallel_with` 时同时 spawn 多个 agent
 - 收集返回值，更新 TASK-LOG.md
 

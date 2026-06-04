@@ -55,12 +55,16 @@ Agent: dev-flow-architect
 Model: opus
 Spawn: inline
 
-```
-<task_description>${description}</task_description>
-<project_root>${project_root}</project_root>
-<workflow_path>.dev/plan/${branch_name}/WORKFLOW.md</workflow_path>
-<knowledge_dir>docs/knowledge/</knowledge_dir>
-```
+- agent: dev-flow-architect
+  model: opus
+  task: |
+    动态设计工作流。分析任务描述，设计适合的流程步骤、agent 编排、产物路径。
+    输出 WORKFLOW.md 到指定路径。
+  params:
+    - task_description: ${description}
+    - project_root
+    - workflow_path: .dev/plan/${branch_name}/WORKFLOW.md
+    - knowledge_dir: docs/knowledge/
 
 ### Step 3: 用户确认工作流
 
@@ -87,53 +91,21 @@ Action: execute_workflow
 4. 人类介入点用 AskUserQuestion 确认
 5. 每步完成后更新 TASK-LOG.md
 
-spawn 模板：
-
-**Agent 定义加载：** spawn 前，先读取 Skill Base directory 下的 `agents/<name>.md`，去除 YAML frontmatter 和团队通信段，将角色定义注入到 prompt 开头。
-
-```
-Agent(
-  subagent_type="general-purpose",
-  model="<model>",
-  prompt="
-    <project_root>${project_root}</project_root>
-    <knowledge_dir>docs/knowledge/</knowledge_dir>
-    <config_path>.dev/config.yml</config_path>
-
-    任务: <步骤描述>
-
-    <context>
-    <前序步骤的关键产出或文件路径>
-    </context>
-
-    <output>
-    <这一步应该产出什么>
-    </output>
-  "
-)
-```
+每个步骤使用 **Agent Loader 协议**：读取 `agents/<name>.md`，去 frontmatter 和团队通信段，拼接 task + params，spawn。
 
 最后触发 recorder（一次）：
 
-```
-Agent(
-  subagent_type="general-purpose",
-  model="sonnet",
-  prompt="
-    <knowledge_dir>docs/knowledge/</knowledge_dir>
-    <phase>development</phase>
-    <task_title>${description}</task_title>
-    <branch_name>${branch_name}</branch_name>
-    <changed_files>
-    <所有变更文件>
-    </changed_files>
-    <commit_hash><最新 commit></commit_hash>
-    <notes>
-    <任务中的关键发现和经验>
-    </notes>
-  "
-)
-```
+- agent: dev-recorder
+  model: sonnet
+  task: 记录即兴编排工作流的经验知识。
+  params:
+    - knowledge_dir: docs/knowledge/
+    - phase: development
+    - task_title: ${description}
+    - branch_name: ${branch_name}
+    - changed_files: ${所有变更文件}
+    - commit_hash: ${最新 commit}
+    - notes: ${任务中的关键发现和经验}
 
 ### Step 5: 提议沉淀
 

@@ -101,42 +101,21 @@ Agent: dev-architect
 Model: opus
 Spawn: inline
 
-```
-<change_request>${bug_description}</change_request>
-<project_root>${project_root}</project_root>
-<prd_path>.dev/plan/hotfix-${slug}/PRD.md</prd_path>
-
-这是紧急线上修复。快速分析问题并输出 Bug Report 到 <prd_path>：
-
-1. **影响范围**: 哪些功能/用户受影响
-2. **根因分析**: 最可能的根因
-3. **修复方案**: 每个文件具体改什么
-4. **风险评估**: 修复可能引入的新问题
-
-输出格式：
-
-# Bug Report: <问题简述>
-
-## 症状
-<影响范围>
-
-## 根因
-<根本原因>
-
-## 受影响文件
-- <file1>: <改动>
-- <file2>: <改动>
-
-## 修复方案
-<具体修复步骤>
-
-## 风险点
-<可能引入的问题>
-
-同时更新 .dev/config.yml 中的 project、build、test 段（根据项目实际情况自动发现填充）。
-
-不要输出 ARCHITECTURE.md，不做详细设计。速度优先。
-```
+- agent: dev-architect
+  model: opus
+  task: |
+    紧急线上修复。快速分析问题并输出 Bug Report 到 prd_path：
+    1. 影响范围：哪些功能/用户受影响
+    2. 根因分析：最可能的根因
+    3. 修复方案：每个文件具体改什么
+    4. 风险评估：修复可能引入的新问题
+    不要输出 ARCHITECTURE.md，不做详细设计。速度优先。
+    同时更新 config_path 中的 project、build、test 段。
+  params:
+    - change_request: ${bug_description}
+    - project_root
+    - prd_path: .dev/plan/hotfix-${slug}/PRD.md
+    - config_path: .dev/config.yml
 
 **Agent 返回后：**
 
@@ -150,28 +129,16 @@ Agent: dev-planner
 Model: opus
 Spawn: inline
 
-```
-<project_root>${project_root}</project_root>
-<prd_path>.dev/plan/hotfix-${slug}/PRD.md</prd_path>
-<plan_path>.dev/plan/hotfix-${slug}/PLAN.md</plan_path>
-
-紧急修复规划。基于 PRD.md 快速生成实现计划。
-
-读取 PRD.md，将修复方案分解为任务列表。输出 PLAN.md：
-
-# 实现计划: hotfix/${slug}
-
-## 任务列表
-
-### T-01: <任务标题>
-- **描述**: <具体做什么>
-- **文件**: <涉及文件列表>
-
-## 执行顺序
-T-01 → ...
-
-注意：任务最小化，只修复问题。涉及交互变更需标注 `[UI]`。
-```
+- agent: dev-planner
+  model: opus
+  task: |
+    紧急修复规划。基于 PRD.md 快速生成实现计划。
+    读取 PRD.md，将修复方案分解为任务列表。任务最小化，只修复问题。
+    涉及交互变更需标注 [UI]。输出 PLAN.md。
+  params:
+    - project_root
+    - prd_path: .dev/plan/hotfix-${slug}/PRD.md
+    - plan_path: .dev/plan/hotfix-${slug}/PLAN.md
 
 ### Step 5: 开发者实现
 
@@ -180,22 +147,19 @@ Agent: dev-developer
 Model: sonnet
 Spawn: inline
 
-```
-<project_root>${project_root}</project_root>
-<prd_path>.dev/plan/hotfix-${slug}/PRD.md</prd_path>
-<plan_path>.dev/plan/hotfix-${slug}/PLAN.md</plan_path>
-<knowledge_dir>docs/knowledge/</knowledge_dir>
-
-紧急修复。根据 PLAN.md 中的任务列表实现修复。参考 PRD.md 中的诊断报告。
-
-<user_adjustments>
-${user_adjustments}
-</user_adjustments>
-
-要求：
-- 最小化改动，只修复问题，不做额外重构
-- 实现完成后提交代码（commit message: fix(scope): [紧急] <修复描述>）
-```
+- agent: dev-developer
+  model: sonnet
+  task: |
+    紧急修复。根据 PLAN.md 中的任务列表实现修复。参考 PRD.md 中的诊断报告。
+    要求：
+    - 最小化改动，只修复问题，不做额外重构
+    - 实现完成后提交代码（commit message: fix(scope): [紧急] <修复描述>）
+  params:
+    - project_root
+    - prd_path: .dev/plan/hotfix-${slug}/PRD.md
+    - plan_path: .dev/plan/hotfix-${slug}/PLAN.md
+    - knowledge_dir: docs/knowledge/
+    - user_adjustments: ${user_adjustments}
 
 ### Step 6: 最小验证
 
@@ -224,20 +188,19 @@ CHANGED_FILES=$(git diff --name-only $BASE_BRANCH..HEAD 2>/dev/null || git diff 
 COMMIT_HASH=$(git log --oneline -1 --format="%h")
 ```
 
-```
-<knowledge_dir>docs/knowledge/</knowledge_dir>
-<phase>development</phase>
-<task_title>紧急修复: ${bug_description}</task_title>
-<branch_name>hotfix/${slug}</branch_name>
-<changed_files>
-${changed_files}
-</changed_files>
-<commit_hash>${commit_hash}</commit_hash>
-<notes>
-线上问题原因: ${root_cause}
-修复方式: ${fix_method}
-</notes>
-```
+- agent: dev-recorder
+  model: sonnet
+  task: 记录紧急修复的经验知识。
+  params:
+    - knowledge_dir: docs/knowledge/
+    - phase: development
+    - task_title: 紧急修复: ${bug_description}
+    - branch_name: hotfix/${slug}
+    - changed_files: ${changed_files}
+    - commit_hash: ${commit_hash}
+    - notes: |
+        线上问题原因: ${root_cause}
+        修复方式: ${fix_method}
 
 ### Step 8: 验收 + 摘要
 

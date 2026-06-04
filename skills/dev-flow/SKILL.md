@@ -34,6 +34,17 @@ allowed-tools:
 
 Skill 加载时 Claude Code 会提供 Base directory 上下文。
 
+## Agent 加载机制
+
+本技能所有 Agent 统一以 `general-purpose` 类型 spawn。角色指令**不从 prompt inline 传入**，而是从 `agents/<name>.md` 文件运行时加载。这是强制性的——工作流和命令文件中的 agent 步骤只声明 agent 名称、模型和任务描述，不包含角色指令。
+
+编排器在 spawn 每个 Agent 前必须执行以下步骤：
+
+1. 读取 Skill Base directory 下的 `agents/<name>.md`
+2. 去除 YAML frontmatter（`---...---` 之间的内容）
+3. 跳过 `## 团队通信` 或 `## Team Communication` 段落（仅用于 team 模式，inline spawn 时无用）
+4. 将角色定义 + 任务上下文组合为最终 prompt：`agent_role + "\n\n## 任务\n" + <task + params>`
+
 ## 可用命令
 
 | 命令 | 用途 | 模式 |

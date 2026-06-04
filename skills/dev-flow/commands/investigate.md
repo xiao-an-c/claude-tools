@@ -26,6 +26,10 @@ allowed-tools:
 - 线上紧急故障（用 `dev-flow hotfix`）
 - 需要修改代码（用 `dev-flow fix` 或 `dev-flow patch`）
 
+## Agent 加载机制
+
+所有 Agent 通过 **Agent Loader 协议** 加载：读取 Skill Base directory 下的 `agents/<name>.md`，去除 YAML frontmatter 和团队通信段，拼接 task + params 作为最终 prompt。
+
 ## 流程
 
 ```
@@ -50,52 +54,23 @@ Done. 建议 dev-flow fix 或 dev-flow feat
 
 ### Step 2: 架构师排查
 
-以内联方式 spawn dev-architect，只做调查：
+加载 `agents/dev-architect.md`，以 bug 排查模式 spawn：
 
-```
-Agent(
-  subagent_type="general-purpose",
-  model="opus",
-  prompt="
-    <investigation_request><问题描述></investigation_request>
-    <project_root><项目根目录绝对路径></project_root>
-    <knowledge_dir>docs/knowledge/</knowledge_dir>
+- agent: dev-architect
+  model: opus
+  task: |
+    bug 排查模式（不要修改任何源代码文件，只读分析）。
+    1. 理解症状：根据描述，确定问题表现是什么
+    2. 追踪路径：阅读相关代码，追踪可能的执行路径
+    3. 定位原因：找到最可能的根因（包括代码位置）
+    4. 评估影响：这个 bug 影响哪些功能/用户
 
-    你正在调查一个 bug。你的任务是：
-
-    1. **理解症状**: 根据描述，确定问题表现是什么
-    2. **追踪路径**: 阅读相关代码，追踪可能的执行路径
-    3. **定位原因**: 找到最可能的根因（包括代码位置）
-    4. **评估影响**: 这个 bug 影响哪些功能/用户
-
-    输出格式（写入 .dev/investigation/INVESTIGATION.md）：
-
-    # 调查报告: <问题描述>
-
-    ## 症状
-    <具体表现>
-
-    ## 调查过程
-    <追踪了哪些代码路径，排除了哪些可能性>
-
-    ## 根因分析
-    <最可能的根因，包含文件路径和行号>
-
-    ## 影响范围
-    <受影响的功能/场景>
-
-    ## 置信度
-    <高/中/低>
-
-    ## 建议下一步
-    - 如果是 bug: dev-flow fix <修复建议>
-    - 如果是设计问题: dev-flow refactor <重构建议>
-    - 如果需要新功能: dev-flow feat <功能建议>
-
-    注意：不要修改任何源代码文件。只读分析。
-  "
-)
-```
+    输出调查报告到 .dev/investigation/INVESTIGATION.md，包含：
+    - 症状、调查过程、根因分析（含文件路径和行号）、影响范围、置信度（高/中/低）、建议下一步
+  params:
+    - investigation_request: ${问题描述}
+    - project_root
+    - knowledge_dir: docs/knowledge/
 
 ### Step 3: 确认调查报告
 
@@ -112,21 +87,15 @@ Agent(
 
 ### Step 4: Recorder
 
-如果调查发现了值得记录的知识：
+如果调查发现了值得记录的知识，加载 `agents/dev-recorder.md`：
 
-```
-Agent(
-  subagent_type="general-purpose",
-  model="sonnet",
-  prompt="
-    <knowledge_dir>docs/knowledge/</knowledge_dir>
-    <phase>investigation</phase>
-    <notes>
-    <调查中的关键发现，如非显而易见的代码行为、隐藏的依赖关系等>
-    </notes>
-  "
-)
-```
+- agent: dev-recorder
+  model: sonnet
+  task: 记录排查中的关键发现（如非显而易见的代码行为、隐藏的依赖关系等）。
+  params:
+    - knowledge_dir: docs/knowledge/
+    - phase: investigation
+    - notes: ${调查中的关键发现}
 
 ## 与其他模式的关系
 

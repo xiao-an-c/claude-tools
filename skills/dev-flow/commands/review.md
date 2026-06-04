@@ -25,6 +25,10 @@ allowed-tools:
 - 想直接改代码（用 `dev-flow fix` 或 `dev-flow refactor`）
 - 想讨论方案（用 `dev-flow discuss`）
 
+## Agent 加载机制
+
+所有 Agent 通过 **Agent Loader 协议** 加载：读取 Skill Base directory 下的 `agents/<name>.md`，去除 YAML frontmatter 和团队通信段，拼接 task + params 作为最终 prompt。
+
 ## 流程
 
 ```
@@ -54,57 +58,32 @@ review 模式不使用 git、不创建分支。
 
 ### Step 2: 架构师审查
 
-以内联方式 spawn dev-architect，只做审查：
+加载 `agents/dev-architect.md`，以代码审查模式 spawn：
 
-```
-Agent(
-  subagent_type="general-purpose",
-  model="opus",
-  prompt="
-    <review_target><审查目标></review_target>
-    <project_root><项目根目录绝对路径></project_root>
-    <knowledge_dir>docs/knowledge/</knowledge_dir>
-
-    你正在审查代码。根据审查目标定位并阅读相关代码，然后输出审查报告。
+- agent: dev-architect
+  model: opus
+  task: |
+    代码审查模式（不要修改任何源代码文件，只读审查）。
+    根据审查目标定位并阅读相关代码，然后输出审查报告。
 
     审查维度：
-    1. **代码质量**: 命名、可读性、复杂度
-    2. **设计问题**: 职责划分、耦合度、抽象层次
-    3. **潜在 bug**: 边界条件、错误处理、并发问题
-    4. **性能**: 明显的性能问题（N+1 查询、不必要的渲染等）
-    5. **安全**: 注入、XSS、敏感数据暴露
-    6. **可维护性**: 测试难度、修改风险
+    1. 代码质量：命名、可读性、复杂度
+    2. 设计问题：职责划分、耦合度、抽象层次
+    3. 潜在 bug：边界条件、错误处理、并发问题
+    4. 性能：明显的性能问题（N+1 查询、不必要的渲染等）
+    5. 安全：注入、XSS、敏感数据暴露
+    6. 可维护性：测试难度、修改风险
 
-    输出格式（写入 .dev/review/REVIEW.md）：
-
-    # 代码审查: <审查目标>
-
-    ## 审查范围
-    <审查了哪些文件>
-
-    ## 总体评估
-    <1-2 句话总结>
-
-    ## 发现
-
-    ### 🔴 严重问题（必须修复）
-    <问题列表，包含文件路径和行号>
-
-    ### 🟡 建议改进（推荐修复）
-    <改进建议列表>
-
-    ### 🟢 做得好的地方
-    <值得保留的模式>
-
-    ## 建议下一步
-    - 如有严重问题: dev-flow fix <问题描述>
-    - 如有设计改进: dev-flow refactor <重构建议>
-    - 如整体OK: 可以合并
-
-    注意：不要修改任何源代码文件。只读审查。
-  "
-)
-```
+    输出审查报告到 .dev/review/REVIEW.md，包含：
+    - 审查范围、总体评估
+    - 🔴 严重问题（必须修复）
+    - 🟡 建议改进（推荐修复）
+    - 🟢 做得好的地方
+    - 建议下一步
+  params:
+    - review_target: ${审查目标}
+    - project_root
+    - knowledge_dir: docs/knowledge/
 
 ### Step 3: 展示审查结果
 
@@ -112,18 +91,12 @@ Agent(
 
 ### Step 4: Recorder
 
-如果审查发现了值得记录的知识：
+如果审查发现了值得记录的知识，加载 `agents/dev-recorder.md`：
 
-```
-Agent(
-  subagent_type="general-purpose",
-  model="sonnet",
-  prompt="
-    <knowledge_dir>docs/knowledge/</knowledge_dir>
-    <phase>review</phase>
-    <notes>
-    <审查中的关键发现，如系统性问题、项目特有的代码模式问题等>
-    </notes>
-  "
-)
-```
+- agent: dev-recorder
+  model: sonnet
+  task: 记录审查中的关键发现（如系统性问题、项目特有的代码模式问题等）。
+  params:
+    - knowledge_dir: docs/knowledge/
+    - phase: review
+    - notes: ${审查中的关键发现}

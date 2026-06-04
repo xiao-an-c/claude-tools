@@ -218,16 +218,14 @@ Model: opus
 Spawn: inline
 Interactive: true (uses AskUserQuestion)
 
-**这是唯一的人类交互点。** 以后所有工作完全由 AI 完成。
-
-以内联方式 spawn Product Agent（因为 Product 需要 `AskUserQuestion`，必须在主会话中运行）：
-
-```
-<feature_description>${description}</feature_description>
-<project_root>${project_root}</project_root>
-<prd_path>.dev/plan/${branch_name}/PRD.md</prd_path>
-<config_path>.dev/config.yml</config_path>
-```
+- agent: dev-product
+  model: opus
+  task: 与用户讨论功能需求，产出 PRD.md。通过 AskUserQuestion 与用户互动（最多 3 轮提问，每轮聚焦一个关键问题），同时自动发现项目配置。
+  params:
+    - feature_description: ${description}
+    - project_root
+    - prd_path: .dev/plan/${branch_name}/PRD.md
+    - config_path: .dev/config.yml
 
 **Agent 返回后：**
 
@@ -291,44 +289,33 @@ sub_branches:
 ### Step 6: 并行 -- 测试设计 + 架构设计
 
 Type: agent
-Agents: [dev-tester, dev-architect]
 Spawn: parallel
 
-**并行 spawn tester 和 architect，同时运行：**
-
-**Agent 定义加载：** spawn 前，先读取 Skill Base directory 下的 `agents/dev-tester.md` 和 `agents/dev-architect.md`，去除 YAML frontmatter 和团队通信段，将角色定义注入到 prompt 开头。
-
-```
-Agent(
-  subagent_type="general-purpose",
-  model="sonnet",
-  prompt="
-    <mode>design_only</mode>
-    <project_root>${project_root}</project_root>
-    <config_path>.dev/config.yml</config_path>
-    <test_design_path>.dev/plan/${branch_name}/TEST-DESIGN.md</test_design_path>
-    <prd_path>.dev/plan/${branch_name}/PRD.md</prd_path>
-    <branch_type>${branch_type}</branch_type>
-    你是测试工程师。基于 PRD.md 生成测试用例设计文档。
+- agent: dev-tester
+  model: sonnet
+  task: |
+    基于 PRD.md 生成测试用例设计文档（mode=design_only）。
     输出 TEST-DESIGN.md 到指定路径。
-  "
-)
-parallel_with:
-Agent(
-  subagent_type="general-purpose",
-  model="opus",
-  prompt="
-    <project_root>${project_root}</project_root>
-    <config_path>.dev/config.yml</config_path>
-    <architecture_path>.dev/plan/${branch_name}/ARCHITECTURE.md</architecture_path>
-    <prd_path>.dev/plan/${branch_name}/PRD.md</prd_path>
-    你是架构师。基于 PRD.md 设计系统架构，输出 ARCHITECTURE.md。
-    当前复杂度: ${complexity}。
-    <如果 complex>请生成完整版架构设计，包含模块划分、接口定义、数据流、集成点。</如果>
-    <如果 simple>请生成简化版架构设计，聚焦模块划分和关键接口。</如果>
-  "
-)
-```
+  params:
+    - mode: design_only
+    - project_root
+    - config_path
+    - test_design_path: .dev/plan/${branch_name}/TEST-DESIGN.md
+    - prd_path
+    - branch_type
+
+- agent: dev-architect
+  model: opus
+  task: |
+    基于 PRD.md 设计系统架构，输出 ARCHITECTURE.md。
+    复杂度=${complexity}。
+    complex → 完整版（模块划分、接口定义、数据流、集成点）
+    simple → 简化版（模块划分和关键接口）
+  params:
+    - project_root
+    - config_path
+    - architecture_path: .dev/plan/${branch_name}/ARCHITECTURE.md
+    - prd_path
 
 **等待两个 Agent 返回。**
 
@@ -347,18 +334,20 @@ Agent: dev-planner
 Model: opus
 Spawn: inline
 
-```
-<feature_description>${description}</feature_description>
-<project_root>${project_root}</project_root>
-<config_path>.dev/config.yml</config_path>
-<plan_path>.dev/plan/${branch_name}/PLAN.md</plan_path>
-<prd_path>.dev/plan/${branch_name}/PRD.md</prd_path>
-<architecture_path>.dev/plan/${branch_name}/ARCHITECTURE.md</architecture_path>
-<branch_type>${branch_type}</branch_type>
-<branch_name>${branch_name}</branch_name>
-你是规划师。基于 PRD.md + ARCHITECTURE.md 进行任务分解，输出 PLAN.md。
-每个任务必须包含：描述、文件列表、依赖、可执行的验证方式。
-```
+- agent: dev-planner
+  model: opus
+  task: |
+    基于 PRD.md + ARCHITECTURE.md 进行任务分解，输出 PLAN.md。
+    每个任务必须包含：描述、文件列表、依赖、可执行的验证方式。
+  params:
+    - feature_description: ${description}
+    - project_root
+    - config_path
+    - plan_path: .dev/plan/${branch_name}/PLAN.md
+    - prd_path
+    - architecture_path
+    - branch_type
+    - branch_name
 
 **等待 planner 返回。** 确认 PLAN.md 已生成且包含任务列表。
 
@@ -374,21 +363,20 @@ Condition: complexity=complex
 
 **simple 路径跳过此步骤。**
 
-**再次 spawn architect，包含自审要求：**
-
-```
-<project_root>${project_root}</project_root>
-<config_path>.dev/config.yml</config_path>
-<architecture_path>.dev/plan/${branch_name}/ARCHITECTURE.md</architecture_path>
-<prd_path>.dev/plan/${branch_name}/PRD.md</prd_path>
-<test_design_path>.dev/plan/${branch_name}/TEST-DESIGN.md</test_design_path>
-你是架构师。请审查你之前生成的 ARCHITECTURE.md，检查：
-- PRD 中的功能是否都有模块支撑
-- 测试用例是否都能在架构下执行
-- 模块边界是否清晰、无循环依赖
-
-如果发现问题，直接修正 ARCHITECTURE.md。完成后返回摘要。
-```
+- agent: dev-architect
+  model: opus
+  task: |
+    审查之前生成的 ARCHITECTURE.md，检查：
+    - PRD 中的功能是否都有模块支撑
+    - 测试用例是否都能在架构下执行
+    - 模块边界是否清晰、无循环依赖
+    如果发现问题，直接修正 ARCHITECTURE.md。完成后返回摘要。
+  params:
+    - project_root
+    - config_path
+    - architecture_path
+    - prd_path
+    - test_design_path
 
 **等待 architect 返回。** 确认 ARCHITECTURE.md 已更新（如有修正）。
 
@@ -402,15 +390,17 @@ Condition: complexity=complex
 
 **simple 路径跳过此步骤。**
 
-```
-<project_root>${project_root}</project_root>
-<config_path>.dev/config.yml</config_path>
-<tech_design_path>.dev/plan/${branch_name}/TECH-DESIGN.md</tech_design_path>
-<plan_path>.dev/plan/${branch_name}/PLAN.md</plan_path>
-<architecture_path>.dev/plan/${branch_name}/ARCHITECTURE.md</architecture_path>
-你是技术设计师。基于 PLAN.md 和 ARCHITECTURE.md，为每个任务设计详细技术方案。
-输出 TECH-DESIGN.md 到指定路径。
-```
+- agent: dev-tech-designer
+  model: sonnet
+  task: |
+    基于 PLAN.md 和 ARCHITECTURE.md，为每个任务设计详细技术方案。
+    输出 TECH-DESIGN.md 到指定路径。
+  params:
+    - project_root
+    - config_path
+    - tech_design_path: .dev/plan/${branch_name}/TECH-DESIGN.md
+    - plan_path
+    - architecture_path
 
 **等待 tech-designer 返回。** 确认 TECH-DESIGN.md 已生成。
 
@@ -461,21 +451,23 @@ git checkout -b <type>/<slug>-t<NN>
 
 为每个任务 spawn developer：
 
-```
-<task_id>${task_id}</task_id>
-<task_title>${task_title}</task_title>
-<task_description>${task_description}</task_description>
-<task_files>${task_files}</task_files>
-<task_verification>${task_verification}</task_verification>
-<project_root>${project_root}</project_root>
-<config_path>.dev/config.yml</config_path>
-<plan_path>.dev/plan/${branch_name}/PLAN.md</plan_path>
-<prd_path>.dev/plan/${branch_name}/PRD.md</prd_path>
-<test_design_path>.dev/plan/${branch_name}/TEST-DESIGN.md</test_design_path>
-<branch_type>${branch_type}</branch_type>
-<如果 TECH-DESIGN.md 存在><tech_design_path>.dev/plan/${branch_name}/TECH-DESIGN.md</tech_design_path></如果>
-你是开发者。实现指定任务，完成后提交代码。
-```
+- agent: dev-developer
+  model: sonnet
+  task: |
+    实现指定任务，完成后提交代码。
+  params:
+    - task_id: ${task_id}
+    - task_title: ${task_title}
+    - task_description: ${task_description}
+    - task_files: ${task_files}
+    - task_verification: ${task_verification}
+    - project_root
+    - config_path
+    - plan_path
+    - prd_path
+    - test_design_path
+    - branch_type
+    - tech_design_path（如果存在）
 
 #### 等待 developer 返回
 
@@ -495,18 +487,21 @@ Spawn: background
 
 **每个任务完成后，后台 spawn recorder（不阻塞）：**
 
-```
-<phase>development</phase>
-<task_id>${task_id}</task_id>
-<task_title>${task_title}</task_title>
-<branch_name>${branch_name}</branch_name>
-<changed_files>${changed_files}</changed_files>
-<commit_hash>${commit_hash}</commit_hash>
-<project_root>${project_root}</project_root>
-<knowledge_dir>docs/knowledge/</knowledge_dir>
-<config_path>.dev/config.yml</config_path>
-<notes>${developer_notes}</notes>
-```
+- agent: dev-recorder
+  model: sonnet
+  task: |
+    记录开发任务的经验知识。
+  params:
+    - phase: development
+    - task_id: ${task_id}
+    - task_title: ${task_title}
+    - branch_name: ${branch_name}
+    - changed_files: ${changed_files}
+    - commit_hash: ${commit_hash}
+    - project_root
+    - knowledge_dir: docs/knowledge/
+    - config_path
+    - notes: ${developer_notes}
 
 **不等 recorder 完成，立即继续处理。**
 
