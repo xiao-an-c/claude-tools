@@ -28,7 +28,12 @@ allowed-tools:
 
 - `commands/<name>.md`、`workflows/<name>.md` — 相对于**本 Skill 的 Base directory**
 - `agents/<name>.md` — 相对于**本 Skill 的 Base directory**（Agent 角色定义，编排器在 spawn 前运行时加载并注入到 prompt）
-- `.dev/config.yml`、`.dev/plan/...`、`.dev/workflows/<name>.md` — 相对于**用户项目根目录**（当前版本的增量内容：PRD、PLAN、TASK-LOG 等临时产出，按分支隔离）
+- `.dev/plan/<branch>/` — 相对于**用户项目根目录**（当前版本的增量内容，按分支隔离）
+  - `product/` — 产品需求（PRD.md）
+  - `architecture/` — 架构设计（ARCHITECTURE.md）
+  - `test/` — 测试设计（TEST-DESIGN.md）
+  - `plan/` — 开发计划（PLAN.md、TECH-DESIGN.md）
+  - `TASK-LOG.md`、`ACCEPTANCE.md` — 执行记录和验收
 - `.dev/doc/` — 相对于**用户项目根目录**（持久项目文档，跨版本累积。结构由 Agent 根据项目实际情况系统性设计，不预设固定模板）
 
 **所有 Agent 统一以 `general-purpose` 类型 spawn。** Agent 的角色指令通过运行时加载 `agents/<name>.md` 实现，不依赖自定义 Agent 类型注册。
@@ -72,6 +77,29 @@ allowed-tools:
 - **关注点分离** — 清晰界定各模块/层的职责边界
 - **契约优先** — 定义模块间接口（输入、输出、约束），不关心内部实现
 - **依赖方向** — 明确依赖关系，避免循环依赖
+
+### 文档生产流程
+
+Agent 按以下顺序生产文档，每一步建立在前一步的产出之上：
+
+```
+1. 产品 Agent → 捋清业务，抽象领域
+   产出: PRD.md（含领域模型、实体关系、业务规则）
+         ↓ 领域实体、关系、规则
+
+2. 架构师 Agent → 基于领域模型，映射代码结构
+   产出: ARCHITECTURE.md（领域 → 模块的映射、接口契约）
+         ↓ 模块划分、接口、数据流
+
+3. 测试 Agent → 基于需求和架构，设计验收标准
+   产出: TEST-DESIGN.md（用例覆盖领域场景和模块行为）
+         ↓ 验收标准
+
+4. 规划 Agent → 基于架构和验收标准，拆解任务
+   产出: PLAN.md（结构化任务、依赖、验证方式）
+```
+
+**关键约束：架构师不得跳过领域模型直接设计模块。** 架构文档中的每个模块必须能追溯到领域模型中的实体或业务规则。
 
 ## 项目文档机制（`.dev/doc/`）
 
