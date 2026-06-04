@@ -76,7 +76,7 @@ Done. 建议具体开发模式
   params:
     - discussion_topic: ${讨论主题}
     - project_root
-    - knowledge_dir: docs/knowledge/
+    - knowledge_dir: .dev/doc/
 
 ### Step 3: 架构师分析 + 多轮讨论
 
@@ -96,7 +96,7 @@ Done. 建议具体开发模式
   params:
     - discussion_topic: ${讨论主题}
     - project_root
-    - knowledge_dir: docs/knowledge/
+    - knowledge_dir: .dev/doc/
     - product_context: ${产品经理收集的上下文}
 
 **讨论格式**：架构师通过 AskUserQuestion 展示方案，用户选择或追问，反复直到满意。
@@ -150,7 +150,7 @@ YYYY-MM-DD
   model: sonnet
   task: 记录讨论中的关键决策和原因。
   params:
-    - knowledge_dir: docs/knowledge/
+    - knowledge_dir: .dev/doc/
     - phase: discussion
     - notes: ${讨论中的关键决策和原因，如为什么选A不选B}
 

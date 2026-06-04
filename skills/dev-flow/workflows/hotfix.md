@@ -158,7 +158,7 @@ Spawn: inline
     - project_root
     - prd_path: .dev/plan/hotfix-${slug}/PRD.md
     - plan_path: .dev/plan/hotfix-${slug}/PLAN.md
-    - knowledge_dir: docs/knowledge/
+    - knowledge_dir: .dev/doc/
     - user_adjustments: ${user_adjustments}
 
 ### Step 6: 最小验证
@@ -192,7 +192,7 @@ COMMIT_HASH=$(git log --oneline -1 --format="%h")
   model: sonnet
   task: 记录紧急修复的经验知识。
   params:
-    - knowledge_dir: docs/knowledge/
+    - knowledge_dir: .dev/doc/
     - phase: development
     - task_title: 紧急修复: ${bug_description}
     - branch_name: hotfix/${slug}

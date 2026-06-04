@@ -64,7 +64,7 @@ Spawn: inline
     - task_description: ${description}
     - project_root
     - workflow_path: .dev/plan/${branch_name}/WORKFLOW.md
-    - knowledge_dir: docs/knowledge/
+    - knowledge_dir: .dev/doc/
 
 ### Step 3: 用户确认工作流
 
@@ -99,7 +99,7 @@ Action: execute_workflow
   model: sonnet
   task: 记录即兴编排工作流的经验知识。
   params:
-    - knowledge_dir: docs/knowledge/
+    - knowledge_dir: .dev/doc/
     - phase: development
     - task_title: ${description}
     - branch_name: ${branch_name}

@@ -70,7 +70,7 @@ Done. 建议 dev-flow fix 或 dev-flow feat
   params:
     - investigation_request: ${问题描述}
     - project_root
-    - knowledge_dir: docs/knowledge/
+    - knowledge_dir: .dev/doc/
 
 ### Step 3: 确认调查报告
 
@@ -93,7 +93,7 @@ Done. 建议 dev-flow fix 或 dev-flow feat
   model: sonnet
   task: 记录排查中的关键发现（如非显而易见的代码行为、隐藏的依赖关系等）。
   params:
-    - knowledge_dir: docs/knowledge/
+    - knowledge_dir: .dev/doc/
     - phase: investigation
     - notes: ${调查中的关键发现}
 

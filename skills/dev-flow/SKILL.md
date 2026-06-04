@@ -28,9 +28,18 @@ allowed-tools:
 
 - `commands/<name>.md`、`workflows/<name>.md` — 相对于**本 Skill 的 Base directory**
 - `agents/<name>.md` — 相对于**本 Skill 的 Base directory**（Agent 角色定义，编排器在 spawn 前运行时加载并注入到 prompt）
-- `.dev/config.yml`、`.dev/plan/...`、`.dev/workflows/<name>.md` — 相对于**用户项目根目录**（运行时状态和用户自定义覆盖）
+- `.dev/config.yml`、`.dev/plan/...`、`.dev/workflows/<name>.md` — 相对于**用户项目根目录**（当前版本的增量内容：PRD、PLAN、TASK-LOG 等临时产出，按分支隔离）
+- `.dev/doc/` — 相对于**用户项目根目录**（持久项目文档，跨版本累积。Agent 发现知识时实时更新。包含架构决策、项目约定、代码模式、已知陷阱等）
 
 **所有 Agent 统一以 `general-purpose` 类型 spawn。** Agent 的角色指令通过运行时加载 `agents/<name>.md` 实现，不依赖自定义 Agent 类型注册。
+
+## 文档语言策略
+
+所有 Agent 产出的文档遵循以下语言优先级：
+
+1. **项目文档风格优先** — 如果项目已有文档（README、CLAUDE.md 等），匹配其语言
+2. **用户习惯** — 用户在对话中使用的语言
+3. **中文兜底** — 无法确定时使用中文（简体）
 
 Skill 加载时 Claude Code 会提供 Base directory 上下文。
 

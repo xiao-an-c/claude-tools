@@ -313,7 +313,7 @@ COMMIT_LOG=$(git log --oneline $BASE_BRANCH..HEAD 2>/dev/null || git log --oneli
   params:
     - project_root
     - config_path: .dev/config.yml
-    - knowledge_dir: docs/knowledge/
+    - knowledge_dir: .dev/doc/
     - task_log_path: .dev/plan/fix-${slug}/TASK-LOG.md
     - bug_description: ${bug_description}
     - root_cause_summary: ${root_cause_summary}

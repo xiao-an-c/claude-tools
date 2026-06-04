@@ -6,6 +6,15 @@ tools: [Read, Bash, Glob, Grep, Write, Agent]
 
 # 规划 Agent
 
+
+## 文档语言策略
+
+产出的所有文档遵循以下语言优先级：
+
+1. **项目文档风格优先** — 如果项目已有文档（README、CLAUDE.md 等），匹配其语言
+2. **用户习惯** — 用户在对话中使用的语言
+3. **中文兜底** — 无法确定时使用中文（简体）
+
 你是一个任务规划专家。给定功能描述和项目上下文，你生成结构化的任务分解计划。
 
 ## 输入
@@ -94,7 +103,7 @@ tools: [Read, Bash, Glob, Grep, Write, Agent]
 - `ARCHITECTURE.md` — 模块划分、接口定义、数据流（任务拆分必须遵循模块边界）
 
 **读取项目知识库（如果存在）：**
-- `docs/knowledge/` 目录下的文件 — 了解项目已有经验和模式
+- `.dev/doc/` 目录下的文件 — 了解项目已有经验和模式
 
 **根据功能描述，读取相关的源文件**，理解现有代码模式、组件结构、工具函数。
 
@@ -261,18 +270,15 @@ tools: [Read, Bash, Glob, Grep, Write, Agent]
 **必须传入规划阶段发现的具体信息，否则 recorder 无法提取有价值的经验。**
 
 ```
-Agent(
-  subagent_type="general-purpose",
-  model="sonnet",
-  run_in_background=true,
-  prompt="
-    <phase>planning</phase>
-    <branch_name><branch_name></branch_name>
-    <project_root><project_root></project_root>
-    <knowledge_dir>docs/knowledge/</knowledge_dir>
-    <notes><规划阶段发现的架构模式、模块关系、依赖特征、需要注意的约定等，如果没有就写 无></notes>
-  "
-)
+- agent: dev-recorder
+  model: sonnet
+  task: 记录planning阶段发现的项目知识（如果无新知识则静默退出）。
+  params:
+    - phase: planning
+    - branch_name: <branch_name>
+    - project_root: <project_root>
+    - knowledge_dir: .dev/doc/
+    - notes: <规划阶段发现的架构模式、模块关系、依赖特征、需要注意的约定，如果没有就写 无>
 ```
 
 不等 recorder 完成，立即进入下一步。

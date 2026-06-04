@@ -354,7 +354,7 @@ Spawn: background
     - changed_files: ${changed_files}
     - commit_hash: ${commit_hash}
     - project_root
-    - knowledge_dir: docs/knowledge/
+    - knowledge_dir: .dev/doc/
     - notes: ${recorder_notes}
 
 #### Step 8: 验证 + 合并子分支

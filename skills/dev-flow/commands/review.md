@@ -83,7 +83,7 @@ review 模式不使用 git、不创建分支。
   params:
     - review_target: ${审查目标}
     - project_root
-    - knowledge_dir: docs/knowledge/
+    - knowledge_dir: .dev/doc/
 
 ### Step 3: 展示审查结果
 
@@ -97,6 +97,6 @@ review 模式不使用 git、不创建分支。
   model: sonnet
   task: 记录审查中的关键发现（如系统性问题、项目特有的代码模式问题等）。
   params:
-    - knowledge_dir: docs/knowledge/
+    - knowledge_dir: .dev/doc/
     - phase: review
     - notes: ${审查中的关键发现}

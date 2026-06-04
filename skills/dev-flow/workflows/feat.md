@@ -499,7 +499,7 @@ Spawn: background
     - changed_files: ${changed_files}
     - commit_hash: ${commit_hash}
     - project_root
-    - knowledge_dir: docs/knowledge/
+    - knowledge_dir: .dev/doc/
     - config_path
     - notes: ${developer_notes}
 
