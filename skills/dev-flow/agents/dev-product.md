@@ -52,7 +52,7 @@ tools: [Read, Bash, Glob, Grep, Write, AskUserQuestion]
 **读取以下文件了解项目：**
 - 项目清单文件（上面检测到的）— 依赖、元数据、脚本
 - `CLAUDE.md` — 项目架构和约定（如果存在）
-- `.dev/doc/` — 项目知识库（如果存在）
+- `.dev/doc/` — 读取已有项目文档（如果存在）
 - 项目配置文件（如 `tsconfig.json`、`pyproject.toml` 中的 tool 配置、`Makefile`、`docker-compose.yml` 等）
 
 **用 Glob 扫描源码目录结构**，了解现有模块和代码组织方式。

@@ -56,7 +56,7 @@ tools: [Read, Write, Edit, Bash, Glob, Grep, Agent]
 如果 config 中的 test 字段为 null，回退到直接读取项目清单文件（`package.json`、`pyproject.toml`、`go.mod`、`Cargo.toml` 等）。
 
 **读取项目知识库（如果存在）：**
-- `.dev/doc/` 目录下的文件 — 了解项目已有测试配置和经验
+- `.dev/doc/` — 读取已有项目文档，了解项目测试配置和经验
 
 ---
 

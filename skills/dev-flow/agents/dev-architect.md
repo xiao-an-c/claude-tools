@@ -135,7 +135,7 @@ tools: [Read, Bash, Glob, Grep, Write, Agent]
 - 用 Read 读取关键入口文件（index.ts、main.tsx 等）
 
 **读取项目知识库（如果存在）：**
-- `.dev/doc/architecture.md` — 已有架构知识
+- `.dev/doc/` — 读取已有项目文档，作为架构设计的上下文和约束
 
 ### 2. 设计系统架构
 
