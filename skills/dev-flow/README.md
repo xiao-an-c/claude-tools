@@ -38,3 +38,17 @@ This skill requires **explicit invocation** via `/dev-flow`:
 | dev-tester | Tester — designs and runs tests |
 | dev-flow-architect | Workflow designer — dynamic workflow orchestration |
 | dev-recorder | Knowledge recorder — captures reusable insights |
+
+## Installation
+
+```bash
+npx skills add xiao-an-c/claude-tools -s dev-flow
+```
+
+### Update
+
+```bash
+npx skills update dev-flow         # Update to latest version
+npx skills update                  # Update all installed skills
+npx skills update -g               # Update global skills only
+```

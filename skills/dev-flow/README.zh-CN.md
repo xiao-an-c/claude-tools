@@ -38,3 +38,17 @@ Claude Code 的多 Agent 协作开发工作流 Skill。编排 8 个专项 Agent�
 | dev-tester | 测试工程师 — 设计和执行测试 |
 | dev-flow-architect | 工作流设计师 — 动态编排工作流 |
 | dev-recorder | 知识记录者 — 捕获可复用洞察 |
+
+## 安装
+
+```bash
+npx skills add xiao-an-c/claude-tools -s dev-flow
+```
+
+### 更新
+
+```bash
+npx skills update dev-flow         # 更新到最新版本
+npx skills update                  # 更新所有已安装技能
+npx skills update -g               # 只更新全局技能
+```

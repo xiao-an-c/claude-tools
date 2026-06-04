@@ -44,6 +44,16 @@ npx skills add xiao-an-c/claude-tools -s git-flow
 npx skills add xiao-an-c/claude-tools -s dev-flow
 ```
 
+### 更新技能
+
+```bash
+npx skills update              # 更新所有已安装的技能
+npx skills update dev-flow     # 只更新 dev-flow
+npx skills update -g           # 只更新全局技能
+npx skills update -p           # 只更新项目级技能
+npx skills upgrade dev-flow    # upgrade 是 update 的别名
+```
+
 ### Claude Code 插件市场
 
 ```

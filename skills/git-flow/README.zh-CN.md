@@ -31,3 +31,17 @@ Claude: git commit -m "feat(user): 添加登录页面"
 用户: "完成这个功能"
 Claude: 将 feat/user-auth 以 --no-ff 合并到 develop
 ```
+
+## 安装
+
+```bash
+npx skills add xiao-an-c/claude-tools -s git-flow
+```
+
+### 更新
+
+```bash
+npx skills update git-flow          # 更新到最新版本
+npx skills update                   # 更新所有已安装技能
+npx skills update -g                # 只更新全局技能
+```
