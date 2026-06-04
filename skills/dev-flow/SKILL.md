@@ -6,6 +6,7 @@ description: |
   子命令：feat(功能开发)、fix(bug修复)、hotfix(紧急修复)、patch(轻量补丁)、refactor(代码重构)、discuss(架构讨论)、review(代码审查)、investigate(bug排查)、auto(即兴编排)、status(状态查看)、resume(恢复中断)。
   用法示例：/dev-flow feat 用户登录功能、/dev-flow fix 分页bug、/dev-flow review src/routes/
 argument-hint: "<command> [args...]"
+disable-model-invocation: true
 allowed-tools:
   - Read
   - Write
